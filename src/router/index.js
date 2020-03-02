@@ -11,8 +11,6 @@ import ScheduleControl from '@/components/control/ScheduleControl'
 import emp from '@/components/hr/emp'
 import dept from '@/components/hr/dept'
 
-import project_classification from '@/components/project-preparation/project_classification'
-
 import standardTask from '@/components/project-preparation/standard-task'
 
 Vue.use(Router)
@@ -61,11 +59,6 @@ const router = new Router({
           path: '/standardTask',
           name: 'standardTask',
           component: standardTask,
-        },
-        {
-          path: '/project_classification',
-          name: 'project_classification',
-          component: project_classification,
         }
       ]
     }
