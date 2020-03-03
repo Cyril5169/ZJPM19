@@ -13,6 +13,7 @@ import dept from '@/components/hr/dept'
 import project_classification from '@/components/project-preparation/project_classification'
 
 import standardTask from '@/components/project-preparation/standard-task'
+import work_post from '@/components/project-preparation/work_post'
 
 Vue.use(Router)
 
@@ -65,6 +66,11 @@ const router = new Router({
           path: '/project_classification',
           name: 'project_classification',
           component: project_classification,
+        },
+        {
+          path: '/work_post',
+          name: 'work_post',
+          component: work_post,
         }
       ]
     }
@@ -81,19 +87,19 @@ router.beforeEach((to, from, next) => {
   // if (!Cookies.get('cid') && !Cookies.get('customerType') && to.name != 'login') {//判断用户信息，不合法返回登陆界面
   //   next('/login')
   // } else {
-    if (from.path == '/') {
-      store.commit('navTabs/emptyBreadCrumb');//到主页面后清空导航
-      if (to.name == 'login' || to.name == 'main') {
-        next()
-      }
-      else {
-        next('/main');
-      }
+  if (from.path == '/') {
+    store.commit('navTabs/emptyBreadCrumb');//到主页面后清空导航
+    if (to.name == 'login' || to.name == 'main') {
+      next()
     }
-    else {//不是刷新
-      next();
-      history.pushState(null, null, location.href);//禁止后退，搭配APP.VUE里面的mounted
+    else {
+      next('/main');
     }
+  }
+  else {//不是刷新
+    next();
+    history.pushState(null, null, location.href);//禁止后退，搭配APP.VUE里面的mounted
+  }
   // }
 })
 
