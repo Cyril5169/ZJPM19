@@ -2,16 +2,13 @@
   <div class="deptEmpTab">
     <el-card shadow="hover" class="centerCard">
       <div>
-        <div slot="header">
-          <span class="fstrong f16">{{deptName}}</span>
-        </div>
-        <div class="tbarStyle">
+        <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
           <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入员工姓名" v-model="condition"
             style="width:300px;">
             <el-button @click="refreshData" slot="append" icon="el-icon-search">搜 索</el-button>
           </el-input>
-          <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewOne()">新增</el-button>
+          <el-button size="small" type="primary" style="margin-left:10px;" @click="addDeptEmpShow()">新增部门人员</el-button>
           <el-button size="small" type="danger" :disabled="selection.length==0" @click="deleteList">
             批量删除({{selection.length}})
           </el-button>
@@ -19,7 +16,7 @@
             <el-button size="small" :disabled="selection.length==0">
               批量修改({{selection.length}})<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
-            <el-dropdown-menu slot="dropdown" >
+            <el-dropdown-menu slot="dropdown">
               <el-dropdown-item @click.native="editList(1)" divided>设置为需被排班</el-dropdown-item>
               <el-dropdown-item @click.native="editList(4)" divided>取消设置需被排班</el-dropdown-item>
               <el-dropdown-item @click.native="editList(2)" divided>设置为负责人</el-dropdown-item>
@@ -30,7 +27,7 @@
           </el-dropdown>
         </div>
         <div style="width:100%;height:370px;">
-          <el-table ref="deptEmpTable" style="width: 100%" height="100%" :data="tableData" tooltip-effect="dark"
+          <el-table ref="deptEmpTable" style="width: 100%" height="100%" :data="deptEmpData" tooltip-effect="dark"
             highlight-current-row border @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" width="70" align="center" label="序号">
@@ -64,27 +61,77 @@
         </div>
       </div>
     </el-card>
-    <el-dialog width="400px" :title="addDeptEmpText" :close-on-click-modal="false" :visible.sync="addDeptEmpVisiable"
+
+    <!-- 新增部门人员 -->
+    <el-dialog :width=" deptEmpModelList.length? '800px':'400px'" title="新增部门人员" :close-on-click-modal="false"
+      :visible.sync="addDeptEmpVisiable">
+      <div class="transferDiv">
+        <div class="leftTransferItem">
+          <div class="tbar">
+            <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchEmp"></el-button>
+            <el-input size="small" @keyup.enter.native="refreshEmpList" placeholder="请输入人员名称" v-model="empCondition"
+              clearable style="width:250px;">
+              <el-button size="small" @click="refreshEmpList" slot="append" icon="el-icon-search">搜索</el-button>
+            </el-input>
+          </div>
+          <div>
+            <span style="color:gray;font-size:12px;">*双击选择人员</span>
+            <el-table ref="itemListTable" style="width:100%;" height="300" :data="empListData" tooltip-effect="dark"
+              @row-dblclick="handleRowDbClcik" border stripe>
+              <el-table-column prop="emp_name" label="人员名称" align="center"></el-table-column>
+            </el-table>
+            <div style="margin:0 15%;">
+              <el-pagination @current-change="handleCurrentChange" :current-page.sync="currentPage" :page-size="limit"
+                layout="total, prev, pager, next, jumper" :total="total"></el-pagination>
+            </div>
+          </div>
+        </div>
+        <div class="rightTransferItem" v-if="deptEmpModelList.length">
+          <fieldset class="oneItem" v-for="(item,index) in deptEmpModelList" :key="index">
+            <legend>人员{{index+1}} <el-button type="danger" icon="el-icon-delete" size="mini" circle
+                @click="deleteSelectEmp(index)"></el-button>
+            </legend>
+            <el-form size="small" :model="item" label-width="80px" :rules="addEmp_rules">
+              <el-form-item label="人员" prop="emp_id">
+                <el-select v-model="item.emp_id" placeholder="请选择人员" disabled="">
+                  <el-option v-for="item in empDataFilter" :key="item.value" :label="item.display" :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+            </el-form>
+          </fieldset>
+        </div>
+        <div class="bottomButton" v-if="deptEmpModelList.length">
+          <el-button size="medium" @click="addDeptEmpVisiable = false">取&nbsp;&nbsp;消</el-button>
+          <el-button type="primary" size="medium" @click="onSaveDeptEmpListClick" style="margin-left:30px;">
+            保&nbsp;&nbsp;存
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
+
+    <!--编辑部门人员记录 -->
+    <el-dialog width="400px" title="编辑部门人员" :close-on-click-modal="false" :visible.sync="selectDeptEmpVisiable"
       top="25vh" @closed="refreshForm" :append-to-body="true">
-      <el-form :model="dept_empModel" label-width="100px" ref="deptEmpForm" :rules="add_rules">
-        <el-form-item label="人员" prop="emp_id" >
-          <el-select v-model="dept_empModel.emp_id" ref="select_emp" placeholder="请选择人员" :disabled="!addOrNot">
-            <el-option v-for="item in empData" :key="item.value" :label="item.label" :value="item.value">
+      <el-form :model="deptEmpModel" label-width="100px" ref="deptEmpForm" :rules="add_rules">
+        <el-form-item label="人员" prop="emp_id">
+          <el-select v-model="deptEmpModel.emp_id" ref="select_emp" placeholder="请选择人员" :disabled="!addOrNot">
+            <el-option v-for="item in empDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="填写项1" prop="de_isscheduling" v-if="!addOrNot">
-          <el-checkbox v-model="dept_empModel.de_isscheduling">是否需被排班</el-checkbox>
+          <el-checkbox v-model="deptEmpModel.de_isscheduling">是否需被排班</el-checkbox>
         </el-form-item>
         <el-form-item label="填写项2" prop="is_manager" v-if="!addOrNot">
-          <el-checkbox v-model="dept_empModel.is_manager">是否为负责人</el-checkbox>
+          <el-checkbox v-model="deptEmpModel.is_manager">是否为负责人</el-checkbox>
         </el-form-item>
         <el-form-item label="填写项3" prop="is_main_dept" v-if="!addOrNot">
-          <el-checkbox v-model="dept_empModel.is_main_dept">是否为主部门</el-checkbox>
+          <el-checkbox v-model="deptEmpModel.is_main_dept">是否为主部门</el-checkbox>
         </el-form-item>
         <el-form-item style="text-align:center;margin-right:20px;">
           <el-button type="primary" @click="onSaveDeptEmpClick" style="margin-left:-60px;">保&nbsp;&nbsp;存</el-button>
-          <el-button @click="addDeptEmpVisiable = false">取&nbsp;&nbsp;消</el-button>
+          <el-button @click="selectDeptEmpVisiable = false">取&nbsp;&nbsp;消</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -100,22 +147,22 @@ export default {
   props: ["deptName", "deptId"],
   data() {
     return {
-      condition: "",
-      tableData: [], //表格数据
-      dept_empModel: {}, //部门人员实例
-      addDeptEmpText: "",
+      condition: "", //部门人员中的人员数据筛选关键字
+      empCondition: "", //新增部门人员中的人员数据的筛选关键字
+      deptEmpData: [], //表格数据
+      deptEmpModel: {}, //部门人员实例
+      deptEmpModelList: [], //待提交的部门人员集合
       addOrNot: true,
       selection: [], //选中项
-      addDeptEmpVisiable: false,
-      empData: [], //部门数据
+      addDeptEmpVisiable: false, //显示新增部门员工界面
+      selectDeptEmpVisiable: false, //显示保存待提交部门员工或编辑部门员工记录的界面
+      empListData: [], //所有人员数据
+      currentPage: 1, //当前页（所有人员）
+      limit: 10, //每页最多展示的记录数
+      total: 0, //查询到的总记录数
+      empDataFilter: [], //过滤人员数据
       add_rules: {
-        emp_id: [{ required: true, message: "请选择人员", trigger: "change" }],
-        is_manager: [
-          { required: true, message: "是否为负责人", trigger: "blur" }
-        ],
-        is_main_dept: [
-          { required: true, message: "是否为主部门", trigger: "blur" }
-        ]
+        emp_id: [{ required: true, message: "请选择人员", trigger: "change" }]
       }
     };
   },
@@ -124,54 +171,63 @@ export default {
       if (val) {
         this.refreshData();
       }
-    },
-    addDeptEmpVisiable(val) {
-      if (val) {
-        this.selectEmp();
-      }
     }
+    // addDeptEmpVisiable(val) {
+    //   if (val) {
+    //     this.searchEmp();
+    //   }
+    // }
+    // selectDeptEmpVisiable(val) {
+    //   if (val) {
+    //     this.refreshEmpList();
+    //   }
+    // }
   },
   methods: {
-    //查找人员数据
-    selectEmp() {
-      this.empData = [];
-      this.z_get("api/employee", {}, { loading: false })
+    //查找所有的人员数据
+    searchEmp() {
+      this.empCondition = "";
+      this.refreshEmpList();
+    },
+    //查找带筛选条件的人员数据
+    refreshEmpList() {
+      this.empListData = [];
+      this.z_get(
+        "api/employee/page",
+        {
+          condition: this.empCondition,
+          page: this.currentPage,
+          limit: this.limit
+        },
+        { loading: false }
+      )
         .then(res => {
           if (res.code == 0) {
-            this.empData = res.data;
-            for (var i = 0; i < this.empData.length; i++) {
-              this.empData[i].label = this.empData[i].emp_name;
-              this.empData[i].value = this.empData[i].emp_id;
-            }
+            this.empDataFilter = res.dict.emp_id;
+            this.empListData = res.data;
+            this.total = res.total;
           }
         })
         .catch(res => {});
     },
+    //查找带筛选条件的当前部门的部门人员数据
     refreshData() {
       this.z_get("api/dept/dept_emp", {
         condition: this.condition,
         deptId: this.deptId
       })
         .then(res => {
-          console.log(res);
-          this.tableData = res.data.dic;
+          this.deptEmpData = res.data.dic;
         })
         .catch(res => {});
     },
+    //查找当前部门的部门人员数据
     search() {
       this.condition = "";
       this.refreshData();
     },
-    addNewOne() {
-      this.addDeptEmpText = "新增部门人员";
-      this.dept_empModel = {
-        c_id: 1, //现在先写死，到时候通过缓存给该变量赋值
-        dept_id: this.deptId,
-        is_main_dept: false,
-        is_manager: false,
-        de_isscheduling: "",
-        de_isauthority: ""
-      };
+    addDeptEmpShow() {
+      this.deptEmpModelList = [];
       this.addOrNot = true;
       this.addDeptEmpVisiable = true;
     },
@@ -179,7 +235,7 @@ export default {
       this.$refs.deptEmpForm.validate(valid => {
         if (valid) {
           if (this.addOrNot) {
-            this.z_post("api/dept/dept_emp", this.dept_empModel)
+            this.z_post("api/dept/dept_emp", this.deptEmpModel)
               .then(res => {
                 this.$message({
                   message: "新增成功",
@@ -187,17 +243,17 @@ export default {
                   duration: 1000
                 });
                 this.refreshData();
-                this.addDeptEmpVisiable = false;
+                this.selectDeptEmpVisiable = false;
               })
               .catch(res => {
-                this.$alert("新增失败:"+res.msg, "提示", {
+                this.$alert("新增失败:" + res.msg, "提示", {
                   confirmButtonText: "确定",
                   type: "error"
                 });
                 console.log(res);
               });
           } else {
-            this.z_put("api/dept/dept_emp", this.dept_empModel)
+            this.z_put("api/dept/dept_emp", this.deptEmpModel)
               .then(res => {
                 this.$message({
                   message: "编辑成功",
@@ -205,7 +261,7 @@ export default {
                   duration: 1000
                 });
                 this.refreshData();
-                this.addDeptEmpVisiable = false;
+                this.selectDeptEmpVisiable = false;
               })
               .catch(res => {
                 this.$alert("编辑失败", "提示", {
@@ -222,10 +278,9 @@ export default {
     },
     //编辑数据
     editShow(row) {
-      this.dept_empModel = JSON.parse(JSON.stringify(row));
-      this.addDeptEmpText = "编辑部门人员";
+      this.deptEmpModel = JSON.parse(JSON.stringify(row));
       this.addOrNot = false;
-      this.addDeptEmpVisiable = true;
+      this.selectDeptEmpVisiable = true;
     },
     refreshForm() {
       this.$refs.deptEmpForm.resetFields();
@@ -335,6 +390,80 @@ export default {
             });
         })
         .catch(() => {});
+    },
+    //翻页
+    handleCurrentChange(val) {
+      this.currentPage = val;
+      this.refreshEmpList();
+    },
+    //双击选中人员
+    handleRowDbClcik(row) {
+      this.deptEmpModel = {
+        c_id: 1, //现在先写死，到时候通过缓存给该变量赋值
+        dept_id: this.deptId,
+        emp_id: row.emp_id,
+        is_main_dept: false,
+        is_manager: false,
+        de_isscheduling: "",
+        de_isauthority: ""
+      };
+      var isContain = false;
+      for (var i = 0; i < this.deptEmpData.length; i++) {
+        if (this.deptEmpData[i].emp_id == this.deptEmpModel.emp_id) {
+          isContain = true;
+          break;
+        }
+      }
+      for (var i = 0; i < this.deptEmpModelList.length; i++) {
+        if (this.deptEmpModelList[i].emp_id == this.deptEmpModel.emp_id) {
+          isContain = true;
+          break;
+        }
+      }
+      if (isContain) {
+        this.$alert("已存在该人员!", "提示", {
+          confirmButtonText: "好的",
+          type: "warning"
+        });
+      } else {
+        this.addOrNot = true;
+        // this.selectDeptEmpVisiable = true;
+        //新增
+        this.deptEmpModelList.push(
+          JSON.parse(JSON.stringify(this.deptEmpModel))
+        );
+      }
+    },
+    //删除待提交的部门人员集合中的人员
+    deleteSelectEmp(index) {
+      this.deptEmpModelList.splice(index, 1);
+    },
+    //提交新增的部门人员集合
+    onSaveDeptEmpListClick() {
+      this.$confirm("是否提交新增的部门人员？", "提示", {
+        confirmButtonText: "是",
+        cancelButtonText: "否",
+        type: "warning"
+      })
+        .then(() => {
+          this.z_post("api/dept/dept_emp_list", this.deptEmpModelList)
+            .then(res => {
+              this.$message({
+                message: "新增成功!",
+                type: "success",
+                duration: 1000
+              });
+              this.addDeptEmpVisiable = false;
+              this.refreshData();
+            })
+            .catch(res => {
+              this.$alert("新增失败!", "提示", {
+                confirmButtonText: "确定",
+                type: "error"
+              });
+            });
+        })
+        .catch(() => {});
     }
   },
   filters: {
@@ -379,7 +508,9 @@ export default {
       }
     }
   },
-  created() {}
+  created() {
+    this.searchEmp();
+  }
 };
 </script>
 
@@ -388,11 +519,33 @@ export default {
   margin: 0 auto;
   position: relative;
 }
-.tbarStyle {
-  margin-top: 13px;
-  margin-bottom: 13px;
-}
 .formItem {
   width: 200px;
+}
+.transferDiv {
+  display: inline;
+}
+.leftTransferItem {
+  display: inline-block;
+  vertical-align: middle;
+  width: 360px;
+  height: 400px;
+}
+.rightTransferItem {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 20px;
+  width: 360px;
+  height: 400px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.oneItem {
+  border: 1px solid #eee;
+  margin-bottom: 10px;
+}
+.bottomButton {
+  text-align: center;
+  margin: 10px 0;
 }
 </style>

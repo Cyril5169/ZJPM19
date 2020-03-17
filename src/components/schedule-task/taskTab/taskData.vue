@@ -177,7 +177,7 @@ export default {
         td_note: "",
         td_quantity: "",
         td_type: "",
-        td_soure: this.source
+        td_source: this.source
       };
       this.addOrNot = true;
       this.addTaskDataVisible = true;

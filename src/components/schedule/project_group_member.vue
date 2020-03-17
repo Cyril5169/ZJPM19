@@ -13,7 +13,7 @@
     </div>
     <div class="gridTable">
       <el-table ref="memberTable" style="width: 100%;" height="200" :data="memberData" tooltip-effect="dark"
-        highlight-current-row border>
+        highlight-current-row border @selection-change="handleSelectionChange">
         <!-- <el-table-column type="selection" width="55" align="center"></el-table-column>  -->
         <el-table-column type="index" label="序号" width="55" align="center" sortable></el-table-column>
         <el-table-column prop="emp_id" label="人员名称" align="center" width="200">
@@ -47,19 +47,19 @@
         </el-form-item>
         <el-form-item label="部门" prop="dept_id">
           <el-select class="formItem" v-model="memberModel.dept_id" placeholder="请选择部门">
-            <el-option v-for="item in deptDataFilter" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in deptDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="进入时间" prop="pgm_starttime">
-        <el-date-picker  v-model="memberModel.pgm_starttime" placeholder="请选择进入时间">
-          <!-- <template slot-scope="scope">{{ scope.row.pgm_starttime | datatrans}}
+          <el-date-picker v-model="memberModel.pgm_starttime" placeholder="请选择进入时间">
+            <!-- <template slot-scope="scope">{{ scope.row.pgm_starttime | datatrans}}
           </template> -->
-        </el-date-picker>
+          </el-date-picker>
         </el-form-item>
         <el-form-item label="退出时间" prop="pgm_endtime">
           <el-date-picker v-model="memberModel.pgm_endtime" placeholder="请选择退出时间">
-          <!-- <template slot-scope="scope">{{ scope.row.pgm_endtime | datatrans}}
+            <!-- <template slot-scope="scope">{{ scope.row.pgm_endtime | datatrans}}
           </template> -->
           </el-date-picker>
         </el-form-item>
@@ -114,22 +114,6 @@ export default {
       let s = date.getSeconds();
       s = s < 10 ? "0" + s : s;
       return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
-    },
-    stTypeTrans(value) {
-      switch (value) {
-        case "function":
-          return "职能";
-          break;
-        case "project":
-          return "项目";
-          break;
-        case "temporary":
-          return "临时";
-          break;
-        default:
-          return "临时";
-          break;
-      }
     }
   },
   watch: {
@@ -143,7 +127,10 @@ export default {
   },
   methods: {
     refreshData() {
-      this.z_get("api/project_group_member/list", { condition: this.condition })
+      this.z_get("api/project_group_member/list", {
+        group_id: this.currentRow.group_id,
+        condition: this.condition
+      })
         .then(res => {
           this.empDataFilter = res.dict.emp_id;
           this.deptDataFilter = res.dict.dept_id;
@@ -170,7 +157,7 @@ export default {
     addNewmember() {
       this.addEmpText = "新增成员";
       this.memberModel = {
-        group_id: 0,
+        group_id: this.currentRow.group_id,
         emp_id: "",
         dept_id: "",
         pgm_starttime: "",
@@ -184,7 +171,7 @@ export default {
       this.$refs.memberForm.validate(valid => {
         if (valid) {
           if (this.addOrNot) {
-            this.z_post("api/work_post", this.memberModel)
+            this.z_post("api/project_group_member", this.memberModel)
               .then(res => {
                 this.$message({
                   message: "新增成功",
@@ -202,7 +189,7 @@ export default {
                 console.log(res);
               });
           } else {
-            this.z_put("api/work_post", this.memberModel)
+            this.z_put("api/project_group_member", this.memberModel)
               .then(res => {
                 this.$message({
                   message: "编辑成功",
@@ -228,7 +215,7 @@ export default {
     //编辑数据
     editmemberShow(row) {
       this.memberModel = JSON.parse(JSON.stringify(row));
-      this.addEmpText = "编辑岗位";
+      this.addEmpText = "编辑成员";
       this.addOrNot = false;
       this.addEmpVisiable = true;
     },
@@ -252,7 +239,7 @@ export default {
       })
         .then(() => {
           var realSelect = this.arrayChildrenFlatten(list, []);
-          this.z_delete("api/work_post/list", { data: realSelect })
+          this.z_delete("api/project_group_member/list", { data: realSelect })
             .then(res => {
               this.$message({
                 message: "删除成功",

@@ -40,9 +40,11 @@
           <el-table-column label="说明" prop="dept_note" align="center"></el-table-column>
           <el-table-column label="操作" width="150" prop="handle">
             <template slot-scope="scope">
-              <el-button v-if="scope.row.dept_pid" type="primary" icon="el-icon-edit" size="mini" circle @click="editDeptShow(scope.row)">
+              <el-button v-if="scope.row.dept_pid" type="primary" icon="el-icon-edit" size="mini" circle
+                @click="editDeptShow(scope.row)">
               </el-button>
-              <el-button v-if="scope.row.dept_pid" type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
+              <el-button v-if="scope.row.dept_pid" type="danger" icon="el-icon-delete" size="mini" circle
+                @click="deleteOne(scope.row)">
               </el-button>
             </template>
           </el-table-column>
@@ -108,7 +110,7 @@ export default {
         {
           value: 2,
           label: "小组"
-        }
+        },
       ],
       add_rules: {
         dept_name: [
@@ -175,7 +177,7 @@ export default {
       var val = this.tableData;
       var select = false;
       for (var i = 0; i < selection.length; i++) {
-        if (selection[i].st_id == val[0].st_id) {
+        if (selection[i].dept_id == val[0].dept_id) {
           select = true;
           break;
         }

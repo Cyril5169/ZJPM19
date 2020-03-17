@@ -19,7 +19,7 @@
               </el-dropdown-menu>
             </el-dropdown>
           </div>
-          <div class="topContent" style="height:432px">
+          <div class="topContent" style="height:440px">
             <el-table ref="deptTable" style="width: 100%" height="100%" :data="tableData" tooltip-effect="dark"
               highlight-current-row row-key="dept_id" default-expand-all @row-dblclick="handleRowDbClick">
               <el-table-column prop="dept_name" label="部门名称" style="width:95%" align="left"></el-table-column>
@@ -39,6 +39,8 @@
           </div>
         </div>
     </div>
+
+    
     <el-dialog width="500px" :title="addDeptText" :close-on-click-modal="false" :visible.sync="addDeptVisiable"
       top="5vh" @closed="refreshForm">
       <el-form :model="deptModel" label-width="100px" ref="deptForm" :rules="add_rules">
