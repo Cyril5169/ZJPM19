@@ -1,76 +1,91 @@
-// Name	Code	Data Type	Length	Precision	Primary	Foreign Key	Mandatory
-// 班次ID	ds_id	int			TRUE	TRUE	TRUE
-// 作业任务ID	t_id	int			TRUE	TRUE	TRUE
-// 员工ID	emp_id	int			TRUE	TRUE	TRUE
-// 日期	日期	datetime			FALSE	FALSE	FALSE
 <template>
-  <div class="scheduling_note_type">
-    <div class="topLayout">
-      <div class="tbar">
-        <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
-        <el-input @keyup.enter.native="refreshData" placeholder="请输入标记类型名称" v-model="condition" clearable style="width:300px;">
-          <el-button @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
-        </el-input>
-        <el-button type="primary" style="margin-left:10px;" @click="addNewWorkPost()">新增标记类型</el-button>
-        <!-- <el-button type="danger" :disabled="selection.length==0" @click="deleteList">删除选中标记类型({{selection.length}}) -->
-        <!-- </el-button> -->
-       
-      </div>
-      <!-- 排产标记类型 scheduling_note_type 注意事项该标记是作用于任务
-// 标记类型ID	snt_id	int			TRUE	FALSE	TRUE
-// 标记类型名称	snt_name	varchar(30)	30		FALSE	FALSE	FALSE
-// 标记类型说明	snt_note	varchar(100)	100		FALSE	FALSE	FALSE
-// 颜色	snt_color	varchar(10)	10		FALSE	FALSE	FALSE
-// c_id	c_id	int			FALSE	FALSE	TRUE
-// update_date	update_date	datetime			FALSE	FALSE	FALSE
-// update_user	update_user	int			FALSE	FALSE	FALSE
-// create_date	create_date	datetime			FALSE	FALSE	FALSE
-// create_user	create_user	int			FALSE	FALSE	FALSE -->
-      <div class="topContent">
-        <el-table ref="tgtTable" style="width: 100%;height:350px;" :data="sntData" tooltip-effect="dark"
-          highlight-current-row row-key="snt_id" default-expand-all @selection-change="handleSelectionChange"
-          @select-all="handleSelectAll" @row-click="handleRowClick">
-          <!-- <el-table-column type="selection" width="55" align="center"></el-table-column> -->
-          <el-table-column prop="snt_id" label="序号" align="center" width="60"></el-table-column>
-          <el-table-column prop="snt_name" label="标记类型名称" align="center" width="150"></el-table-column>
-          
-          <el-table-column prop="snt_note" label="标记说明" align="center" width="180"></el-table-column>
-          
-          <el-table-column label="操作" width="150" prop="handle" center>
-            <template slot-scope="scope">
-              <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editWorkPostShow(scope.row)">
-              </el-button>
-              <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </div>
-    <el-dialog width="500px" :title="addSntText" :close-on-click-modal="false" :visible.sync="addsntVisiable"
-      top="5vh" @closed="refreshForm">
-      <zj-form :model="sntModel" label-width="100px" ref="sntForm" :rules="add_rules">
-        <el-form-item label="序号">
-          <el-input class="formItem" v-model="sntModel.snt_id" placeholder="系统自动生成" disabled>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="标记名称">
-          <el-input class="formItem" v-model="sntModel.snt_name" placeholder="请填写标记类型名称">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="标记类型说明">
-          <el-input class="formItem" type="textarea" :rows="2" v-model="sntModel.snt_note" placeholder="说明信息">
-          </el-input>
-        </el-form-item>
-       
-        
-        <el-form-item style="text-align:center;margin-right:100px;">
-          <el-button @click="addsntVisiable = false">取&nbsp;&nbsp;消</el-button>
-          <el-button type="primary" @click="onSaveSntClick" style="margin-left:30px;">保&nbsp;&nbsp;存</el-button>
-        </el-form-item>
-      </zj-form>
-    </el-dialog>
-  </div>
+  <el-container>
+    <el-header>
+      <el-row>
+        <el-col :span="6">
+          <div>
+            <el-button type="primary" size="mini">保存</el-button>
+            <el-button type="primary" size="mini">投放</el-button>
+            <el-button type="primary" size="mini">撤销投放</el-button>
+            <el-button type="primary" size="mini">导出</el-button>
+            <!-- <el-button type="primary" size="mini">打印</el-button > -->
+          </div>
+        </el-col>
+        <el-col :span="1">
+          <div> 图例:</div>
+        </el-col>
+        <el-col :span="1">
+          <div> 已保存:</div>
+        </el-col>
+        <el-col :span="1">
+          <div class="sampelDiv1"> &nbsp; </div>
+        </el-col>
+        <el-col :span="1">
+          <div> 已排班:</div>
+        </el-col>
+        <el-col :span="1">
+          <div class="sampelDiv2"> &nbsp; </div>
+        </el-col>
+        <el-col :span="1">
+          <div> 明天前:</div>
+        </el-col>
+        <el-col :span="1">
+          <div class="sampelDiv3"> &nbsp; </div>
+        </el-col>
+      </el-row>
+    </el-header>
+    <el-main>
+      <!-- 制作表格 -->
+
+      <table id="top-table" cellspacing=0 cellpadding=0 border=1 style="table-layout:fixed">
+        <!-- 排列日期 -->
+        <tr>
+          <th class="top-firstBox"><span @click="pageDown(-7)" class="buttonLike">&nbsp; -</span> 日期 <span
+              @click="pageDown(7)" class="buttonLike">&nbsp;+</span></th>
+          <th class="top-dateBox" v-for="(date,dateIndex) in tableHead" :key="dateIndex"
+            :class="{isOvered:date.isOver}"><span>
+              {{date.week}} </span><span class="fontSize"> ({{date.day}}) </span></th>
+        </tr>
+        <!-- 排列班次 ---->
+        <tr>
+          <td></td>
+          <td v-for="(date,dateIndex) in tableHead" :key="dateIndex">
+            <table width="100% " cellspacing=0 cellpadding=0 border=1 padding=0 style="table-layout:fixed">
+              <tr>
+                <td v-for="(shift,shiftIndex) in dept_shifts" :key="shiftIndex">
+                  {{shift.name}}
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <!-- 排列事项 -->
+        <tr v-for="(em, index) in tree" :key="index" height="40px" class="alt">
+          <td> {{em.name}}</td>
+          <td v-for="(date,dateIndex) in em.date" :key="dateIndex">
+            <table width="100% " height="100%" cellspacing=0 cellpadding=0 padding=0 style="table-layout:fixed">
+              <tr>
+                <td v-for="(shift,shiftIndex) in date" :key="shiftIndex">
+                  <table width="100% " height="100%" cellspacing=0 cellpadding=0 padding=0 style="table-layout:fixed">
+                    <tr v-for="(task,taskIndex) in shift" :key="taskIndex">
+                      <td>
+                        {{task.task}}
+                      </td>
+                    </tr>
+                  </table>
+
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+
+    </el-main>
+
+  </el-container>
+
 </template>
 
 <script>
@@ -78,186 +93,196 @@ export default {
   name: "scheduling_note_type",
   data() {
     return {
-      condition: "",
-      sntData: [], //表格数据
-      //deptDataFilter:[],
-      //deptData: [], //部门数据
-      selection: [],
-      addsntVisiable: false,
-      sntModel: {},
-      addOrNot: true, //是否新增
-      addSntText: ""
+      pushFlag: 0,
+      firstDay: new Date(),
+      dayNum: 7,//视图显示天数
+      renshu: 2,
+      dept_shifts: [
+        {
+          name: "早",
+          start: "7:00",
+          end: "17:00",
+        },
+        {
+          name: "中",
+          start: "17:00",
+          end: "24:00",
+        }
+      ],
+      weeks: [],
+      resultList: [
+        {
+          name: "张三",
+          date: '2020-03-18',
+          shift: "早",
+          task: "装配A",
+        },
+        {
+          name: "张三",
+          date: '2020-03-18',
+          shift: "早",
+          task: "装配C",
+        },
+        {
+          name: "张三",
+          date: '2020-03-18',
+          shift: "早",
+          task: "装配B",
+        },
+        {
+          name: "张三",
+          date: '2020-03-18',
+          shift: "中",
+          task: "质检B",
+        },
+        {
+          name: "张三",
+          date: '2020-03-19',
+          shift: "中",
+          task: "装配A",
+        },
 
+        {
+          name: "李四",
+          date: '2020-03-19',
+          shift: "早",
+          task: "装配C",
+        },
+        {
+          name: "王五",
+          date: '2020-03-16',
+          shift: "早",
+          task: "质检D",
+        },
+
+      ],
+      employees: [],
+      tree: [],
+      page: 0,
+
+      tableHead: [],
     };
   },
 
-  watch: {
-    addsntVisiable(val) {
-      if (val) {
-        this.selectDept();
-      }
-    }
+  created() {
+    this.refreshTable();
+
+    // console.log(this.tree);
   },
   methods: {
+    //日历翻页
+    pageDown(val) {
+      this.page = this.page + val;
+      this.refreshTable();
+    },
+    //刷新排班排产日期
+    refreshTable() {
 
-
-
-    refreshData() {
-      this.z_get("api/scheduling_note_type", { condition: this.condition })
-        .then(res => {
-          //this.deptDataFilter = res.dict.dept_id;
-          this.sntData = res.data;
-        })
-        .catch(res => {});
-    },
-    //重置表单
-    refreshForm() {
-      this.$refs.tgForm.resetFields();
-    },
-    refreshBottom() {
-      this.itemCondition = "";
-      this.dataCondition = "";
-    },
-    search() {
-      this.condition = "";
-      this.refreshData();
-    },
-    //表格树选中改变
-    handleSelectionChange(val) {
-      this.selection = val;
-    },
- 
-  
-    addNewWorkPost() {
-        this.addSntText = "新增标记类型";
-        this.sntModel = {
-            snt_id: 0,
-            snt_name:"",
-            snt_note:"",
-          
-      };
-      this.addOrNot = true;
-      this.addsntVisiable = true;
+      //排班部门确定排班班次（与日期一起确定行头），排班人员（确定列头）
+      var head = [];
+      var formatDate = [];
+      var currentDay = new Date();
+      var cyear = currentDay.getFullYear();
+      var cmonth = currentDay.getMonth();
+      var cday = currentDay.getDate();
+      var cweek = (currentDay.getDay() + 6) % 7;
+      this.firstDay = new Date(cyear, cmonth, cday - cweek + this.page);
+      for (var i = 0; i < this.dayNum; i++) {
+        var strDay = new Date(cyear, cmonth, cday - cweek + this.page + i);
+        formatDate.push(this.dateFormat(strDay, "yyyy-MM-dd"));
+        var y = strDay.getFullYear();
+        var m = strDay.getMonth() + 1;
+        var d = strDay.getDate();
+        var m_d = m + "-" + d;
+        var isOvered = strDay > currentDay ? 0 : 1;
+        head.push({ day: this.dateFormat(strDay, "MM-dd"), week: this.getWeekDay(i), isOver: isOvered, strDay: this.dateFormat(strDay, "yyyy-MM-dd") });//表头日期
+      }
+      this.tableHead = head;//获取表头
+      this.tree = this.convertModelsToTreee(this.resultList);
     },
 
+    //构建人员的班次任务详情数据结构
+    getPeopleConstruct() {
+      let em = [];
+      let d = [];
+      for (let s = 0; s < this.tableHead.length; s++) {
+        em.push(d)
+      }
+      return em;
+    },
+    getResultConstruct(n) {
 
-    onSaveSntClick() {
-      this.$refs.sntForm.validate(valid => {
-        if (valid) {
-          if (this.addOrNot) {
-            this.z_post("api/scheduling_note_type", this.sntModel)
-              .then(res => {
-                this.$message({
-                  message: "新增成功",
-                  type: "success",
-                  duration: 1000
-                });
-                this.refreshData();
-                this.addsntVisiable = false;
-              })
-              .catch(res => {
-                this.$alert("新增失败", "提示", {
-                  confirmButtonText: "确定",
-                  type: "error"
-                });
-                console.log(res);
-              });
-          } else {
-                 this.sntModel.UpdateColumns = this.$refs.sntForm.UpdateColumns;
-            this.z_put("api/scheduling_note_type", this.sntModel)
-              .then(res => {
-                this.$message({
-                  message: "编辑成功",
-                  type: "success",
-                  duration: 1000
-                });
-                this.refreshData();
-                this.addsntVisiable = false;
-              })
-              .catch(res => {
-                this.$alert("编辑失败", "提示", {
-                  confirmButtonText: "确定",
-                  type: "error"
-                });
-                console.log(res);
-              });
+      let em = { name: n, date: [] };
+      for (let d = 0; d < this.tableHead.length; d++) {
+        let dr = [];
+        for (let s = 0; s < this.dept_shifts.length; s++) {
+          let sr = [];
+          dr.push(sr);
+        }
+        em.date.push(dr)
+      }
+      return em;
+    },
+    //将查出的班次结果信息转化成树结构数组
+    convertModelsToTreee(val) {
+      // let d1=new Date("2020-03-30");
+      // let d2=new Date("2020-03-20");
+      // console.log(d1-d2);
+      let employees = [];
+      let tree = [];
+      let name = [];
+      let task = {};
+      for (let i = 0; i < val.length; i++) {
+        task = { name: val[i].name, date: val[i].date, shift: val[i].shift, task: val[i].task }
+        let time = new Date(this.dateFormat(task.date, "yyyy-MM-dd")) - new Date(this.dateFormat(this.firstDay, "yyyy-MM-dd"))
+        let eindex = 0;
+        let dindex = parseInt(time / (1 * 24 * 60 * 60 * 1000));
+        if (dindex < 0 || dindex > this.dayNum - 1) {
+          continue
+        }
+        let sindex = 0;
+        for (let s = 0; s < this.dept_shifts.length; s++) {
+          if (task.shift == this.dept_shifts[s].name) {
+            sindex = s
+            //  console.log(s);
           }
-        } else {
-          return false;
         }
-      });
-    },
-    //编辑数据
-    editWorkPostShow(row) {
-      this.sntModel = JSON.parse(JSON.stringify(row));
-      //this.sntModel.snt_id = this.filterDeptName(this.sntModel.dept_id);
+        if (employees.indexOf(task.name) == -1) {
+          employees.push(task.name)
+          eindex = employees.indexOf(task.name);
+          name = [];
+          tree.push(this.getResultConstruct(task.name));
+          tree[eindex].date[dindex][sindex].push(task);
+          this.pushFlag += 1;
+        }
+        else {
+          eindex = employees.indexOf(task.name);
 
-      this.addSntText = "编辑标记类型";
-      this.addOrNot = false;
-      this.addsntVisiable = true;
-    },
-    //删除一个
-    deleteOne(row) {
-      var list = [];
-      list.push(row);
-      this.onDeleteClick(list);
-    },
-    //删除树
-    deleteList() {
-      if (this.selection.length) {
-        this.onDeleteClick(this.selection);
-      }
-    },
-onDeleteClick(list) {
-      this.$confirm("是否删除？", "提示", {
-        confirmButtonText: "是",
-        cancelButtonText: "否",
-        type: "warning"
-      })
-        .then(() => {
-          var realSelect = this.arrayChildrenFlatten(list, []);
-          this.z_delete("api/scheduling_note_type/list", { data: realSelect })
-            .then(res => {
-              this.$message({
-                message: "删除成功",
-                type: "success",
-                duration: 1000
-              });
-              this.refreshData();
-            })
-            .catch(res => {
-              this.$alert("删除失败", "提示", {
-                confirmButtonText: "确定",
-                type: "error"
-              });
-            });
-        })
-        .catch(() => {});
-    },
-
-
-    //多维数组扁平化
-    arrayChildrenFlatten(array, result) {
-      for (var i = 0; i < array.length; i++) {
-        var item = array[i];
-        if (item.children && item.children.length > 0) {
-          result.push(item);
-          result = this.arrayChildrenFlatten(item.children, result);
-        } else {
-          result.push(item);
+          tree[eindex].date[dindex][sindex].push(task);
+          this.pushFlag += 1;
         }
       }
-      return result;
+      //     console.log("最后的树结构");
+      // console.log(tree);
+      return tree;
     },
- 
-    handleRowClick(row, column) {
-      if (column.property != "handle")
-        this.$refs.tgtTable.toggleRowSelection(row);
+
+    getWeekDay(value) {
+      switch ((value) % 7) {
+        case (0): return "一"
+        case (1): return "二"
+        case (2): return "三"
+        case (3): return "四"
+        case (4): return "五"
+        case (5): return "六"
+        case (6): return "日"
+      }
     },
+
 
   },
   mounted() {
-    this.refreshData();
+    this.pushFlag = 0;
   }
 };
 </script>
@@ -266,10 +291,141 @@ onDeleteClick(list) {
 .scheduling_note_type {
   width: 100%;
 }
-.tbar {
-  margin-bottom: 10px;
+.result-date {
+  background: #dcdfe6;
+  display: flex;
+  height: 40px;
+  text-align: center;
+  /* width: 100%; */
+  line-height: 40px;
+  margin: 0;
 }
-.formItem {
-  width: 300px;
+.result-shift {
+  background: #e4e7ed;
+  display: flex;
+  height: 40px;
+  text-align: center;
+  /* width: 100%; */
+  line-height: 40px;
+  margin: 0;
+}
+.result-shift li {
+  border: 1;
+  flex-grow: 1;
+  text-align: center;
+}
+.result-body {
+  /* background: #f2f6fc; */
+  background: #f2f6fc;
+  display: flex;
+  height: 100px;
+  line-height: 50px;
+  margin: 0;
+}
+.result-body li {
+  border: 1;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.result-date li {
+  border: 1;
+  flex-grow: 1;
+  text-align: center;
+}
+.isOvered {
+  background-color: #909399;
+}
+.sampelDiv1 {
+  background-color: #67c23a;
+  width: 20px;
+  display: inline-block;
+}
+.sampelDiv2 {
+  background-color: #e6a23c;
+  width: 20px;
+  display: inline-block;
+}
+.sampelDiv3 {
+  background-color: #909399;
+  width: 20px;
+  display: inline-block;
+}
+.buttonLike {
+  /* background-color: #409eff; */
+  cursor: pointer;
+  color: #409eff;
+  font-weight: bold;
+}
+.div_border {
+  white-space: normal;
+  word-break: break-all;
+  /* background-color: #409eff; */
+  /* height: 36px; */
+  display: inline-block;
+
+  position: relative;
+  border: 0;
+  border-top: 1px solid #fff;
+  border-left: 1px solid #fff;
+  /* width: 100px; */
+  /* border-style:solid; */
+}
+.fontSize {
+  font-size: 12px;
+}
+.div1-box {
+  height: 39px;
+  width: 80px;
+  background-color: #dcdfe6;
+  float: left;
+  border-top: 1px solid #fff;
+  border-left: 1px solid #fff;
+}
+
+.shift-box {
+  width: 49%;
+  background-color: #67c23a;
+  float: left;
+  border-top: 1px solid #fff;
+  border-left: 1px solid #fff;
+}
+.top-dateBox {
+  background-color: #fff;
+}
+
+#top-table {
+  width: 100%;
+  word-wrap: break-word;
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  padding: 0;
+}
+#top-table tr.alt td {
+  color: #000000;
+  background-color: #67c23a;
+}
+#top-table td,
+#top-table th {
+  font-size: 1em;
+  /* border: 1px solid #000; */
+  padding: 0px;
+}
+
+#top-table th {
+  font-size: 1.1em;
+  text-align: left;
+  padding-top: 5px;
+  padding-bottom: 4px;
+  background-color: #a7c942;
+  color: #ffffff;
+}
+/* #innertable {
+  word-wrap: break-word;
+} */
+#innertable td {
+  /* border-top: 1px solid #fff; */
+  border-left: 1px solid #000;
+  word-wrap: break-word;
 }
 </style>
