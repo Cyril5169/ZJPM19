@@ -1,74 +1,69 @@
 <template>
   <div class="shift_group">
-    <div class="containAll">
-      <div class="topLayout">
-        <div class="tbar">
-          <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
-          <el-input size="small" @keyup.enter.native="refreshHead" placeholder="请输入班次名称" v-model="condition" clearable
-            style="width:250px;">
-            <el-button size="small" @click="refreshHead" slot="append" icon="el-icon-search">搜索</el-button>
-          </el-input>
-          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewTaskShow">新增班次组
-          </el-button>
-        </div>
-        <div class="gridTable">
-          <el-table ref="shiftGroupTable" style="width: 100%;" height="250px" :data="taskData" tooltip-effect="dark"
-            highlight-current-row row-key="st_id" default-expand-all @selection-change="handleSelectionChange"
-            @select-all="handleSelectAll" @row-click="handleRowClick">
-            <el-table-column type="selection" width="55" align="center"></el-table-column>
-            <!-- <el-table-column prop="st_id" label="任务编号" align="center" width="150"></el-table-column> -->
-           <el-table-column prop="sg_id" label="序号" align="center" width="60"></el-table-column>
-          <el-table-column prop="sg_name" label="班次名称" align="center" width="150"></el-table-column>
-          <el-table-column prop="sg_note" label="班次说明" align="center" width="180"></el-table-column>
-            <el-table-column label="操作" width="140" prop="handle">
-              <template slot-scope="scope">
-                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
-                </el-button>
-                <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="onDeleteClick(scope.row)">
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      </div>
-      <div class="bottomLayout" style="min-height:300px;">
-        <el-tabs v-model="activeName">
-          <el-tab-pane label="班次明细" name="first">
-            <div v-if="bottomDataShow">
+    <div class="tbar">
+      <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
+      <el-input size="small" @keyup.enter.native="refreshHead" placeholder="请输入班次名称" v-model="condition" clearable
+        style="width:250px;">
+        <el-button size="small" @click="refreshHead" slot="append" icon="el-icon-search">搜索</el-button>
+      </el-input>
+      <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewTaskShow">新增班次组
+      </el-button>
+    </div>
+    <div class="gridTable">
+      <zj-table :autoHeight='bottomDivShow' height='100%' ref="shiftGroupTable" style="width: 100%;" :data="taskData"
+        tooltip-effect="dark" highlight-current-row row-key="st_id" default-expand-all
+        @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick"
+        @row-dblclick="handleRowDBClick">
+        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <!-- <el-table-column prop="st_id" label="任务编号" align="center" width="150"></el-table-column> -->
+        <el-table-column prop="sg_id" label="序号" align="center" width="60"></el-table-column>
+        <el-table-column prop="sg_name" label="班次名称" align="center" width="150"></el-table-column>
+        <el-table-column prop="sg_note" label="班次说明" align="center" width="180"></el-table-column>
+        <el-table-column label="操作" width="140" prop="handle">
+          <template slot-scope="scope">
+            <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
+            </el-button>
+            <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="onDeleteClick(scope.row)">
+            </el-button>
+          </template>
+        </el-table-column>
+      </zj-table>
+    </div>
+
+    <div class="bottomLayout">
+      <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
+        <el-tab-pane label="班次明细" name="first">
+          <keep-alive>
+            <div v-if="bottomDivShow" >
               <div class="tbar">
-                <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchItem"></el-button>
-                <el-input size="small" @keyup.enter.native="refreshItemData" placeholder="请输入物料名称"
-                  v-model="itemCondition" clearable style="width:250px;">
-                  <el-button size="small" @click="refreshItemData" slot="append" icon="el-icon-search">搜索</el-button>
-                </el-input>
+                <!-- <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchItem"></el-button> -->
                 <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewDayShiftShow">新增班次明细
                 </el-button>
-               
               </div>
-              <div class="gridTable">
-                <el-table ref="DayShiftTable" v-loading="loading" style="width:100%;" height="250" :data="DayShiftData"
+              <div>
+                <el-table ref="DayShiftTable" v-loading="loading" style="width:100%;" height="200" :data="DayShiftData"
                   tooltip-effect="dark" highlight-current-row border @selection-change="handleSelectionChange2">
                   <!-- <el-table-column type="selection" width="55" align="center"></el-table-column> -->
                   <el-table-column type="index" width="40" align="center">
                   </el-table-column>
-                 
+
                   <el-table-column prop="ds_name" label="班次名称" align="center" width="80"></el-table-column>
-                   <el-table-column prop="ds_starttime" label="开始时间" align="center" width="80">
-                       <template slot-scope="scope">
-                <span>{{ scope.row.ds_starttime|dateFormat("HH:mm")}}</span>
-              </template>
-                   </el-table-column>
-                    <el-table-column prop="ds_endtime" label="结束时间" align="center" width="80">
-                        <template slot-scope="scope">
-                <span>{{ scope.row.ds_endtime|dateFormat("HH:mm")}}</span>
-              </template>
-                    </el-table-column>
-                     <el-table-column prop="is_report" label="是否报工" align="center" width="120">
-                       <template slot-scope="scope">
-                <span>{{ scope.row.is_report|yesOrNo("是否")}}</span>
-              </template>
-                     </el-table-column>
-                       <el-table-column prop="ds_period" label="时长" align="center" width="60"></el-table-column>
+                  <el-table-column prop="ds_starttime" label="开始时间" align="center" width="80">
+                    <template slot-scope="scope">
+                      <span>{{ scope.row.ds_starttime|dateFormat("HH:mm")}}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="ds_endtime" label="结束时间" align="center" width="80">
+                    <template slot-scope="scope">
+                      <span>{{ scope.row.ds_endtime|dateFormat("HH:mm")}}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="is_report" label="是否报工" align="center" width="120">
+                    <template slot-scope="scope">
+                      <span>{{ scope.row.is_report|yesOrNo("是否")}}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="ds_period" label="时长" align="center" width="60"></el-table-column>
                   <el-table-column label="操作" width="140" prop="handle">
                     <template slot-scope="scope">
                       <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editItemShow(scope.row)">
@@ -81,9 +76,12 @@
                 </el-table>
               </div>
             </div>
-          </el-tab-pane>
-        </el-tabs>
-      </div>
+          </keep-alive>
+
+        </el-tab-pane>
+      </el-tabs>
+      <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
+        @click="bottomDivShow=!bottomDivShow"></i>
     </div>
 
     <!-- 新增/修改班次组 -->
@@ -108,52 +106,42 @@
     </el-dialog>
 
     <!-- 新增班次明细 -->
-    <el-dialog :width=" DayShiftModelList.length? '1000px':'550px'" title="新增班次明细" :close-on-click-modal="false"
+    <el-dialog width="350px" :title="addDayShiftText" :close-on-click-modal="false"
       :visible.sync="addDayShiftVisible">
-       <el-form size="small" :newDataFlag='addDayShiftVisible' :model="DayShiftModel" label-width="100px"
-        ref="DayShiftForm" >
- <el-form-item label="班次名称" prop="ds_name">
-          <el-input class="formItem" v-model="DayShiftModel.ds_name" placeholder="班次名称(早，中，晚，全白...)">
+      <el-form size="small" :newDataFlag='addDayShiftVisible' :model="DayShiftModel" label-width="100px"
+        ref="DayShiftForm">
+        <el-form-item label="班次名称" prop="ds_name">
+          <el-input class="shiftformItem" v-model="DayShiftModel.ds_name" placeholder="班次名称(早，中，晚，全白...)">
           </el-input>
         </el-form-item>
 
-  <el-form-item label="开始时间" prop="ds_starttime" >
-            <el-time-select
-    placeholder="起始时间"
-    v-model="starttime"
-    format="HH:mm"
-     value-format="HH:mm"
-    :picker-options="{
-     start: '06:00',
-      step: '00:15',
-      end: '23:30',
-    }">
-  </el-time-select>
+        <el-form-item label="开始时间" prop="ds_starttime">
+          <el-time-select class="shiftformItem" placeholder="起始时间" v-model="starttime" format="HH:mm" value-format="HH:mm" 
+          :picker-options="{
+            start: '06:00',
+             step: '00:15',
+             end: '23:30',
+          }">
+          </el-time-select>
         </el-form-item>
 
-        <el-form-item label="结束时间"  prop="ds_endtime">
-                
-  <el-time-select
-    placeholder="结束时间"
-    v-model="endtime"
-   
-    :picker-options="{
-      start: '06:00',
-      step: '00:15',
-      end: '23:30',
-      minTime: starttime
-    }">
-  </el-time-select>
+        <el-form-item label="结束时间" prop="ds_endtime">
+          <el-time-select class="shiftformItem" placeholder="结束时间" v-model="endtime" :picker-options="{
+             start: '06:00',
+             step: '00:15',
+             end: '23:30',
+             minTime: starttime}">
+          </el-time-select>
         </el-form-item>
 
         <el-form-item label="是否报工" prop="is_report">
           <el-checkbox v-model="DayShiftModel.is_report">是</el-checkbox>
-         
+
         </el-form-item>
         <el-form-item label="时长" prop="ds_period">
-           {{timeRange(starttime,endtime) }}h
+          {{timeRange(starttime,endtime) }}h
         </el-form-item>
-        <el-form-item style="text-align:center;margin-right:100px;">
+        <el-form-item style="text-align:center;margin-right:10px;">
           <el-button size="medium" @click="addDayShiftVisible = false">取&nbsp;&nbsp;消</el-button>
           <el-button type="primary" size="medium" @click="onSaveDayShiftClick" style="margin-left:30px;">保&nbsp;&nbsp;存
           </el-button>
@@ -169,7 +157,7 @@ export default {
   name: "shift_group",
   data() {
     return {
-      
+      bottomDivShow: false,
       limit: 10,
       currentPage: 1,
       total: 0,
@@ -186,12 +174,12 @@ export default {
       addTaskVisiable: false,
       addDayShiftVisible: false,
       addTaskDataVisible: false,
-    
+
       bottomDataShow: false,
       shiftGroupModel: {},
       DayShiftModel: {},
       DayShiftModelList: [],
-     
+
       addOrNot: true, //是否新增
       addTaskText: "",
       addDayShiftText: "",
@@ -200,8 +188,8 @@ export default {
       loading: false,
       loading2: false,
       loading3: false,
-      starttime:"06:00",
-      endtime:"12:00",
+      starttime: "06:00",
+      endtime: "12:00",
       add_rules: {
         st_name: [
           { required: true, message: "请填写任务名称", trigger: "blur" }
@@ -214,38 +202,39 @@ export default {
           { required: true, message: "请填写数量", trigger: "blur" }
         ]
       },
- 
+
     };
   },
   filters: {
   },
-//   watch: {
-//     addTaskVisiable(val) {
-//       if (val) {
-//         this.selectDept();
-//       }
-//     }
-//   },
-//  computed: {
-    
-//   },
+  //   watch: {
+  //     addTaskVisiable(val) {
+  //       if (val) {
+  //         this.selectDept();
+  //       }
+  //     }
+  //   },
+  //  computed: {
+
+  //   },
   methods: {
-  timeRange(val1,val2) {
-        this.DayShiftModel.ds_period=((new Date("2020-01-01 "+val2) - new Date("2020-01-01 "+val1)) / 1000 / 60 / 60).toFixed(2);
-       return ((new Date("2020-01-01 "+val2) - new Date("2020-01-01 "+val1)) / 1000 / 60 / 60).toFixed(2)
+    timeRange(val1, val2) {
+      this.DayShiftModel.ds_period = ((new Date("2020-01-01 " + val2) - new Date("2020-01-01 " + val1)) / 1000 / 60 / 60).toFixed(2);
+      return ((new Date("2020-01-01 " + val2) - new Date("2020-01-01 " + val1)) / 1000 / 60 / 60).toFixed(2)
     },
     //刷新任务树
     refreshHead() {
+      this.bottomDivShow = false;
       this.taskData = [];
       this.currentRow = {};
       this.bottomDataShow = false;
-     
+
       this.z_get("api/shift_group", { condition: this.condition })
         .then(res => {
-        
+
           this.taskData = res.data;
         })
-        .catch(res => {});
+        .catch(res => { });
     },
     //刷新班次明细
     refreshItemData() {
@@ -260,9 +249,9 @@ export default {
           this.loading = false;
           this.DayShiftData = res.data;
         })
-        .catch(res => {});
+        .catch(res => { });
     },
- 
+
 
     search() {
       this.condition = "";
@@ -275,7 +264,7 @@ export default {
 
     searchData() {
       this.dataCondition = "";
-   
+
     },
     //当前选中的节点
     handleSelectionChange(val) {
@@ -318,9 +307,9 @@ export default {
     },
     //显示任务dialog
     addNewTaskShow() {
-    //var titleName = "";
-    
-    this.addTaskText = "新增班次组";
+      //var titleName = "";
+
+      this.addTaskText = "新增班次组";
       this.shiftGroupModel = {
         st_id: 0,
         st_name: "",
@@ -328,9 +317,9 @@ export default {
         st_note: ""
       };
       this.addOrNot = true;
-      this.starttime="08:00",
-      this.endtime="18:00",
-      this.addTaskVisiable = true;
+      this.starttime = "08:00",
+        this.endtime = "18:00",
+        this.addTaskVisiable = true;
     },
     //保存新增/编辑任务
     onSaveTaskClick() {
@@ -386,15 +375,15 @@ export default {
       this.shiftGroupModel = JSON.parse(JSON.stringify(row));
       this.shiftGroupModel.dept_name = this.renderFilter(
         this.shiftGroupModel.dept_id,
-     
+
       );
-      this.addTaskText = "编辑节点";
+      this.addTaskText = "编辑班次";
       this.addOrNot = false;
       this.addTaskVisiable = true;
     },
- 
+
     //确认删除班次组
-  onDeleteClick(row) {
+    onDeleteClick(row) {
       this.$confirm("是否删除？", "提示", {
         confirmButtonText: "是",
         cancelButtonText: "否",
@@ -417,9 +406,9 @@ export default {
               });
             });
         })
-        .catch(() => {});
+        .catch(() => { });
     },
-    
+
     //显示新增班次明细
     addNewDayShiftShow() {
       this.DayShiftModel = {
@@ -429,26 +418,26 @@ export default {
         ds_starttime: new Date(),
         ds_endtime: new Date(),
         is_report: 0,
-        ds_period:0,
+        ds_period: 0,
       };
-      this.starttime="08:00";
-      this.endtime="18:00";
+      this.starttime = "08:00";
+      this.endtime = "18:00";
       this.addDayShiftText = "新增班次";
       this.addOrNot = true;
-     this.addDayShiftVisible = true;
+      this.addDayShiftVisible = true;
     },
     //保存/编辑选中班次
     onSaveDayShiftClick() {
-      let config={
-        params:{
-         starttime:this.starttime,
-         endtime:this.endtime
+      let config = {
+        params: {
+          starttime: this.starttime,
+          endtime: this.endtime
         }
       }
       this.$refs.DayShiftForm.validate(valid => {
         if (valid) {
           if (this.addOrNot) {
-          this.z_post("api/day_shift", this.DayShiftModel ,config)
+            this.z_post("api/day_shift", this.DayShiftModel, config)
               .then(res => {
                 this.$message({
                   message: "新增成功!",
@@ -464,27 +453,27 @@ export default {
                   type: "error"
                 });
               });
-           
+
           } else {
             //修改
-         
-              this.z_put("api/day_shift", this.DayShiftModel ,config)
-                .then(res => {
-                  this.$message({
-                    message: "编辑成功!",
-                    type: "success",
-                    duration: 1000
-                  });
-                  this.refreshItemData();
-             this.addDayShiftVisible = false;
-                })
-                .catch(res => {
-                  this.$alert("编辑失败!", "提示", {
-                    confirmButtonText: "确定",
-                    type: "error"
-                  });
+
+            this.z_put("api/day_shift", this.DayShiftModel, config)
+              .then(res => {
+                this.$message({
+                  message: "编辑成功!",
+                  type: "success",
+                  duration: 1000
                 });
-           
+                this.refreshItemData();
+                this.addDayShiftVisible = false;
+              })
+              .catch(res => {
+                this.$alert("编辑失败!", "提示", {
+                  confirmButtonText: "确定",
+                  type: "error"
+                });
+              });
+
           }
         }
       });
@@ -495,12 +484,12 @@ export default {
       this.DayShiftModel = JSON.parse(JSON.stringify(row));
       this.addOrNot = false;
       this.addDayShiftText = "编辑班次明细";
-     this.addDayShiftVisible = true;
-     this.starttime=this.dateFormat(this.DayShiftModel.ds_starttime,"HH:mm");
-      this.endtime=this.dateFormat(this.DayShiftModel.ds_endtime,"HH:mm");
+      this.addDayShiftVisible = true;
+      this.starttime = this.dateFormat(this.DayShiftModel.ds_starttime, "HH:mm");
+      this.endtime = this.dateFormat(this.DayShiftModel.ds_endtime, "HH:mm");
     },
-   
-    
+
+
     //确认删除班次明细
     deleteOneItem(row) {
       this.$confirm("是否删除物料？", "提示", {
@@ -525,10 +514,10 @@ export default {
               });
             });
         })
-        .catch(() => {});
+        .catch(() => { });
     },
- 
-  
+
+
     //点击任务行显示下面
     handleRowClick(row, column) {
       if (column.property == "handle") {
@@ -537,18 +526,26 @@ export default {
       if (JSON.stringify(this.currentRow) != JSON.stringify(row)) {
         this.currentRow = row;
         //点击加载tab数据
-     
+
         this.refreshItemData();
       }
       this.bottomDataShow = true;
     },
- 
+    handleRowDBClick(row, column) {
+      if (column.property == "handle") {
+        return;
+      }
+      if (JSON.stringify(this.currentRow) != JSON.stringify(row)) {
+        this.currentRow = row;
+      }
+      this.bottomDivShow = true;
+    },
 
 
     //翻页
     handleCurrentChange(val) {
       this.currentPage = val;
-   
+
     },
     //删除选中的班次
     deleteSelectItem(index) {
@@ -557,7 +554,7 @@ export default {
   },
   mounted() {
     this.refreshHead();
-   
+
   }
 };
 </script>
@@ -566,36 +563,13 @@ export default {
 .shift_group {
   width: 1100px;
 }
-.formItem {
-  width: 300px;
+.gridTable {
+  flex: 1;
 }
-.formItem2 {
-  width: 200px;
+.bottomLayout {
+  position: relative;
 }
-.transferDiv {
-  display: inline-block;
-}
-.leftTransferItem {
-  display: inline-block;
-  vertical-align: middle;
-  width: 500px;
-  height: 400px;
-}
-.rightTransferItem {
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 20px;
-  width: 350px;
-  height: 400px;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-.oneItem {
-  border: 1px solid #eee;
-  margin-bottom: 10px;
-}
-.bottomButton {
-  text-align: center;
-  margin: 10px 0;
+.shiftformItem{
+  width: 120px;
 }
 </style>
