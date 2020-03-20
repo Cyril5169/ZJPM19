@@ -31,7 +31,7 @@
         >
       </div>
 
-      <el-table :data="tableData" height="100%"  border style="width:100% " row-key="t_class_name"  tooltip-effect="dark">
+      <el-table :data="tableData" height="100%"  border style="width:100% " row-key="t_class_id"  tooltip-effect="dark">
         <el-table-column type="index" label="序号" width="100" align="center">
         </el-table-column>
         <el-table-column
@@ -113,7 +113,7 @@
     </el-form-item>
     
 
-    <el-form-item label="生单类型" prop="t_bill_type">
+    <el-form-item label="生单类型" >
       <el-select v-model="tClassModel.t_bill_type" placeholder="请选择账号类别">
         <el-option label="物料单" value="物料单"></el-option>
       </el-select>
@@ -158,9 +158,7 @@ export default {
           {required:true, message:'不能为空', trigger:'blur'}
         ],
       
-        t_bill_type:[
-          {required:true, message:'生单类型不能为空', trigger:'change'}
-        ],
+       
         
       }
       
@@ -190,12 +188,12 @@ export default {
           this.addOrNot = true;
           this.addTClassText = "新增任务分类";
           this.tClassModel = {
-      
+        
+        t_class_id:"0",
         t_class_name: "",
         t_class_note: "",
         t_upload_ornot: "",
         t_bill_type: "",
-      
         t_create_bill_ornot:"",
         
     }
