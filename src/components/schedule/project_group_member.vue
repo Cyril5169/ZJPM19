@@ -53,14 +53,14 @@
         </el-form-item>
         <el-form-item label="进入时间" prop="pgm_starttime">
           <el-date-picker v-model="memberModel.pgm_starttime" placeholder="请选择进入时间">
-            <!-- <template slot-scope="scope">{{ scope.row.pgm_starttime | datatrans}}
-          </template> -->
+            <template slot-scope="scope">{{ scope.row.pgm_starttime | datatrans}}
+            </template>
           </el-date-picker>
         </el-form-item>
         <el-form-item label="退出时间" prop="pgm_endtime">
           <el-date-picker v-model="memberModel.pgm_endtime" placeholder="请选择退出时间">
-            <!-- <template slot-scope="scope">{{ scope.row.pgm_endtime | datatrans}}
-          </template> -->
+            <template slot-scope="scope">{{ scope.row.pgm_endtime | datatrans}}
+            </template>
           </el-date-picker>
         </el-form-item>
 
@@ -171,6 +171,20 @@ export default {
       this.$refs.memberForm.validate(valid => {
         if (valid) {
           if (this.addOrNot) {
+            var isContain = false;
+            for (var i = 0; i < this.memberData.length; i++) {
+              if (this.memberData[i].emp_id == this.memberModel.emp_id) {
+                isContain = true;
+                break;
+              }
+            }
+            if (isContain) {
+              this.$alert("已存在该成员！", "提示", {
+                confirmButtonText: "好的",
+                type: "warning"
+              });
+              return;
+            }
             this.z_post("api/project_group_member", this.memberModel)
               .then(res => {
                 this.$message({
@@ -189,26 +203,29 @@ export default {
                 console.log(res);
               });
           } else {
-            this.z_put("api/project_group_member", this.memberModel)
-              .then(res => {
-                this.$message({
-                  message: "编辑成功",
-                  type: "success",
-                  duration: 1000
+            this.memberModel.UpdateColumns = this.$refs.memberForm.UpdateColumns;
+            if (this.memberModel.UpdateColumns) {
+              this.z_put("api/project_group_member", this.memberModel)
+                .then(res => {
+                  this.$message({
+                    message: "编辑成功",
+                    type: "success",
+                    duration: 1000
+                  });
+                  this.refreshData();
+                  this.addEmpVisiable = false;
+                })
+                .catch(res => {
+                  this.$alert("编辑失败", "提示", {
+                    confirmButtonText: "确定",
+                    type: "error"
+                  });
+                  console.log(res);
                 });
-                this.refreshData();
-                this.addEmpVisiable = false;
-              })
-              .catch(res => {
-                this.$alert("编辑失败", "提示", {
-                  confirmButtonText: "确定",
-                  type: "error"
-                });
-                console.log(res);
-              });
+            }else {
+              this.addEmpVisiable = false;
+            }
           }
-        } else {
-          return false;
         }
       });
     },

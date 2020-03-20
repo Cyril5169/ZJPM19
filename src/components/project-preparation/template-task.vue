@@ -50,9 +50,10 @@
       </el-dropdown>
     </div>
     <div class="gridTable">
-      <zj-table :autoHeight='bottomDivShow' height='100%' ref="taskTable" style="width: 100%;" :data="taskData" tooltip-effect="dark"
-        highlight-current-row row-key="tt_no" default-expand-all @selection-change="handleSelectionChange"
-        @select-all="handleSelectAll" @row-click="handleRowClick" @row-dblclick="handleRowDBClick">
+      <zj-table :autoHeight='bottomDivShow' height='100%' ref="taskTable" style="width: 100%;" :data="taskData"
+        tooltip-effect="dark" highlight-current-row row-key="tt_no" default-expand-all
+        @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick"
+        @row-dblclick="handleRowDBClick">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="tt_name" label="任务名称" width="180" show-overflow-tooltip></el-table-column>
         <el-table-column prop="tt_period" label="工期(天)" align="center" width="100"></el-table-column>
@@ -332,7 +333,7 @@ export default {
         (this.currentRow.tt_no && type == "children")
       ) {
         var titleName = "";
-        var tt_pno = 0;
+        var tt_pno = null;
         var level = "";
         if (type == "root") {
           titleName = "";

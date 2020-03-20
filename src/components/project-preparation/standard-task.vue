@@ -25,9 +25,10 @@
       </el-dropdown>
     </div>
     <div class="gridTable">
-      <zj-table :autoHeight='bottomDivShow' height='100%' ref="taskTable" style="width: 100%;" :data="taskData" tooltip-effect="dark"
-        highlight-current-row row-key="st_id" default-expand-all @selection-change="handleSelectionChange"
-        @select-all="handleSelectAll" @row-click="handleRowClick" @row-dblclick="handleRowDBClick">
+      <zj-table :autoHeight='bottomDivShow' height='100%' ref="taskTable" style="width: 100%;" :data="taskData"
+        tooltip-effect="dark" highlight-current-row row-key="st_id" default-expand-all
+        @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick"
+        @row-dblclick="handleRowDBClick">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="st_name" label="任务名称" width="180" show-overflow-tooltip></el-table-column>
         <el-table-column prop="dept_id" label="部门" align="center" width="180">
@@ -202,7 +203,7 @@ export default {
     //全选选中子节点
     handleSelectAll(selection) {
       var val = this.taskData;
-      var select = false;//全选还是反选
+      var select = false; //全选还是反选
       for (var i = 0; i < selection.length; i++) {
         if (selection[i].st_id == val[0].st_id) {
           select = true;
@@ -347,7 +348,9 @@ export default {
               this.refreshData();
             })
             .catch(res => {
-              this.$alert("删除失败:" + res.msg, "提示", {
+              var msg = res.msg;
+              if (msg.indexOf("FK") > -1) msg = "该数据已被使用，无法删除";
+              this.$alert("删除失败:" + msg, "提示", {
                 confirmButtonText: "确定",
                 type: "error"
               });

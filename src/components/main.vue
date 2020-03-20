@@ -451,7 +451,7 @@ export default {
 }
 .commonStyle {
   margin: 0 auto;
-  padding: 10px 20px;
+  padding: 10px;
   box-sizing: border-box;
   background-color: white;
   flex: 1;
@@ -560,6 +560,7 @@ export default {
 .el-card__body {
   padding: 10px !important;
   width: 100%;
+  box-sizing: border-box;
 }
 .el-dialog__body {
   padding: 20px !important;
@@ -567,9 +568,6 @@ export default {
 .el-table td,
 .el-table th {
   padding: 5px 0 !important;
-}
-.el-badge__content {
-  border: none !important;
 }
 .el-table th.gutter {
   display: table-cell !important;

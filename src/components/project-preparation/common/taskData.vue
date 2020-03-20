@@ -150,7 +150,7 @@ export default {
       this.z_get(
         "api/standard_task_data",
         {
-          st_id: this.currentRow.st_id,
+          st_id: this.source == "standard" ? this.currentRow.st_id : null,
           tt_no: this.currentRow.tt_no,
           condition: this.dataCondition,
           source: this.source
