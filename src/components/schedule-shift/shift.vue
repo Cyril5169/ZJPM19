@@ -14,7 +14,7 @@
         tooltip-effect="dark" highlight-current-row row-key="st_id" default-expand-all
         @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick"
         @row-dblclick="handleRowDBClick">
-        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <!-- <el-table-column type="selection" width="55" align="center"></el-table-column> -->
         <!-- <el-table-column prop="st_id" label="任务编号" align="center" width="150"></el-table-column> -->
         <el-table-column prop="sg_id" label="序号" align="center" width="60"></el-table-column>
         <el-table-column prop="sg_name" label="班次名称" align="center" width="150"></el-table-column>

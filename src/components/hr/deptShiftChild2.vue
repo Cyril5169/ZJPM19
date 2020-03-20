@@ -6,15 +6,10 @@
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" width="70" align="center" label="序号">
             </el-table-column>
-            <el-table-column prop="sg_name" label="班次名称" align="center" width="140"></el-table-column>
-            <el-table-column prop="dsg_startdate" label="开始使用时间" align="center" width="130">
-              <template slot-scope="scope">{{ scope.row.dsg_startdate| datetrans}}
-              </template>
-            </el-table-column>
-            <el-table-column prop="dsg_enddate" label="结束使用时间" align="center" width="130">
-              <template slot-scope="scope">{{ scope.row.dsg_enddate | datetrans}}
-              </template>
-            </el-table-column>
+            <el-table-column prop="emp_id" label="ID" align="center" width="140"></el-table-column>
+              <el-table-column prop="emp_id" label="姓名" align="center" width="140"></el-table-column>
+            <el-table-column prop="de_isscheduling" label="参与排班" align="center" width="140"></el-table-column>
+
           </el-table>
         </div>
       
@@ -31,7 +26,7 @@ import print from "print-js";
 import Axios from "axios";
 import Cookies from "js-cookie";
 export default {
-  name: "depShiftChild",
+  name: "depShiftChild2",
   props: ["deptName", "deptId"],
   data() {
     return {
@@ -67,9 +62,7 @@ export default {
   
     //查找带筛选条件的部门班次数据
     refreshData(){
-       console.log("历史记录方法");
-     console.log(this.deptId);
-      this.z_get("api/dept_shift_group", {
+      this.z_get("api/dept_emp", {
         dept_id: this.deptId
       })
         .then(res => {
