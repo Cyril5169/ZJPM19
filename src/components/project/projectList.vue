@@ -126,8 +126,10 @@
         <el-row>
           <el-col :span="11">
             <el-form-item label="客户名称" prop="c_no">
-              <el-input style="width:200px;" v-model="projectModel.c_no" placeholder="请选择客户">
-              </el-input>
+              <el-select style="width:200px;" filterable v-model="projectModel.c_no" placeholder="请选择客户">
+                <el-option v-for="item in customerFilter" :key="item.value" :label="item.display" :value="item.value">
+                </el-option>
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col class="line" :span="1">&nbsp;</el-col>
@@ -156,15 +158,18 @@
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="产品名称" prop="item_no">
-              <el-input style="width:200px;" v-model="projectModel.item_no" placeholder="请选择产品名称">
-              </el-input>
+              <el-select style="width:200px;" filterable v-model="projectModel.item_no" placeholder="请选择产品">
+                <el-option v-for="item in productData" :key="item.item_no" :label="item.item_name"
+                  :value="item.item_no">
+                </el-option>
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="11">
             <el-form-item label="业务员" prop="p_salesman">
-              <el-select style="width:200px;" v-model="projectModel.p_salesman" placeholder="请选择业务员">
+              <el-select style="width:200px;" filterable v-model="projectModel.p_salesman" placeholder="请选择业务员">
                 <el-option v-for="item in employeeFilter" :key="item.value" :label="item.display" :value="item.value">
                 </el-option>
               </el-select>
@@ -173,7 +178,7 @@
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="项目经理" prop="p_manager">
-              <el-select style="width:200px;" v-model="projectModel.p_manager" placeholder="请选择业务员">
+              <el-select style="width:200px;" filterable v-model="projectModel.p_manager" placeholder="请选择项目经理">
                 <el-option v-for="item in employeeFilter" :key="item.value" :label="item.display" :value="item.value">
                 </el-option>
               </el-select>
@@ -216,6 +221,8 @@
 </template>
 
 <script>
+import { mapMutations } from "vuex";
+
 export default {
   data() {
     return {
@@ -229,6 +236,8 @@ export default {
       projectSelection: [],
       classFilter: [],
       employeeFilter: [],
+      customerFilter: [],
+      productData: [],
       projectModel: {},
       addOrNot: false,
       addProjectVisible: false,
@@ -258,6 +267,8 @@ export default {
         pc_no: [
           { required: true, message: "请选择所属分类", trigger: "change" }
         ],
+        c_no: [{ required: true, message: "请选择客户", trigger: "change" }],
+        item_no: [{ required: true, message: "请选择产品", trigger: "change" }],
         p_salesman: [
           { required: true, message: "请选择业务员", trigger: "change" }
         ],
@@ -288,7 +299,15 @@ export default {
       }
     }
   },
+  watch: {
+    addProjectVisible(val) {
+      if (val) {
+        this.refreshProductData();
+      }
+    }
+  },
   methods: {
+    ...mapMutations("navTabs", ["addBreadCrumb"]),
     refreshClassData() {
       this.classData = [];
       this.selectClass = {};
@@ -314,6 +333,7 @@ export default {
           this.loading = false;
           this.classFilter = res.dict.pc_no;
           this.employeeFilter = res.dict.p_salesman;
+          this.customerFilter = res.dict.c_no;
           this.projectData = res.data;
         })
         .catch(res => {});
@@ -331,6 +351,14 @@ export default {
       )
         .then(res => {
           this.classCountData = res.data;
+        })
+        .catch(res => {});
+    },
+    refreshProductData() {
+      this.productData = [];
+      this.z_get("api/item/product", {}, { loading: false })
+        .then(res => {
+          this.productData = res.data;
         })
         .catch(res => {});
     },
@@ -435,6 +463,16 @@ export default {
         count = oneClass[0].class_count;
       }
       return count;
+    },
+    //跳转路由
+    toDetail(row) {
+      this.$router.push({
+        name: "schedule/baseSchedule",
+        params: {
+          projectId: row.p_no
+        }
+      });
+      this.addBreadCrumb("schedule/baseSchedule");
     }
   },
   mounted() {
