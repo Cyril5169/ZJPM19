@@ -440,8 +440,43 @@ export default {
         }
       });
     },
-    deleteOneProject(row) {},
-    deleteListProject() {},
+    deleteOneProject(row) {
+      var list = [];
+      list.push(row);
+      this.onProjectDeleteClick(list);
+    },
+    deleteListProject() {
+      if (this.projectSelection.length) {
+        this.onDeleteClick(this.projectSelection);
+      }
+    },
+    onProjectDeleteClick(list) {
+      this.$confirm("是否删除该项目?", "提示", {
+        confirmButtonText: "是",
+        cancelButtonText: "否",
+        type: "warning"
+      })
+        .then(() => {
+          this.z_delete("api/project/list", { data: list })
+            .then(res => {
+              this.$message({
+                message: "删除成功!",
+                type: "success",
+                duration: 1000
+              });
+              this.refreshProjectData();
+            })
+            .catch(res => {
+              var msg = res.msg;
+              if (msg.indexOf("FK") > -1) msg = "该数据已被使用，无法删除";
+              this.$alert("删除失败:" + msg, "提示", {
+                confirmButtonText: "确定",
+                type: "error"
+              });
+            });
+        })
+        .catch(() => {});
+    },
     //选中的分类
     handleSelectTreeClick(data) {
       this.selectClass = data;

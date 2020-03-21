@@ -4,7 +4,7 @@
       <div class="leftLayout">
         <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
-          <el-button type="primary" size="small" style="margin-left:10px;">新增</el-button>
+          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewProjectPlan">新增</el-button>
           <el-button type="primary" size="small">进度计算</el-button>
           <el-button type="primary" size="small">发布</el-button>
           <el-button type="primary" size="small">撤销发布</el-button>
@@ -77,7 +77,11 @@ export default {
       }
     }
   },
-  methods: {}
+  methods: {
+    addNewProjectPlan(){
+      
+    }
+  }
 };
 </script>
 
