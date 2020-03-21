@@ -21,18 +21,13 @@
         </el-table-column>
         <el-table-column prop="ddt_name" label="资料类型" align="center" width="140">
         </el-table-column>
-        <el-table-column label="文档" align="center" width="200">
-          <a class="el-upload-list__item-name">
-            <el-link type="primary" size="mini">{{ file.name }}
-            </el-link>
-          </a>
-          <label style="display:block;position:absolute;top:1px;right:10px;">
-            <a style="cursor:pointer;" @click="this.downLoadFile(file.url)">下载</a>
-          </label>
+        <el-table-column prop="file_name" label="文档" align="center" width="200">
         </el-table-column>
         <el-table-column prop="note" label="备注" align="center" width="150"></el-table-column>
         <el-table-column label="操作" width="140" prop="handle">
           <template slot-scope="scope">
+            <el-button type="info" icon="el-icon-download" size="mini" circle @click="downLoadOne(scope.row.file_path)">
+            </el-button>
             <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOneFile(scope.row)">
             </el-button>
           </template>
@@ -442,6 +437,12 @@ export default {
       formData.append("file", param.file);
       this.z_post("api/file_manager/upload", formData).then(res => {});
     },
+    //下载文件
+    downLoadOne(path) {
+      this.downLoadFile(
+        this.Global.baseUrl + `api/DownLoadAPI?path=${path}&`
+      ).then(res => {});
+    },
     handleChange(file, fileList, index) {
       this.DataFileModelList[index].fileList = fileList;
     },
@@ -450,7 +451,7 @@ export default {
       if ((file.status = "success")) {
         this.deleteFile.push(file.url);
       }
-    },
+    }
     // handleSuccess(res, file, fileList, index) {
     //   var flag = true;
     //   //判断是否每个文档都上传成功
