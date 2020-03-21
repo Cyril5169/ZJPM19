@@ -24,7 +24,6 @@
             </el-button>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item @click.native="editExecutorShow()" divided>设置执行者</el-dropdown-item>
-              <!-- <el-dropdown-item @click.native="editExecutorShow()" divided>设置执行部门</el-dropdown-item> -->
               <el-dropdown-item @click.native="resetExecutor()" divided>取消设置执行者</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -103,6 +102,11 @@
               <taskData v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskData>
             </keep-alive>
           </el-tab-pane>
+          <el-tab-pane label="输入文档" name="dataFile">
+            <keep-alive>
+              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow' ></taskDataFile>
+            </keep-alive>
+          </el-tab-pane>
         </el-tabs>
         <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
           @click="bottomDivShow=!bottomDivShow"></i>
@@ -145,26 +149,15 @@
             value-format="yyyy-MM-dd" placeholder="请选择日期" :picker-options="pickerOptions" style="width:218px">
           </el-date-picker>
         </el-form-item>
-        <!--如果是根节点-->
-        <!-- <el-form-item label="工期(天)" prop="t_period" v-if="!taskModel.t_pid">
+        <el-form-item label="工期(天)" prop="t_period">
           <el-input class="formItem" v-model="taskModel.t_period" placeholder="请填写工期" oninput="value=value.replace(/[^\d.]/g,'')
                                 .replace(/^\./g, '').replace(/\.{2,}/g, '.')
                                 .replace('.', '$#$').replace(/\./g, '')
                                 .replace('$#$', '.')
                                 .slice(0,value.indexOf('.') === -1? value.length: value.indexOf('.') + 3)">
           </el-input>
-        </el-form-item> -->
-        <!--如果是子节点-->
-        <!-- <el-form-item label="工期(天)" prop="t_period" v-else>
-          <el-input class="formItem" v-model="taskModel.t_period" :max="p_taskModel.t_period" placeholder="请填写工期"
-            oninput="value=value.replace(/[^\d.]/g,'')
-                                .replace(/^\./g, '').replace(/\.{2,}/g, '.')
-                                .replace('.', '$#$').replace(/\./g, '')
-                                .replace('$#$', '.')
-                                .slice(0,value.indexOf('.') === -1? value.length: value.indexOf('.') + 3)">
-          </el-input>
-        </el-form-item> -->
-        <el-form-item label="工期(天)" prop="t_period" v-if="!p_taskModel.t_period">
+        </el-form-item>
+        <!-- <el-form-item label="工期(天)" prop="t_period" v-if="!p_taskModel.t_period">
           <el-input-number v-model="taskModel.t_period" :min=0 controls-position="right"
             style="width:218px;text-align:left">
           </el-input-number>
@@ -173,7 +166,7 @@
           <el-input-number v-model="taskModel.t_period" :min=0 :max="p_taskModel.t_period" controls-position="right"
             style="width:218px;text-align:left">
           </el-input-number>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="备注">
           <el-input class="formItem" type="textarea" :rows="2" v-model="taskModel.t_note" placeholder="">
           </el-input>
@@ -215,12 +208,14 @@
 import taskExecutor from "@/components/schedule-task/taskTab/taskExecutor";
 import taskMaterial from "@/components/schedule-task/taskTab/taskMaterial";
 import taskData from "@/components/schedule-task/taskTab/taskData";
+import taskDataFile from "@/components/schedule-task/taskTab/taskDataFile";
 export default {
   name: "taskManage",
   components: {
     taskExecutor,
     taskMaterial,
-    taskData
+    taskData,
+    taskDataFile
   },
   data() {
     return {
@@ -476,13 +471,6 @@ export default {
       this.addOrNot = true;
       this.addTaskVisiable = true;
     },
-    //计数器获得两位小数的方法
-    // getPrecision(value) {
-    //   if (value == null || value == "") {
-    //     return "";
-    //   }
-    //   return value.toFixed("2");
-    // },
     //时间datePicker范围处理：暂时仅考虑父节点的时间限制(并未与Date.now()比较)
     dealDisabledDate(time) {
       if (this.taskModel.t_pid) {
@@ -665,7 +653,14 @@ export default {
     //提交新增及编辑结果
     onSaveTaskClick() {
       this.$refs.taskForm.validate(valid => {
-        if (valid) {
+        if (valid) {     //判断子节点任务的工期限制
+          if (this.p_taskModel.t_period!=""&&this.taskModel.t_period > this.p_taskModel.t_period) {
+            this.$alert("工期不能超过父节点任务的工期："+this.p_taskModel.t_period+"天", "提示", {
+              confirmButtonText: "确定",
+              type: "warning"
+            });
+            return;
+          }
           if (this.addOrNot) {
             this.z_post("api/task", this.taskModel)
               .then(res => {

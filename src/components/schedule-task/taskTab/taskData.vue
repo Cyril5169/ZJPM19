@@ -16,7 +16,7 @@
       <el-table ref="taskItemTable" v-loading="loading" style="width:100%;" height="200" :data="taskDataData"
         tooltip-effect="dark" highlight-current-row border @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
-        <el-table-column type="index" width="40" align="center">
+        <el-table-column type="index" label="序号"  width="55" align="center">
         </el-table-column>
         <el-table-column prop="td_name" label="资料名称" align="center" width="200" show-overflow-tooltip>
         </el-table-column>
@@ -177,7 +177,8 @@ export default {
         td_note: "",
         td_quantity: "",
         td_type: "",
-        td_source: this.source
+        td_source: this.source,
+        td_isdone:0,
       };
       this.addOrNot = true;
       this.addTaskDataVisible = true;
