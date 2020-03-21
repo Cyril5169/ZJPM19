@@ -133,7 +133,7 @@
         </el-button>
       </div>
       <div class="gridTable">
-        <zj-table ref="TempGroupTable" style="width: 100%;" height="380px" :data="TempGroupData" tooltip-effect="dark"
+        <zj-table ref="TempGroupTable" style="width: 100%;" height="400" :data="TempGroupData" tooltip-effect="dark"
           highlight-current-row row-key="tg_id" default-expand-all @select="handleSelectChildren"
           @selection-change="handleSelectionChange2" @select-all="handleSelectAll2">
           <el-table-column type="selection" width="55" align="center"></el-table-column>
