@@ -10,7 +10,7 @@
           </el-input>
           <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewTaskShow('root')">新增技能信息</el-button>
          <el-button type="primary" size="small">导入</el-button>
-          <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewTaskShow('children')">新增子节点</el-button>
+          <el-button type="primary" size="cnpmsmall" :disabled="selection.length!=1" @click="addNewTaskShow('children')">新增子节点</el-button>
           <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">删除选中节点({{selection.length}})
           </el-button>
           <el-dropdown style="margin-left:10px;">
@@ -89,13 +89,7 @@ export default {
   mounted() {
     this.refreshData();
   },
-  watch: {
-    addTaskVisiable(val) {
-      if (val) {
-        this.selectDept();
-      }
-    }
-  },
+  
   methods: {
     refreshData() {      
       this.z_get("api/skill", {
