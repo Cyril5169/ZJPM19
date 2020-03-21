@@ -439,7 +439,7 @@ export default {
     }
   },
   created() {
-    // this.searchShift();
+    this.searchShift();
   }
 };
 </script>
