@@ -65,7 +65,7 @@
           </el-button>
         </div>
         <div class="gridTable">
-          <zj-table height='100%' ref="projectTable" v-loading="loading" style="width:100%;" :data="projectData"
+          <el-table height='100%' ref="projectTable" v-loading="loading" style="width:100%;" :data="projectData"
             tooltip-effect="dark" highlight-current-row border @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column prop="p_no" label="项目号" align="center" width="100" show-overflow-tooltip>
@@ -98,7 +98,7 @@
                 </el-button>
               </template>
             </el-table-column>
-          </zj-table>
+          </el-table>
         </div>
       </el-main>
     </el-container>
@@ -504,7 +504,7 @@ export default {
       this.$router.push({
         name: "schedule/baseSchedule",
         params: {
-          projectId: row.p_no
+          projectNo: row.p_no
         }
       });
       this.addBreadCrumb("schedule/baseSchedule");

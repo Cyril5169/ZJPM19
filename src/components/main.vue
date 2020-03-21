@@ -452,7 +452,6 @@ export default {
 .commonStyle {
   margin: 0 auto;
   padding: 10px;
-  box-sizing: border-box;
   background-color: white;
   flex: 1;
   display: flex;
@@ -494,6 +493,17 @@ export default {
   cursor: pointer;
   font-size: 20px;
   line-height: 35px !important;
+}
+/* flex大包围 */
+.flexDiv-column{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.flexDiv-row{
+  flex: 1;
+  display: flex;
+  flex-direction: row;
 }
 /* 水平菜单样式 */
 .el-menu--horizontal > .el-menu-item,
