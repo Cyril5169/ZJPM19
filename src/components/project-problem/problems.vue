@@ -5,11 +5,21 @@
 
         <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
-          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入问题描述或者问题位置" v-model="condition" clearable
-            style="width:300px;">
+          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入问题描述或者问题位置" v-model="condition"
+            clearable style="width:295px;">
             <el-button size="small" @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
           </el-input>
-          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewproblemShow">新增
+
+          <span style="font-size:13px;margin-left:10px">项目名称:</span>
+         
+
+          <el-select size="small"  v-model="select_project" @change="refreshData" ref="select_project" placeholder="请选择项目">
+              <el-option v-for="item in problemProjectFilter" :key="item.value" :label="item.display"
+                :value="item.value">
+              </el-option>
+            </el-select>
+
+          <el-button type="primary" size="small" style="margin-left:20px;" @click="addNewproblemShow">新增问题
 
           </el-button>
           <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">
@@ -22,6 +32,11 @@
             @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick">
             <el-table-column type="selection" width="40" align="center"></el-table-column>
             <el-table-column type="index" label="序号" width="50" align="center"></el-table-column>
+
+            <el-table-column prop="projectno" label="所属项目" align="center" sortable width="150">
+              <template slot-scope="scope">{{scope.row.projectno | renderFilter(problemProjectFilter)}}</template>
+            </el-table-column>
+
             <el-table-column prop="p_note" label="问题描述" width="300" align="center"></el-table-column>
             <el-table-column prop="p_position" label="位置" width="120" align="center"></el-table-column>
 
@@ -47,11 +62,11 @@
             <el-table-column label="操作" width="150" prop="handle" align="center">
               <template slot-scope="scope">
 
-                  <el-tooltip class="item" effect="dark" content="编辑问题信息" placement="top-start">
+                <el-tooltip class="item" effect="dark" content="编辑问题信息" placement="top-start">
                   <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editProblemShow(scope.row)">
                   </el-button>
                 </el-tooltip>
-                <el-tooltip class="item" effect="dark" content="流程详情" placement="top-start">
+                <el-tooltip class="item" effect="dark" content="问题详情" placement="top-start">
                   <el-button type="primary" icon="el-icon-s-grid" size="mini" circle @click="toDetail(scope.row)">
                   </el-button>
                 </el-tooltip>
@@ -70,6 +85,15 @@
         :visible.sync="addproblemVisiable" top="5vh" @closed="refreshForm">
         <zj-form size="small" :newDataFlag='addproblemVisiable' :model="problemModel" label-width="100px"
           ref="problemForm" :rules="add_rules">
+
+          <el-form-item label="所属项目" prop="projectno">
+            <el-select class="formproblem" v-model="problemModel.projectno" placeholder="请选择项目">
+              <el-option v-for="item in problemProjectFilter" :key="item.value" :label="item.display"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+
           <el-form-item label="问题描述" prop="p_note">
             <el-input class="formproblem" type="textarea" :rows="4" v-model="problemModel.p_note" placeholder="请填写问题描述">
             </el-input>
@@ -100,11 +124,11 @@
           </el-form-item>
 
           <el-form-item label="状态" prop="p_state">
-          <el-select style="width:50%;" v-model="problemModel.p_state" placeholder="请选择问题状态">
-            <el-option v-for="item in status_options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
+            <el-select style="width:50%;" v-model="problemModel.p_state" placeholder="请选择问题状态">
+              <el-option v-for="item in status_options" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
 
           <el-form-item style="text-align:center;margin-right:100px;">
             <el-button size="medium" @click="addproblemVisiable = false">取&nbsp;&nbsp;消</el-button>
@@ -125,7 +149,8 @@ export default {
   name: "problem",
   data() {
     return {
-    
+      
+      select_project:"",
       condition: "",
 
       problemCondition: "",
@@ -134,10 +159,11 @@ export default {
       problemData: [], //物料数据
 
       problemTypeData: [], //物料类型数据
-      
 
       employeeFilter: [], //记录人员渲染
       problemTypeFilter: [],
+      problemProjectFilter: [],
+
       problemModel: {},
 
       problem_typeModel: {},
@@ -181,7 +207,8 @@ export default {
         p_state: [
           { required: true, message: "请填写问题状态", trigger: "blur" }
         ],
-        p_emp: [{ required: true, message: "选择记录人", trigger: "change" }]
+        p_emp: [{ required: true, message: "选择记录人", trigger: "change" }],
+        projectno: [{ required: true, message: "选择项目", trigger: "change" }]
       }
     };
   },
@@ -218,17 +245,19 @@ export default {
     //刷新物料信息
     refreshData() {
       this.problemData = [];
-      this.z_get("api/problem/list", { condition: this.condition })
+      this.z_get("api/problem/list", {projectno:this.select_project, condition: this.condition })
         .then(res => {
           this.problemData = res.data;
           this.employeeFilter = res.dict.p_emp;
           this.problemTypeFilter = res.dict.pt_id;
+          this.problemProjectFilter = res.dict.projectno;
         })
         .catch(res => {});
     },
     //重置表单
     search() {
       this.condition = "";
+      this.select_project = "";
       this.refreshData();
     },
 
@@ -256,7 +285,7 @@ export default {
 
     //显示任务dialog
     addNewproblemShow() {
-      this.addproblemText = "异常信息";
+      this.addproblemText = "新增问题";
       this.problemModel = {
         p_id: 0,
         t_id: null,
@@ -267,7 +296,9 @@ export default {
         p_empName: "",
         p_recorddate: new Date(),
         p_state: "",
-        p_position: ""
+        p_position: "",
+        projectno: "",
+        projectName: ""
       };
       this.addOrNot = true;
       this.addproblemVisiable = true;
@@ -333,6 +364,11 @@ export default {
       this.problemModel.p_empName = this.renderFilter(
         this.problemModel.p_emp,
         this.employeeFilter
+      );
+
+      this.problemModel.projectName = this.renderFilter(
+        this.problemModel.projectno,
+        this.problemProjectFilter
       );
 
       this.addproblemText = "编辑问题";
