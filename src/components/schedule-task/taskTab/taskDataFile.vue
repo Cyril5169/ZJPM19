@@ -19,17 +19,20 @@
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column label="序号" type="index" width="55" align="center">
         </el-table-column>
-        <el-table-column prop="ddt_id" label="资料类型" align="center" width="140">
-          <template slot-scope="scope">{{scope.row.ddt_id | renderFilter(dataTypeFilter)}}</template>
+        <el-table-column prop="ddt_name" label="资料类型" align="center" width="140">
         </el-table-column>
-        <el-table-column prop="file_id" label="文档" align="center" width="200">
-          <template slot-scope="scope">{{scope.row.file_id | renderFilter(fileFilter)}}</template>
+        <el-table-column label="文档" align="center" width="200">
+          <a class="el-upload-list__item-name">
+            <el-link type="primary" size="mini">{{ file.name }}
+            </el-link>
+          </a>
+          <label style="display:block;position:absolute;top:1px;right:10px;">
+            <a style="cursor:pointer;" @click="this.downLoadFile(file.url)">下载</a>
+          </label>
         </el-table-column>
         <el-table-column prop="note" label="备注" align="center" width="150"></el-table-column>
         <el-table-column label="操作" width="140" prop="handle">
           <template slot-scope="scope">
-            <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editDataFileShow(scope.row)">
-            </el-button>
             <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOneFile(scope.row)">
             </el-button>
           </template>
@@ -77,13 +80,19 @@
             </legend>
             <el-form size="small" :model="item" label-width="80px" :rules="addItem_rules">
               <el-form-item label="资料类型" prop="ddt_id">
-                <el-select v-model="item.ddt_id" disabled>
+                <el-select v-model="item.ddt_id" placeholder="请选择需求类型">
                   <el-option v-for="item in dataTypeFilter" :key="item.value" :label="item.display" :value="item.value">
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="输入文档">
-                <el-upload class="upload-de" :action="Global.baseUrl + '/file_manager/UploadDataFiles'"
+              <el-form-item label="需求类型" prop="tdf_type">
+                <el-select v-model="item.tdf_type" placeholder="请选择需求类型">
+                  <el-option v-for="item in tdfType_options" :key="item.value" :label="item.label" :value="item.value">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <!-- <el-form-item label="输入文档"> -->
+              <!-- <el-upload class="upload-de" :action="Global.baseUrl + '/file_manager/UploadDataFiles'"
                   :on-change="function(file,fileList){return  handleChange(file,fileList,index)}"
                   :on-remove="function(file,fileList){return  handleRemove(file,fileList,index)}"
                   :on-success="function(res,file,fileList){return  handleSuccess(res,file,fileList,index)}"
@@ -92,10 +101,18 @@
                   <i class="el-icon-upload2" style="margin-top:5px;">
                     <span style="font-size:15px;">上传文档</span>
                   </i>
+                </el-upload> -->
+              <!-- </el-form-item> -->
+              <el-form-item label="输入文档">
+                <el-upload class="upload-de" action="#" list-type="text"
+                  :on-change="function(file,fileList){return  handleChange(file,fileList,index)}"
+                  :on-remove="function(file,fileList){return  handleRemove(file,fileList,index)}"
+                  :file-list="item.fileList" :limit=1 :http-request="uploadFiles">
+                  <i class="el-icon-upload2"> <span style="font-size:13px;">上传</span></i>
                 </el-upload>
               </el-form-item>
               <el-form-item label="备注" prop="item_note">
-                <el-input  v-model="item.note" type="textarea" :rows="2" placeholder="备注信息">
+                <el-input v-model="item.note" type="textarea" :rows="2" placeholder="备注信息">
                 </el-input>
               </el-form-item>
             </el-form>
@@ -110,16 +127,30 @@
       </div>
     </el-dialog>
 
-    <!-- 选择/修改输入文档 -->
+    <!-- 修改输入文档 -->
     <el-dialog v-if="selectDataVisible" v-dialogDrag width="450px" :title="addOrNot?'上传输入文档':'编辑输入文档'"
       :close-on-click-modal="false" :visible.sync="selectDataVisible">
       <zj-form size="small" :newDataFlag='selectDataVisible' :model="dataFileModel" label-width="100px"
         ref="dataFileForm" :rules="addItem_rules">
-        <el-form-item label="类型" prop="td_type">
-          <el-select v-model="dataFileModel.tdf_type" placeholder="请选择类型">
+        <el-form-item label="资料类型" prop="ddt_id">
+          <el-select v-model="dataFileModel.ddt_id" placeholder="请选择资料类型">
+            <el-option v-for="item in dataTpyeList" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="需求类型" prop="tdf_type">
+          <el-select v-model="dataFileModel.tdf_type" placeholder="请选择需求类型">
             <el-option v-for="item in tdfType_options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
+        </el-form-item>
+        <el-form-item label="输入文档">
+          <el-upload class="upload-de" action="#" list-type="text"
+            :on-change="function(file,fileList){return  handleChange(file,fileList,index)}"
+            :on-remove="function(file,fileList){return  handleRemove(file,fileList,index)}" :file-list="item.fileList"
+            :http-request="uploadFiles">
+            <i class="el-icon-upload2"> <span style="font-size:13px;">上传</span></i>
+          </el-upload>
         </el-form-item>
         <el-form-item label="备注">
           <el-input class="formItem" type="textarea" :rows="2" v-model="dataFileModel.note" placeholder="备注信息">
@@ -163,31 +194,26 @@ export default {
       dateStamp: "",
       tdfType_options: [
         {
-          value: "input",
+          value: 1,
           label: "输入"
         },
         {
-          value: "output",
+          value: 2,
           label: "输出"
         }
       ],
-      addItem_rules: {
-        item_name: [{ required: true, message: "请选择物料", trigger: "blur" }],
-        ti_quantity: [
-          { required: true, message: "请填写数量", trigger: "blur" }
-        ]
-      }
+      addItem_rules: {}
     };
   },
   watch: {
-    // currentRow: {
-    //   //当选中任务后，执行查询任务输入文档记录的方法
-    //   deep: true,
-    //   immediate: true,
-    //   handler() {
-    //     this.searchDataFile();
-    //   }
-    // }
+    currentRow: {
+      //当选中任务后，执行查询任务输入文档记录的方法
+      deep: true,
+      immediate: true,
+      handler() {
+        this.searchDataFile();
+      }
+    }
   },
   filters: {
     isDoneTrans(value) {
@@ -222,7 +248,7 @@ export default {
       this.loading = true;
       this.dataFileList = [];
       this.z_get(
-        "api/task_data_file",
+        "api/task_data_file/list",
         {
           t_id: this.currentRow.t_id,
           condition: this.fileCondition
@@ -231,9 +257,7 @@ export default {
       )
         .then(res => {
           this.loading = false;
-          this.dataTypeFilter = res.dict.ddt_id;
-          this.fileFilter = res.dict.file_id;
-          this.dataFileList = res.data;
+          this.dataFileList = res.data.dic;
         })
         .catch(res => {});
     },
@@ -272,11 +296,6 @@ export default {
     handleSelectionChange(val) {
       this.dataSelection = val;
     },
-    //翻页
-    // handleCurrentChange(val) {
-    //   this.currentPage = val;
-    //   this.refreshDataList();
-    // },
     //显示上传任务的输入文档界面
     addNewDataFileShow() {
       this.DataFileModelList = [];
@@ -291,12 +310,11 @@ export default {
         tdf_id: 0,
         t_id: this.currentRow.t_id,
         ddt_id: row.ddt_id,
-        file_id: "",
+        file_id: 0,
         note: "",
         tdf_type: "",
         c_id: 1, //暂时写死，之后用缓存
-        fileList: [],
-        fileChange: false //是否上传文件
+        fileList: []
       };
       this.uploadFileModel = {
         file_id: 0,
@@ -304,51 +322,47 @@ export default {
         file_note: "",
         c_id: 1 //暂时写死，之后用缓存
       };
+      //新增
+      this.DataFileModelList.push(
+        JSON.parse(JSON.stringify(this.dataFileModel))
+      );
+      this.selectDataVisible = false;
       this.addOrNot = true;
-      this.selectDataVisible = true;
     },
     //保存选中输入文档至待提交的输入文档集合/编辑任务输入文档
     onSaveDataFileClick() {
       this.$refs.dataFileForm.validate(valid => {
         if (valid) {
-          if (this.addOrNot) {
-            //新增
-            this.DataFileModelList.push(
-              JSON.parse(JSON.stringify(this.dataFileModel))
-            );
-            this.selectDataVisible = false;
-          } else {
-            //修改
-            this.dataFileModel.UpdateColumns = this.$refs.dataFileForm.UpdateColumns;
-            if (this.dataFileModel.UpdateColumns) {
-              this.z_put("api/task_item", this.dataFileModel)
-                .then(res => {
-                  this.$message({
-                    message: "编辑成功!",
-                    type: "success",
-                    duration: 1000
-                  });
-                  this.refreshDataFile();
-                  this.selectDataVisible = false;
-                })
-                .catch(res => {
-                  this.$alert("编辑失败!", "提示", {
-                    confirmButtonText: "确定",
-                    type: "error"
-                  });
+          //修改
+          this.dataFileModel.UpdateColumns = this.$refs.dataFileForm.UpdateColumns;
+          if (this.dataFileModel.UpdateColumns) {
+            this.z_put("api/task_item", this.dataFileModel)
+              .then(res => {
+                this.$message({
+                  message: "编辑成功!",
+                  type: "success",
+                  duration: 1000
                 });
-            } else {
-              this.selectDataVisible = false;
-            }
+                this.refreshDataFile();
+                this.selectDataVisible = false;
+              })
+              .catch(res => {
+                this.$alert("编辑失败!", "提示", {
+                  confirmButtonText: "确定",
+                  type: "error"
+                });
+              });
+          } else {
+            this.selectDataVisible = false;
           }
         }
       });
     },
-    //提交新增的输入文档集合1
+    //提交新增的输入文档集合
     onSaveDataFileListClick() {
       //判断每条记录是否都上传了文档
       for (var i = 0; i < this.DataFileModelList.length; i++) {
-        if (!this.DataFileModelList[i].fileList) {
+        if (this.DataFileModelList[i].fileList.length == 0) {
           this.$alert("每条记录都必须上传输入文档", "提示", {
             confirmButtonText: "确定",
             type: "warning"
@@ -356,10 +370,22 @@ export default {
           return;
         }
       }
-      //上传文档
-      for (var i = 0; i < this.DataFileModelList.length; i++) {
-        this.$refs.upload[i].submit();
-      }
+      this.z_post("api/task_data_file/list", this.DataFileModelList)
+        .then(res => {
+          this.$message({
+            message: "新增成功!",
+            type: "success",
+            duration: 1000
+          });
+          this.addDataFileVisible = false;
+          this.refreshDataFile();
+        })
+        .catch(res => {
+          this.$alert("新增失败!", "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
     },
     //删除待提交的输入文档集合中的元素
     deleteSelectFile(index) {
@@ -410,9 +436,14 @@ export default {
         })
         .catch(() => {});
     },
+    //上传文件
+    uploadFiles(param) {
+      const formData = new FormData();
+      formData.append("file", param.file);
+      this.z_post("api/file_manager/upload", formData).then(res => {});
+    },
     handleChange(file, fileList, index) {
       this.DataFileModelList[index].fileList = fileList;
-      this.DataFileModelList[index].fileChange = true;
     },
     handleRemove(file, fileList, index) {
       this.DataFileModelList[index].fileList = fileList;
@@ -420,88 +451,87 @@ export default {
         this.deleteFile.push(file.url);
       }
     },
-    handleSuccess(res, file, fileList, index) {
-      var flag = true;
-      //判断是否每个文档都上传成功
-      for (let i = 0; i < this.DataFileModelList.length; i++) {
-        if (
-          this.DataFileModelList[i].fileList.filter(
-            item => item.status == "uploading"
-          ).length == 0 &&
-          this.DataFileModelList[i].fileList.filter(
-            item => item.status == "success"
-          ).length == this.DataFileModelList[i].fileList.length
-        ) {
-        } else {
-          flag = false;
-          break;
-        }
-      }
-      if (flag) {
-        //若成功，则插入或编辑除文档外的其他数据
-        if (this.addOrNot) {
-          this.submitAddAsync();
-        } else {
-          this.submitEditAsync();
-        }
-      }
-    },
-    handleError(err, file, fileList, index) {
-      this.$refs.upload[index].clearFiles();
-      this.DataFileModelList[index].fileList = [];
-      this.$alert("文件上传失败", "提示", {
-        confirmButtonText: "确定",
-        type: "success"
-      });
-    },
-    //提交新增的输入文档集合2
-    async submitAddAsync() {
-      //相当于同步，等提交成功后再执行
-      //附件拼接
-      for (let i = 0; i < this.DataFileModelList.length; i++) {
-        this.uploadFileModelList[i].file_path +=
-          "/Files/TaskDataFile/" +
-          this.dateStamp +
-          "/" +
-          this.fileList[i].name +
-          ";";
-        this.uploadFileModelList[i].file_note = this.DataFileModelList[i].note;
-      }
-      // 需要？？
-      // this.tableData.file_folder =
-      //   "/Files/TaskDataFile/" +  "/" + this.dateStamp;
-      let res1 = await this.z_post(
-        "api/task_data_file/list",
-        this.DataFileModelList
-      )
-        .then(res => {})
-        .catch(res => {
-          this.$alert("新增失败!", "提示", {
-            confirmButtonText: "确定",
-            type: "error"
-          });
-        });
-      let res2 = await this.z_post(
-        "api/file_manager/list",
-        this.uploadFileModelList
-      )
-        .then(res => {
-          this.$message({
-            message: "新增成功!",
-            type: "success",
-            duration: 1000
-          });
-          this.addDataFileVisible = false;
-          this.refreshDataFile();
-        })
-        .catch(res => {
-          this.$alert("新增失败!", "提示", {
-            confirmButtonText: "确定",
-            type: "error"
-          });
-        });
-    },
-    submitEditAsync() {}
+    // handleSuccess(res, file, fileList, index) {
+    //   var flag = true;
+    //   //判断是否每个文档都上传成功
+    //   for (let i = 0; i < this.DataFileModelList.length; i++) {
+    //     if (
+    //       this.DataFileModelList[i].fileList.filter(
+    //         item => item.status == "uploading"
+    //       ).length == 0 &&
+    //       this.DataFileModelList[i].fileList.filter(
+    //         item => item.status == "success"
+    //       ).length == this.DataFileModelList[i].fileList.length
+    //     ) {
+    //     } else {
+    //       flag = false;
+    //       break;
+    //     }
+    //   }
+    //   if (flag) {
+    //     //若成功，则插入或编辑除文档外的其他数据
+    //     if (this.addOrNot) {
+    //       this.submitAddAsync();
+    //     } else {
+    //       this.submitEditAsync();
+    //     }
+    //   }
+    // },
+    // handleError(err, file, fileList, index) {
+    //   this.$refs.upload[index].clearFiles();
+    //   this.DataFileModelList[index].fileList = [];
+    //   this.$alert("文件上传失败", "提示", {
+    //     confirmButtonText: "确定",
+    //     type: "success"
+    //   });
+    // },
+    // async submitAddAsync() {
+    //   //相当于同步，等提交成功后再执行
+    //   //附件拼接
+    //   for (let i = 0; i < this.DataFileModelList.length; i++) {
+    //     this.uploadFileModelList[i].file_path +=
+    //       "/Files/TaskDataFile/" +
+    //       this.dateStamp +
+    //       "/" +
+    //       this.fileList[i].name +
+    //       ";";
+    //     this.uploadFileModelList[i].file_note = this.DataFileModelList[i].note;
+    //   }
+    //   // 需要？？
+    //   // this.tableData.file_folder =
+    //   //   "/Files/TaskDataFile/" +  "/" + this.dateStamp;
+    //   let res1 = await this.z_post(
+    //     "api/task_data_file/list",
+    //     this.DataFileModelList
+    //   )
+    //     .then(res => {})
+    //     .catch(res => {
+    //       this.$alert("新增失败!", "提示", {
+    //         confirmButtonText: "确定",
+    //         type: "error"
+    //       });
+    //     });
+    //   let res2 = await this.z_post(
+    //     "api/file_manager/list",
+    //     this.uploadFileModelList
+    //   )
+    //     .then(res => {
+    //       this.$message({
+    //         message: "新增成功!",
+    //         type: "success",
+    //         duration: 1000
+    //       });
+    //       this.addDataFileVisible = false;
+    //       this.refreshDataFile();
+    //     })
+    //     .catch(res => {
+    //       this.$alert("新增失败!", "提示", {
+    //         confirmButtonText: "确定",
+    //         type: "error"
+    //       });
+    //     });
+    // },
+    // submitEditAsync() {}
   },
   created() {
     this.getDataTypeList();
