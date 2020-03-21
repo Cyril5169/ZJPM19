@@ -133,7 +133,7 @@
         </el-button>
       </div>
       <div class="gridTable">
-        <zj-table ref="TempGroupTable" style="width: 100%;" height="380px" :data="TempGroupData" tooltip-effect="dark"
+        <zj-table ref="TempGroupTable" style="width: 100%;" height="400" :data="TempGroupData" tooltip-effect="dark"
           highlight-current-row row-key="tg_id" default-expand-all @select="handleSelectChildren"
           @selection-change="handleSelectionChange2" @select-all="handleSelectAll2">
           <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -162,7 +162,7 @@ export default {
       tableData: [], //表格数据
       postDataFilter: [],
       postDataFilter2: [],
-      tempGroupData: [],
+      TempGroupData: [],
       currentRow: {},
       selection: [],
       addproject_groupVisiable: false,
@@ -474,7 +474,8 @@ export default {
       this.project_groupModel = {
         group_id: 0,
         group_pid: group_pid,
-        p_no: this.selectTemplateId,
+        wp_id: "",
+        p_no: this.selectProjectId,
         group_name: "",
         group_note: ""
       };
@@ -505,11 +506,9 @@ export default {
         var oneTemp = {
           group_id: select.tg_id, //后台重新赋值
           group_pid: pid, //后台重新赋值
-          p_no: this.selectTemplateId,
-          //tg_id: select.tg_id,
-          //dept_id: "",
-          //dept_name: "",
-          // group_name: select.tg_name,
+          wp_id: select.wp_id,
+          p_no: this.selectProjectId,
+          group_name: "",
           group_note: select.tg_note
         };
         this.TempGroupModelList.push(oneTemp);

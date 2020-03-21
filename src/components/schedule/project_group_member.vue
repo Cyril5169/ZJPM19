@@ -88,11 +88,11 @@ export default {
       addOrNot: true, //是否新增
       addEmpText: "",
       add_rules: {
-        wp_name: [
-          { required: true, message: "请填写岗位名称", trigger: "blur" }
+        emp_id: [
+          { required: true, message: "请选择人员", trigger: "change" }
         ],
-        wp_type: [
-          { required: true, message: "请选择岗位类型", trigger: "change" }
+        dept_id: [
+          { required: true, message: "请选择部门", trigger: "change" }
         ]
       }
     };
