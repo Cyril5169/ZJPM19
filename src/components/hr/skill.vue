@@ -138,7 +138,7 @@ export default {
       this.$refs.taskForm.validate(valid => {
         if (valid) {
           if (this.addOrNot) {
-            this.z_post("api/skill", this.taskModel)
+            this.z_post("api/skill", this.skillModel)
               .then(res => {
                 this.$message({
                   message: "新增成功",
@@ -156,7 +156,7 @@ export default {
                 console.log(res);
               });
           } else {
-            this.z_put("api/skill", this.taskModel)
+            this.z_put("api/skill", this.skillModel) 
               .then(res => {
                 this.$message({
                   message: "编辑成功",
@@ -173,6 +173,7 @@ export default {
                 });
                 console.log(res);
               });
+          
           }
         } else {
           return false;
