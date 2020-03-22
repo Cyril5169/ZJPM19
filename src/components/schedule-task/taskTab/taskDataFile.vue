@@ -86,23 +86,11 @@
                   </el-option>
                 </el-select>
               </el-form-item>
-              <!-- <el-form-item label="输入文档"> -->
-              <!-- <el-upload class="upload-de" :action="Global.baseUrl + '/file_manager/UploadDataFiles'"
-                  :on-change="function(file,fileList){return  handleChange(file,fileList,index)}"
-                  :on-remove="function(file,fileList){return  handleRemove(file,fileList,index)}"
-                  :on-success="function(res,file,fileList){return  handleSuccess(res,file,fileList,index)}"
-                  :on-error="function(err, file, fileList){return  handleError(err, file, fileList,index)}" ref="upload"
-                  :auto-upload="false" :file-list="item.fileList" :data="{ dateStamp: dateStamp }" :limit=1>
-                  <i class="el-icon-upload2" style="margin-top:5px;">
-                    <span style="font-size:15px;">上传文档</span>
-                  </i>
-                </el-upload> -->
-              <!-- </el-form-item> -->
               <el-form-item label="输入文档">
                 <el-upload class="upload-de" action="#" list-type="text"
                   :on-change="function(file,fileList){return  handleChange(file,fileList,index)}"
                   :on-remove="function(file,fileList){return  handleRemove(file,fileList,index)}"
-                  :file-list="item.fileList" :limit=1 :http-request="uploadFiles">
+                  :file-list="item.fileList" :limit=1  :http-request="uploadFiles">   <!-- :auto-upload="false"-->
                   <i class="el-icon-upload2"> <span style="font-size:13px;">上传</span></i>
                 </el-upload>
               </el-form-item>
@@ -122,7 +110,7 @@
       </div>
     </el-dialog>
 
-    <!-- 修改输入文档 -->
+    <!-- 修改输入文档_暂时不用 -->
     <el-dialog v-if="selectDataVisible" v-dialogDrag width="450px" :title="addOrNot?'上传输入文档':'编辑输入文档'"
       :close-on-click-modal="false" :visible.sync="selectDataVisible">
       <zj-form size="small" :newDataFlag='selectDataVisible' :model="dataFileModel" label-width="100px"
@@ -173,8 +161,9 @@ export default {
       dataFileList: [], //某任务的输入文档记录集合
       DataFileModelList: [], //待提交的输入文档集合
       dataFileModel: {}, //匹配资料需求的输入文档实体
-      uploadFileModel: {}, //上传的文件记录实例ist
-      uploadFileModelList: [], //上传的文件记录集合
+      // uploadFileModel: {}, //上传的文件记录实例ist
+      // uploadFileModelList: [], //上传的文件记录集合
+      fileNameList: [], //输入文档名称集合
       addOrNot: false,
       addDataFileVisible: false,
       loading: false,
@@ -294,6 +283,7 @@ export default {
     //显示上传任务的输入文档界面
     addNewDataFileShow() {
       this.DataFileModelList = [];
+      this.fileNameList = [];
       this.searchDataList();
       this.dateStamp = new Date().getTime();
       this.addOrNot = true;
@@ -311,17 +301,16 @@ export default {
         c_id: 1, //暂时写死，之后用缓存
         fileList: []
       };
-      this.uploadFileModel = {
-        file_id: 0,
-        file_path: "",
-        file_note: "",
-        c_id: 1 //暂时写死，之后用缓存
-      };
+      // this.uploadFileModel = {
+      //   file_id: 0,
+      //   file_path: "",
+      //   file_note: "",
+      //   c_id: 1 //暂时写死，之后用缓存
+      // };
       //新增
       this.DataFileModelList.push(
         JSON.parse(JSON.stringify(this.dataFileModel))
       );
-      this.selectDataVisible = false;
       this.addOrNot = true;
     },
     //保存选中输入文档至待提交的输入文档集合/编辑任务输入文档
@@ -331,7 +320,7 @@ export default {
           //修改
           this.dataFileModel.UpdateColumns = this.$refs.dataFileForm.UpdateColumns;
           if (this.dataFileModel.UpdateColumns) {
-            this.z_put("api/task_item", this.dataFileModel)
+            this.z_put("api/task_data_file", this.dataFileModel)
               .then(res => {
                 this.$message({
                   message: "编辑成功!",
@@ -365,7 +354,9 @@ export default {
           return;
         }
       }
-      this.z_post("api/task_data_file/list", this.DataFileModelList)
+      this.z_post("api/task_data_file/list", this.DataFileModelList,{
+            params: { fileNameList:this.fileNameList }
+          })
         .then(res => {
           this.$message({
             message: "新增成功!",
@@ -393,27 +384,43 @@ export default {
       this.addOrNot = false;
       this.selectDataVisible = true;
     },
-    //删除一个物料需求
+    //删除一个输入文档
     deleteOneFile(row) {
-      var list = [];
-      list.push(row);
-      this.onDeleteFileClick(list);
+      var tdfIdList = [];
+      tdfIdList.push(row.tdf_id);
+      console.log(tdfIdList);
+      this.onDeleteFileClick(tdfIdList);
+      // var list = [];
+      // list.push(row);
+      // console.log(list);
+      // this.onDeleteFileClick(list);
     },
     //删除多个资料需求
     deleteDataFileList() {
       if (this.dataSelection.length) {
-        this.onDeleteFileClick(this.dataSelection);
+        var tdfIdList = [];
+        for (var i = 0; i < this.dataSelection.length; i++) {
+          tdfIdList.push(this.dataSelection[i].tdf_id);
+        }
+        console.log(tdfIdList);
+        this.onDeleteFileClick(tdfIdList);
       }
+      // if (this.dataSelection.length) {
+      //   this.onDeleteFileClick(this.dataSelection);
+      // }
     },
     //确认删除物料需求
     onDeleteFileClick(list) {
-      this.$confirm("是否删除选中的物料？", "提示", {
+      this.$confirm("是否删除选中的文档？", "提示", {
         confirmButtonText: "是",
         cancelButtonText: "否",
         type: "warning"
       })
         .then(() => {
-          this.z_delete("api/task_item/list", { data: list })
+          this.z_delete("api/task_data_file/byId", {
+            data: list,
+            loading: false
+          })
             .then(res => {
               this.$message({
                 message: "删除成功!",
@@ -435,13 +442,16 @@ export default {
     uploadFiles(param) {
       const formData = new FormData();
       formData.append("file", param.file);
+      this.fileNameList.push(param.file.name);
       this.z_post("api/file_manager/upload", formData).then(res => {});
+      // const formData = new FormData();
+      // formData.append("file", param.file);
+      // this.fileNameList.push(param.file.name);
+      // this.z_post("api/file_manager/upload", formData).then(res => {});
     },
     //下载文件
     downLoadOne(path) {
-      this.downLoadFile(
-        this.Global.baseUrl + `api/DownLoadAPI?path=${path}&`
-      ).then(res => {});
+      this.downLoadFile(this.Global.baseUrl + `api/DownLoadAPI?path=${path}`);
     },
     handleChange(file, fileList, index) {
       this.DataFileModelList[index].fileList = fileList;
@@ -451,88 +461,29 @@ export default {
       if ((file.status = "success")) {
         this.deleteFile.push(file.url);
       }
+    },
+    handleSuccess(res, file, fileList, index) {
+      var flag = true;
+      for (let i = 0; i < this.DataFileModelList.length; i++) {
+        if (
+          this.DataFileModelList[i].fileList.filter(
+            item => item.status == "uploading"
+          ).length == 0 &&
+          this.DataFileModelList[i].fileList.filter(
+            item => item.status == "success"
+          ).length == this.DataFileModelList[i].fileList.length
+        ) {
+          this.fileNameList.push(file.name);
+        } else {
+          flag = false;
+          break;
+        }
+      }
+      if (flag) {
+        if (this.addOrNot) {
+        }
+      }
     }
-    // handleSuccess(res, file, fileList, index) {
-    //   var flag = true;
-    //   //判断是否每个文档都上传成功
-    //   for (let i = 0; i < this.DataFileModelList.length; i++) {
-    //     if (
-    //       this.DataFileModelList[i].fileList.filter(
-    //         item => item.status == "uploading"
-    //       ).length == 0 &&
-    //       this.DataFileModelList[i].fileList.filter(
-    //         item => item.status == "success"
-    //       ).length == this.DataFileModelList[i].fileList.length
-    //     ) {
-    //     } else {
-    //       flag = false;
-    //       break;
-    //     }
-    //   }
-    //   if (flag) {
-    //     //若成功，则插入或编辑除文档外的其他数据
-    //     if (this.addOrNot) {
-    //       this.submitAddAsync();
-    //     } else {
-    //       this.submitEditAsync();
-    //     }
-    //   }
-    // },
-    // handleError(err, file, fileList, index) {
-    //   this.$refs.upload[index].clearFiles();
-    //   this.DataFileModelList[index].fileList = [];
-    //   this.$alert("文件上传失败", "提示", {
-    //     confirmButtonText: "确定",
-    //     type: "success"
-    //   });
-    // },
-    // async submitAddAsync() {
-    //   //相当于同步，等提交成功后再执行
-    //   //附件拼接
-    //   for (let i = 0; i < this.DataFileModelList.length; i++) {
-    //     this.uploadFileModelList[i].file_path +=
-    //       "/Files/TaskDataFile/" +
-    //       this.dateStamp +
-    //       "/" +
-    //       this.fileList[i].name +
-    //       ";";
-    //     this.uploadFileModelList[i].file_note = this.DataFileModelList[i].note;
-    //   }
-    //   // 需要？？
-    //   // this.tableData.file_folder =
-    //   //   "/Files/TaskDataFile/" +  "/" + this.dateStamp;
-    //   let res1 = await this.z_post(
-    //     "api/task_data_file/list",
-    //     this.DataFileModelList
-    //   )
-    //     .then(res => {})
-    //     .catch(res => {
-    //       this.$alert("新增失败!", "提示", {
-    //         confirmButtonText: "确定",
-    //         type: "error"
-    //       });
-    //     });
-    //   let res2 = await this.z_post(
-    //     "api/file_manager/list",
-    //     this.uploadFileModelList
-    //   )
-    //     .then(res => {
-    //       this.$message({
-    //         message: "新增成功!",
-    //         type: "success",
-    //         duration: 1000
-    //       });
-    //       this.addDataFileVisible = false;
-    //       this.refreshDataFile();
-    //     })
-    //     .catch(res => {
-    //       this.$alert("新增失败!", "提示", {
-    //         confirmButtonText: "确定",
-    //         type: "error"
-    //       });
-    //     });
-    // },
-    // submitEditAsync() {}
   },
   created() {
     this.getDataTypeList();
