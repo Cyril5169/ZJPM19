@@ -82,20 +82,32 @@
     </div>
 
 
-    <el-dialog :title="addMetText" :visible.sync="metFormVisible" width="500px" close-on-click-model="false" @closed="refreshForm">
-  <zj-form  :newDataFlag="metFormVisible" :model="meetModel" :rules="rules"  label-width="120px" label-position="right" style="width:400px" ref="meetForm" >
+    <el-dialog 
+    :title="addMetText" 
+    :visible.sync="metFormVisible" 
+    width="500px" close-on-click-model="false" 
+    @closed="refreshForm">
+  <zj-form  
+  :newDataFlag="metFormVisible" 
+  :model="meetModel" 
+  :rules="rules"  
+  label-width="120px" 
+  label-position="right" 
+  
+  style="width:400px" ref="meetForm" >
     
     
-    <el-form-item label="会议类型名称" prop="mt_name">
+    <el-form-item label="类型名称" prop="mt_name">
       <el-input 
       v-model="meetModel.mt_name" 
       autocomplete="off"
+
       placeholder="请填写会议类型名称"
       ></el-input>
     </el-form-item>
 
     
-    <el-form-item label="会议类型说明" prop="mt_note">
+    <el-form-item label="类型说明" prop="mt_note">
         <el-input 
         v-model="meetModel.mt_note" 
         placeholder="请填写会议类型说明">
@@ -127,12 +139,12 @@ export default {
       //custDataFilter: [],
       
       addOrNot: true,
-      rules:{//新增客户校验规则
+      rules:{//新增会议校验规则
         mt_note:[
-          {required:true, message:'编号不能为空', trigger:'blur'}
+          {required:true, message:'会议类型说明不能为空', trigger:'blur'}
         ],
         mt_name:[
-          {required:true, message:'姓名不能为空', trigger:'blur'}
+          {required:true, message:'会议类型名称不能为空', trigger:'blur'}
         ],
   
       }
@@ -160,7 +172,7 @@ export default {
   addNewCust() {
           this.metFormVisible = true;
           this.addOrNot = true;
-          this.addMetText = "新增客户";
+          this.addMetText = "新增会议类型";
           this.meetModel = {
 
         mt_name: "",
@@ -182,7 +194,7 @@ export default {
     //编辑数据
     editCustShow(row) {
       this.meetModel = JSON.parse(JSON.stringify(row));
-      this.addMetText = "编辑客户信息";
+      this.addMetText = "编辑会议类型";
       this.addOrNot = false;
       this.metFormVisible = true;
     },

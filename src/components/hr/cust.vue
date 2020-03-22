@@ -13,6 +13,7 @@
         v-model="condition"
         placeholder="请输入客户名称"
         style="width:250px"
+        size="small"
       >
         <el-button
           @click="refreshData"
@@ -60,7 +61,7 @@
         <el-table-column
           prop="c_address"
           label="客户地址"
-          width="300"
+          width="309"
           align="center"
         >
         </el-table-column>
@@ -149,7 +150,7 @@
           </el-select>
         </el-form-item>
       </zj-form>
-      <div slot="footer" class="dialog-footer">
+      <div slot="footer" class="dialog-footer" style="text-align:center">
         <el-button @click="custFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="onSaveCustClick('custForm')"
           >保 存</el-button
@@ -334,17 +335,7 @@ export default {
 </script>
 
 <style scoped>
-.custTypePanel {
-  text-align: center;
-  position: absolute;
-  width: 220px;
-  top: 85px;
-  left: 3px;
-  bottom: 0px;
 
-  padding: 2px;
-  background-color: #ffffff;
-}
 
 .custFormPanel {
   /*position: absolute;

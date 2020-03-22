@@ -1,6 +1,11 @@
-<template>
+、<template>
   <div>
-    
+    <!--<div class="custTypePanel">
+      <div style="float:left;margin:2px 10px 2px 50px">客户分类</div>
+
+      <el-button icon="el-icon-plus" circle size="mini"></el-button>
+      <el-button icon="el-icon-minus" circle size="mini"></el-button>
+    </div>-->
 
     <div class="problem_type">
       
@@ -81,7 +86,7 @@
   <zj-form  :newDataFlag="proFormVisible" :model="problemModel" :rules="rules"  label-width="120px" label-position="right" style="width:400px" ref="problemForm" >
     
     
-    <el-form-item label="异常分类名称" prop="pt_name">
+    <el-form-item label="分类名称" prop="pt_name">
       <el-input 
       v-model="problemModel.pt_name" 
       autocomplete="off"
@@ -90,7 +95,7 @@
     </el-form-item>
 
     
-    <el-form-item label="异常分类说明" prop="pt_note">
+    <el-form-item label="分类说明" prop="pt_note">
         <el-input 
         v-model="problemModel.pt_note" 
         placeholder="请填写异常分类说明">
@@ -122,12 +127,12 @@ export default {
       //custDataFilter: [],
       
       addOrNot: true,
-      rules:{//新增客户校验规则
+      rules:{//新增错误校验规则
         pt_note:[
-          {required:true, message:'编号不能为空', trigger:'blur'}
+          {required:true, message:'错误类型说明不能为空', trigger:'blur'}
         ],
         pt_name:[
-          {required:true, message:'姓名不能为空', trigger:'blur'}
+          {required:true, message:'错误类型名称不能为空', trigger:'blur'}
         ],
   
       }
@@ -155,7 +160,7 @@ export default {
   addNewCust() {
           this.proFormVisible = true;
           this.addOrNot = true;
-          this.addProText = "新增客户";
+          this.addProText = "新增异常类型";
           this.problemModel = {
 
         pt_name: "",
@@ -177,7 +182,7 @@ export default {
     //编辑数据
     editCustShow(row) {
       this.problemModel = JSON.parse(JSON.stringify(row));
-      this.addProText = "编辑客户信息";
+      this.addProText = "编辑异常类型";
       this.addOrNot = false;
       this.proFormVisible = true;
     },

@@ -17,8 +17,9 @@
           @keyup.enter.native="refreshData" v-model="condition"
           placeholder="请输入用户名称"
           style="width:300px;"
+          size="small"
         >
-          <el-button @click="refreshData" slot="append" icon="el-icon-search"
+          <el-button @click="refreshData" slot="append" icon="el-icon-search" size="small"
             >搜索</el-button
           >
         </el-input>
@@ -71,10 +72,10 @@
         <el-table-column
           prop="status"
           label="账号状态"
-          width="150"
+          width="149"
           align="center">
         </el-table-column>
-        <el-table-column label="操作" width="150" align="center">
+        <el-table-column label="操作" width="130" align="center">
           <template slot-scope="scope">
             <!--<el-button size="mini"
               >详情</el-button>-->
@@ -121,13 +122,13 @@
 
     <el-form-item label="账号状态" prop="status">
       <el-select v-model="userModel.status" placeholder="请选择账号状态">
-        <el-option label="在用" value="1"></el-option>
-        <el-option label="已注销" value="2"></el-option>
+        <el-option label="启用" value="0"></el-option>
+        <el-option label="停用" value="1"></el-option>
       </el-select>
     </el-form-item>
 
   </zj-form>
-  <div slot="footer" class="dialog-footer">
+  <div slot="footer" class="dialog-footer" style="text-align:center">
     <el-button @click="userFormVisible = false">取 消</el-button>
     <el-button type="primary" @click ="onSaveUserClick('userForm')">保 存</el-button>
   </div>
@@ -232,7 +233,7 @@ export default {
         login_name: "",
         password: "",
         user_type: "",
-        status:"",
+        status:"0",
         emp_id:"",
         c_id:"1",
 
