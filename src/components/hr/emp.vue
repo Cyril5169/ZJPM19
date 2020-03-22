@@ -996,7 +996,7 @@ export default {
         this.refreshBottom();
         this.refreshItemData();
       }
-      /* this.bottomDivShow = true; */
+      this.bottomDivShow = true;
     },
     handleRowDBClick(row, column) {
       if (column.property == "handle") {
