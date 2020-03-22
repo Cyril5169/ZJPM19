@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="userFormPanel">
     
 
-    <div class="userFormPanel">
+    
       
 
       <div class="tbar"> 
@@ -30,8 +30,8 @@
           >新增</el-button
         >
       </div>
-
-      <el-table :data="tableData" height="100%"  border style="width:100% " row-key="user_id"  tooltip-effect="dark">
+      <div class="gridTable">
+      <zj-table :data="tableData" height="100%"  border style="width:100% " row-key="user_id"  tooltip-effect="dark">
         <el-table-column type="index" label="序号" width="100" align="center">
         </el-table-column>
         <el-table-column
@@ -89,8 +89,9 @@
             
           </template>
         </el-table-column>
-      </el-table>
-    </div>
+      </zj-table>
+      </div>
+    
 
 
     <el-dialog :title="addUserText" :visible.sync="userFormVisible" width="500px" close-on-click-model="false" @closed="refreshForm">
@@ -349,6 +350,7 @@ export default {
   right: 0px;*/
   width:1100px;
 }
-.tbar {
-  margin: 10px;
-}</style>
+.gridTable {
+  flex: 1;
+}
+</style>

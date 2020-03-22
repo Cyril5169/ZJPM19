@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="tClassFormPanel">
     
 
-    <div class="tClassFormPanel">
+    
       
 
       <div class="tbar"> 
@@ -30,8 +30,8 @@
           >新增</el-button
         >
       </div>
-
-      <el-table :data="tableData" height="100%"  border style="width:100% " row-key="t_class_id"  tooltip-effect="dark">
+      <div class="gridTable">
+      <zj-table :data="tableData" height="100%"  border style="width:100% " row-key="t_class_id"  tooltip-effect="dark">
         <el-table-column type="index" label="序号" width="100" align="center">
         </el-table-column>
         <el-table-column
@@ -84,7 +84,7 @@
             
           </template>
         </el-table-column>
-      </el-table>
+      </zj-table>
     </div>
 
 
@@ -312,4 +312,7 @@ export default {
 }
 .tbar {
   margin: 10px;
+}
+.gridTable {
+  flex: 1;
 }</style>
