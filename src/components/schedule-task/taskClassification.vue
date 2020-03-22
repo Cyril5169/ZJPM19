@@ -17,8 +17,9 @@
           @keyup.enter.native="refreshData" v-model="condition"
           placeholder="请输入任务类型名称"
           style="width:300px;"
+          size="small"
         >
-          <el-button @click="refreshData" slot="append" icon="el-icon-search"
+          <el-button @click="refreshData" slot="append" icon="el-icon-search" size="small"
             >搜索</el-button
           >
         </el-input>
@@ -122,7 +123,7 @@
     
 
   </zj-form>
-  <div slot="footer" class="dialog-footer">
+  <div slot="footer" class="dialog-footer" style="text-align:center">
     <el-button @click="tClassFormVisible = false">取 消</el-button>
     <el-button type="primary" @click ="onSaveTClassClick('tClassForm')">保 存</el-button>
   </div>
