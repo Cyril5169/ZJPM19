@@ -73,13 +73,13 @@
                 style="width: 100%" size = "medium">
                 <el-table-column label="序号" type="index" width="50" align="center">
                 </el-table-column>
-                <el-table-column property="ct_id" label="分类ID" align="center" width="100">
-                </el-table-column>
+                <!-- <el-table-column property="ct_id" label="分类ID" align="center" width="100">
+                </el-table-column> -->
                 <!-- <el-table-column property="cc_code" label="编码code" align="center" width="100">
                 </el-table-column> -->
-                <el-table-column property="cc_name" label="编码名称"  align="center" width="100px">
+                <el-table-column property="cc_name" label="编码名称"  align="center" width="150px">
                 </el-table-column>
-                <el-table-column property="cc_note" label="编码说明" align="center" width="120px">
+                <el-table-column property="cc_note" label="编码说明" align="center" width="150px">
                 </el-table-column>
                 <!-- <el-table-column property="c_id" label="公司编号" align="center" width="80">
                 </el-table-column>
@@ -97,7 +97,7 @@
                 </el-table-column>
                 <el-table-column property="create_user" label="创建人员" align="center" width="80">
                 </el-table-column> -->
-                <el-table-column label="操作" width="120" prop="handle" align="center">
+                <el-table-column label="操作" width="130" prop="handle" align="center">
                   <template slot-scope="scope">
                     <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editCodeShow(scope.row)">
                     </el-button>
