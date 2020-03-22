@@ -6,6 +6,7 @@
         <el-option v-for="item in projectTemplateData" :key="item.pt_id"
           :label="renderFilter(item.pc_no,classFilter) +'-' + item.pt_name" :value="item.pt_id"></el-option>
       </el-select>
+      <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="refreshTemplateData"></el-button>
       <el-button icon="el-icon-arrow-left" size="small" style="float:right;" v-if="btnShow" @click="toTemplate">返回项目模板
       </el-button>
     </div>
@@ -60,7 +61,7 @@
         <el-table-column prop="tt_node_level" label="层级" align="center" width="100">
           <template slot-scope="scope">{{scope.row.tt_node_level | levelFilter}}</template>
         </el-table-column>
-        <el-table-column prop="tt_node_type" label="类别" align="center" width="100">
+        <el-table-column prop="tt_node_type" label="任务类型" align="center" width="100">
           <template slot-scope="scope">{{scope.row.tt_node_type | stTypeFilter}}</template>
         </el-table-column>
         <el-table-column prop="tt_note" label="说明" align="center" show-overflow-tooltip></el-table-column>
@@ -359,6 +360,20 @@ export default {
         };
         this.addOrNot = true;
         this.addTaskVisiable = true;
+      } else {
+        if (!this.selectTemplateId && type == "root") {
+          this.$message({
+            message: "请先选择一个模板!",
+            type: "warning",
+            duration: 1000
+          });
+        } else if (!this.currentRow.tt_no && type == "children") {
+          this.$message({
+            message: "请先选中一个根节点!",
+            type: "warning",
+            duration: 1000
+          });
+        }
       }
     },
     editTaskShow(row) {

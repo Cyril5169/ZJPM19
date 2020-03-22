@@ -642,7 +642,10 @@ export default {
   },
   mounted() {
     this.refreshProjectData();
-    this.refreshData();
+    if (this.$route.params.projectNo) {
+      this.selectProjectId = this.$route.params.projectNo;
+      this.refreshData();
+    }
 
     // this.search();
   }

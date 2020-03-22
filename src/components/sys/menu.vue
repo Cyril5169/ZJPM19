@@ -16,7 +16,7 @@
           <a @click="SaveModuleSortable">保存</a>
           <a @click="CancelModuleSortable">取消</a>
         </div>
-        <div class="table_ct">
+        <div class="table_ct module_table">
           <el-table ref="moduleTable" style="width:100%;" :height="moduleTableHeight" :data="moduleData" tooltip-effect="dark"
             highlight-current-row :show-header="false" fit row-key="module_id"
             :current-row-key="currentModule.module_id" @current-change="handleModuleRowClick">

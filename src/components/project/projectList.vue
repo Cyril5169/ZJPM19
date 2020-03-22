@@ -207,7 +207,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="项目备注" prop="p_note">
-          <el-input style="width:500px;" type="textarea" :rows="3" v-model="projectModel.p_note" placeholder="项目备注">
+          <el-input style="width:530px;" type="textarea" :rows="3" v-model="projectModel.p_note" placeholder="项目备注">
           </el-input>
         </el-form-item>
         <el-form-item style="text-align:center;margin-right:100px;">
@@ -409,7 +409,9 @@ export default {
                 this.addProjectVisible = false;
               })
               .catch(res => {
-                this.$alert("新增失败!", "提示", {
+                var msg = res.msg;
+                if (msg.indexOf("重复键") > -1) msg = "已存在该项目号";
+                this.$alert("新增失败!" + msg, "提示", {
                   confirmButtonText: "确定",
                   type: "error"
                 });
@@ -428,7 +430,9 @@ export default {
                   this.addProjectVisible = false;
                 })
                 .catch(res => {
-                  this.$alert("编辑失败!", "提示", {
+                  var msg = res.msg;
+                  if (msg.indexOf("重复键") > -1) msg = "已存在该项目号";
+                  this.$alert("编辑失败!" + msg, "提示", {
                     confirmButtonText: "确定",
                     type: "error"
                   });

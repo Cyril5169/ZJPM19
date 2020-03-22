@@ -79,7 +79,7 @@ Vue.component('zj-table', {
             let that = this;
             this.$nextTick(function () {
                 let h = that.$el.parentNode.offsetHeight;
-                that.layout.setHeight(h);
+                that.layout.setHeight(h - 1);//offsetHeight被取整了，这里多减去1
                 //that.doLayout();
             });
         }

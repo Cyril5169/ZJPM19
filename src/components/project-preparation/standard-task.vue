@@ -175,7 +175,7 @@ export default {
   watch: {
     addTaskVisiable(val) {
       if (val) {
-        this.selectDept();
+        this.searchDept();
       }
     }
   },
@@ -247,7 +247,7 @@ export default {
         dept_id: "",
         dept_name: "",
         st_name: "",
-        st_type: "",
+        st_type: "task",
         st_period: "",
         st_note: ""
       };
@@ -359,7 +359,7 @@ export default {
         .catch(() => {});
     },
     //刷新部门数据
-    selectDept() {
+    searchDept() {
       this.z_get("api/dept/tree", { condition: "" }, { loading: false })
         .then(res => {
           //如果不一样才赋值
@@ -427,7 +427,7 @@ export default {
   },
   mounted() {
     this.refreshData();
-    this.selectDept();
+    this.searchDept();
   }
 };
 </script>
