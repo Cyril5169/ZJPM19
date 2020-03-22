@@ -127,9 +127,8 @@ export default {
     //刷新任务执行者数据
     refreshData() {
       this.bottomDivShow = false;
-      this.z_get("api/task_release/executor", {
-        condition: this.condition,
-        taskId: this.currentRow.t_id
+      this.z_get("api/task/treeList", {
+        condition: this.condition
       })
         .then(res => {
           console.log(res);

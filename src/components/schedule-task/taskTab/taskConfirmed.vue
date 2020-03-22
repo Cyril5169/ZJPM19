@@ -14,7 +14,7 @@
             @click="rejectTaskList">拒绝({{selection.length}})</el-button>
         </div>
         <div class="gridTable">
-          <zj-table height='200' ref="taskTable" style="width: 100%"  :data="tableData" tooltip-effect="dark"
+          <el-table height='200px' ref="taskTable" style="width: 100%" :data="tableData" tooltip-effect="dark"
             highlight-current-row border row-key="t_id" @selection-change="handleSelectionChange"
             @select-all="handleSelectAll" @row-click="handleRowClick" @row-dblclick="handleRowDBClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -34,7 +34,7 @@
                 </el-button>
               </template>
             </el-table-column>
-          </zj-table>
+          </el-table>
         </div>
       </div>
       <div class="bottomLayout">
@@ -99,6 +99,7 @@ export default {
       activeName: "executor",
       bottomDivShow: false,
       currentRow2: {},
+      taskModel: {},
       selection: [] //选中行数据
     };
   },
@@ -172,9 +173,31 @@ export default {
       this.bottomDivShow = true;
     },
     //确认任务
-    OnConfirmTaskClick() {},
+    OnConfirmTaskClick() {
+      this.taskModel = {
+        t_status: 1
+      };
+      this.z_put("api/task", this.taskModel)
+        .then(res => {
+          this.$message({
+            message: "确认成功!",
+            type: "success",
+            duration: 1000
+          });
+          this.refreshData();
+          this.addTaskVisiable = false;
+        })
+        .catch(res => {
+          this.$alert("确认失败!", "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
+    },
     //确认一个任务
     confirmTask(row) {
+      this.taskModel = JSON.parse(JSON.stringify(row));
+      
       var list = [];
       list.push(row);
       this.OnConfirmTaskClick(list);
@@ -186,7 +209,27 @@ export default {
       }
     },
     //拒绝任务
-    OnRejectTaskClick() {},
+    OnRejectTaskClick() {
+      this.taskModel = {
+        t_status: null
+      };
+      this.z_put("api/task", this.taskModel)
+        .then(res => {
+          this.$message({
+            message: "拒绝成功!",
+            type: "success",
+            duration: 1000
+          });
+          this.refreshData();
+          this.addTaskVisiable = false;
+        })
+        .catch(res => {
+          this.$alert("拒绝失败!", "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
+    },
     //拒绝一个任务
     RejectTask(row) {
       var list = [];
