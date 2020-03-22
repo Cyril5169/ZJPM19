@@ -13,17 +13,23 @@
     </div>
     <div class="gridTable">
       <el-table ref="memberTable" style="width: 100%;" height="200" :data="memberData" tooltip-effect="dark"
-        highlight-current-row border @selection-change="handleSelectionChange">
+        highlight-current-row border @selection-change="handleSelectionChange" row-key="pgm_id">
         <!-- <el-table-column type="selection" width="55" align="center"></el-table-column>  -->
         <el-table-column type="index" label="序号" width="55" align="center" sortable></el-table-column>
-        <el-table-column prop="emp_id" label="人员" align="center" width="200">
+        <el-table-column prop="emp_id" label="人员" align="center" width="180">
           <template slot-scope="scope">{{scope.row.emp_id | renderFilter(empDataFilter)}}</template>
         </el-table-column>
-        <el-table-column prop="dept_id" label="部门" align="center" width="220">
+        <el-table-column prop="dept_id" label="部门" align="center" width="180">
           <template slot-scope="scope">{{scope.row.dept_id | renderFilter(deptDataFilter)}}</template>
         </el-table-column>
-        <el-table-column prop="pgm_starttime" label="进入时间" align="center" width="220"></el-table-column>
-        <el-table-column prop="pgm_endtime" label="退出时间" align="center" width="220"></el-table-column>
+        <el-table-column prop="pgm_starttime" label="进入时间" align="center" width="200" show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column prop="pgm_endtime" label="退出时间" align="center" width="200" show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column prop="is_enabled" label="是否生效" align="center" width="90">
+          <template slot-scope="scope">{{ scope.row.is_enabled | enabledTypeFilter}}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" align="center" prop="handle">
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editmemberShow(scope.row)">
@@ -39,15 +45,15 @@
       :visible.sync="addEmpVisiable">
       <zj-form :model="memberModel" label-width="100px" ref="memberForm" :rules="add_rules" size="small"
         :newDataFlag='addEmpVisiable'>
-        <el-form-item label="人员" prop="emp_id">
-          <el-select :disabled="!addOrNot" class="formItem" v-model="memberModel.emp_id" placeholder="请选择人员">
-            <el-option v-for="item in empDataFilter" :key="item.value" :label="item.display" :value="item.value">
+        <el-form-item label="部门" prop="dept_id">
+          <el-select :disabled="!addOrNot" class="formItem" v-model="memberModel.dept_id" placeholder="请选择部门">
+            <el-option v-for="item in deptDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item  label="部门" prop="dept_id">
-          <el-select :disabled="!addOrNot" class="formItem" v-model="memberModel.dept_id" placeholder="请选择部门">
-            <el-option v-for="item in deptDataFilter" :key="item.value" :label="item.display" :value="item.value">
+        <el-form-item label="人员" prop="emp_id">
+          <el-select :disabled="!addOrNot" class="formItem" v-model="memberModel.emp_id" placeholder="请选择人员">
+            <el-option v-for="item in empDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -62,6 +68,12 @@
             <template slot-scope="scope">{{ scope.row.pgm_endtime | datatrans}}
             </template>
           </el-date-picker>
+        </el-form-item>
+        <el-form-item label="是否生效" prop="is_enabled">
+          <el-select v-model="memberModel.is_enabled" placeholder="请选择">
+            <el-option v-for="item in enabledTypeOptions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
 
         <el-form-item style="text-align:center;margin-right:100px;">
@@ -88,13 +100,18 @@ export default {
       addOrNot: true, //是否新增
       addEmpText: "",
       add_rules: {
-        emp_id: [
-          { required: true, message: "请选择人员", trigger: "change" }
-        ],
-        dept_id: [
-          { required: true, message: "请选择部门", trigger: "change" }
-        ]
-      }
+        dept_id: [{ required: true, message: "请选择部门", trigger: "change" }]
+      },
+      enabledTypeOptions: [
+        {
+          value: "0",
+          label: "否"
+        },
+        {
+          value: "1",
+          label: "是"
+        }
+      ]
     };
   },
   filters: {
@@ -114,6 +131,20 @@ export default {
       let s = date.getSeconds();
       s = s < 10 ? "0" + s : s;
       return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
+    },
+    enabledTypeFilter(value) {
+      switch (value) {
+        case "0":
+          return "否";
+          break;
+        case "1":
+          return "是";
+          break;
+        // default :
+        //   return "否";
+        //   break;
+
+      }
     }
   },
   watch: {
@@ -157,9 +188,11 @@ export default {
     addNewmember() {
       this.addEmpText = "新增成员";
       this.memberModel = {
+        pgm_id: 0,
         group_id: this.currentRow.group_id,
         emp_id: "",
         dept_id: "",
+        is_enabled:"",
         pgm_starttime: "",
         pgm_endtime: ""
       };
@@ -222,7 +255,7 @@ export default {
                   });
                   console.log(res);
                 });
-            }else {
+            } else {
               this.addEmpVisiable = false;
             }
           }
