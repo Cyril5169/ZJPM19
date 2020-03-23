@@ -42,8 +42,8 @@ Vue.component('zj-form', {
             Object.keys(this.comparativeData).forEach(key => {
                 if (key == 'children') return;
                 if (key == 'UpdateColumns') return;
-                if ((this.model[key] != "" && this.comparativeData[key] != null)
-                    && this.model[key] != this.comparativeData[key]) {
+                if (this.model[key] == "" && this.comparativeData[key] == null) return;
+                if (this.model[key] != this.comparativeData[key]) {
                     if (this.updateColumns == null) this.updateColumns = [];
                     this.updateColumns.push(key);
                 }

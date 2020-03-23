@@ -14,13 +14,13 @@
         <el-button icon="el-icon-arrow-left" size="small" style="float:right;" v-if="btnShow" @click="toProject">返回项目列表
         </el-button>
       </div>
-      <el-tabs class="toptabs" v-model="activeName" style="height:40px;">
+      <el-tabs class="toptabs" v-model="selectNodeLevel" style="height:40px;">
         <el-tab-pane label="基准计划" name="base" disabled>
         </el-tab-pane>
         <el-tab-pane label="详细计划" name="detail" disabled>
         </el-tab-pane>
       </el-tabs>
-      <div class="tabPanel flexDiv-row">
+      <div class="tabPanel flexDiv-row" style="margin-top:5px;">
         <div class="leftLayout">
           <div class="tbar">
             <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchProjectPlanData">
@@ -37,7 +37,8 @@
           </div>
           <div class="gridTable">
             <zj-table height='100%' ref="projectPlanTable" style="width: 100%;" :data="projectPlanData"
-              tooltip-effect="dark" highlight-current-row @selection-change="handleSelectionChange">
+              tooltip-effect="dark" highlight-current-row @selection-change="handleSelectionChange"
+              @row-click="handleRowClick">
               <el-table-column type="selection" width="55" align="center"></el-table-column>
               <el-table-column prop="pp_release_status" label="发布状态" align="center" width="80">
                 <template slot-scope="scope">{{scope.row.pp_release_status | releaseStatusFilter}}</template>
@@ -74,8 +75,32 @@
             </zj-table>
           </div>
         </div>
-        <div class="rightLayout flexDiv-column">
-
+        <div class="rightLayout">
+          <div class="rightTop" style="height:330px;">
+            <schedule :height="330" :width="'100%'" :isShowToolBar='false'></schedule>
+          </div>
+          <div class="rightBottom" style="flex:1;">
+            <el-tabs v-model="activeName" style="height:100%;" class="bottomtabs flexDiv-column">
+              <el-tab-pane label="部件需求" name="first" class="flexDiv-column">
+                <keep-alive>
+                  <taskMaterial v-if="bottomDivShow" :currentRow='currentRow' class="flexDiv-column" source='plan'>
+                  </taskMaterial>
+                </keep-alive>
+              </el-tab-pane>
+              <el-tab-pane label="资料需求" name="second" class="flexDiv-column">
+                <keep-alive>
+                  <taskData v-if="bottomDivShow" :currentRow='currentRow' class="flexDiv-column" source='plan'>
+                  </taskData>
+                </keep-alive>
+              </el-tab-pane>
+              <el-tab-pane label="紧前作业" name="third" class="flexDiv-column">
+              </el-tab-pane>
+              <el-tab-pane label="紧后作业" name="forth" class="flexDiv-column">
+              </el-tab-pane>
+              <el-tab-pane label="变更记录" name="fifth" class="flexDiv-column">
+              </el-tab-pane>
+            </el-tabs>
+          </div>
         </div>
       </div>
     </div>
@@ -177,6 +202,9 @@
 
 <script>
 import { mapMutations } from "vuex";
+import taskMaterial from "../schedule-task/taskTab/taskMaterial";
+import taskData from "../schedule-task/taskTab/taskData";
+import schedule from "../control/ScheduleControl";
 
 export default {
   data() {
@@ -191,8 +219,10 @@ export default {
       projectPlanSelection: [],
       currentRow: [],
       btnShow: false,
+      bottomDivShow: false,
       projectPlanCondition: "",
-      activeName: "base",
+      activeName: "first",
+      selectNodeLevel: "base",
       addProjectPlanVisible: false,
       addOrNot: false,
       stType_options: [
@@ -215,6 +245,11 @@ export default {
         ]
       }
     };
+  },
+  components: {
+    taskMaterial,
+    taskData,
+    schedule
   },
   filters: {
     releaseStatusFilter(value) {
@@ -239,7 +274,7 @@ export default {
     }
   },
   watch: {
-    activeName: {
+    selectNodeLevel: {
       immediate: true,
       handler() {
         this.$nextTick(function() {
@@ -267,7 +302,10 @@ export default {
     },
     refreshProjectPlanData() {
       this.projectPlanData = [];
-      if (this.activeName == "base") {
+      this.currentRow = {};
+      this.projectPlanSelection = [];
+      this.bottomDivShow = false;
+      if (this.selectNodeLevel == "base") {
         //刷新基准计划
         this.z_get("api/project_plan/basePlan", {
           p_no: this.selectProjectNo
@@ -276,7 +314,7 @@ export default {
             this.projectPlanData = res.data;
           })
           .catch(res => {});
-      } else if (this.activeName == "detail") {
+      } else if (this.selectNodeLevel == "detail") {
         this.z_get("api/project_plan/detailPlan", {
           pp_id: this.selectBasePlan.pp_id
         })
@@ -312,7 +350,7 @@ export default {
     },
     selProject(val) {
       this.selectProjectNo = val;
-      this.activeName = "base";
+      this.selectNodeLevel = "base";
       this.searchProjectPlanData();
     },
     addNewProjectPlanShow() {
@@ -328,8 +366,9 @@ export default {
           wp_name: "",
           pp_note: "",
           pp_progress: "0",
-          pp_node_level: this.activeName,
-          pp_pid: this.activeName == "base" ? null : this.selectBasePlan.pp_id
+          pp_node_level: this.selectNodeLevel,
+          pp_pid:
+            this.selectNodeLevel == "base" ? null : this.selectBasePlan.pp_id
         };
         this.addOrNot = true;
         this.addProjectPlanVisible = true;
@@ -406,6 +445,16 @@ export default {
     handleSelectionChange(val) {
       this.projectPlanSelection = val;
     },
+    //点击任务行显示下面
+    handleRowClick(row, column) {
+      if (column.property == "handle") {
+        return;
+      }
+      if (JSON.stringify(this.currentRow) != JSON.stringify(row)) {
+        this.currentRow = row;
+      }
+      this.bottomDivShow = true;
+    },
     //跳转路由
     toProject() {
       this.$router.push({
@@ -426,10 +475,10 @@ export default {
       this.$nextTick(function() {
         var firstTab = document.getElementById("tab-base");
         firstTab.style.color =
-          this.activeName == "base" ? "#409EFF" : "#C0C4CC";
+          this.selectNodeLevel == "base" ? "#409EFF" : "#C0C4CC";
         var secondTab = document.getElementById("tab-detail");
         secondTab.style.color =
-          this.activeName == "base" ? "#C0C4CC" : "#409EFF";
+          this.selectNodeLevel == "base" ? "#C0C4CC" : "#409EFF";
       });
     }
   },
@@ -450,14 +499,17 @@ export default {
   width: 1500px;
 }
 .leftLayout {
-  width: 45%;
+  width: 740px;
   border-right: 2px solid #eee;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
-.tabPanel {
-  margin-top: 5px;
+.rightLayout {
+  width: 740px;
+  margin-left: 2px;
+  display: flex;
+  flex-direction: column;
 }
 .gridTable {
   flex: 1;
@@ -468,5 +520,10 @@ export default {
 .toptabs .el-tabs__nav {
   transform: translateX(-50%) !important;
   margin-left: 50%;
+}
+.bottomtabs .el-tabs__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 </style>

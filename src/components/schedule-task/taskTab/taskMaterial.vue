@@ -8,23 +8,25 @@
       </el-input>
       <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewTaskItemShow">新增物料需求
       </el-button>
-      <el-button type="danger" size="small" :disabled="itemSelection.length==0" @click="deleteListItem"> 
+      <el-button type="danger" size="small" :disabled="itemSelection.length==0" @click="deleteListItem">
         删除选中物料({{itemSelection.length}})
       </el-button>
     </div>
-    <div class="gridTable" style="width:75%;">
-      <el-table ref="taskItemTable" v-loading="loading" style="width:100%;" height="200" :data="taskItemData"
-        tooltip-effect="dark" highlight-current-row border @selection-change="handleSelectionChange">
+    <div class="gridTable" :style="{width:source =='plan'?'100%':'75%'}">
+      <zj-table ref="taskItemTable" v-loading="loading" style="width:100%;" :height="source =='plan'?'100%':200"
+        :data="taskItemData" tooltip-effect="dark" highlight-current-row border
+        @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column label="序号" type="index" width="55" align="center">
         </el-table-column>
-        <el-table-column prop="item_name" label="物料名称" align="center" width="200" show-overflow-tooltip>
+        <el-table-column prop="item_name" label="物料名称" align="center" :width="source =='plan'?120:200"
+          show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="item_no" label="物料编码" align="center" width="150"></el-table-column>
-        <el-table-column prop="ti_quantity" label="数量" align="center" width="100"></el-table-column>
-        <el-table-column prop="item_unit" label="单位" align="center" width="100"></el-table-column>
+        <el-table-column prop="item_no" label="物料编码" align="center" :width="source =='plan'?100:150"></el-table-column>
+        <el-table-column prop="ti_quantity" label="数量" align="center" :width="source =='plan'?80:100"></el-table-column>
+        <el-table-column prop="item_unit" label="单位" align="center" :width="source =='plan'?80:100"></el-table-column>
         <el-table-column prop="ti_note" label="任务备注" align="center" show-overflow-tooltip></el-table-column>
-        <el-table-column label="操作" width="140" prop="handle">
+        <el-table-column label="操作" :width="source =='plan'?100:140" prop="handle">
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editItemShow(scope.row)">
             </el-button>
@@ -32,7 +34,7 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>
+      </zj-table>
     </div>
 
     <!-- 新增物料需求 -->
@@ -153,8 +155,9 @@ export default {
       }
     };
   },
-  watch: {  
-    currentRow: { //当选中任务后，执行查询任务物料需求记录的方法
+  watch: {
+    currentRow: {
+      //当选中任务后，执行查询任务物料需求记录的方法
       deep: true,
       immediate: true,
       handler() {
@@ -170,9 +173,10 @@ export default {
       this.z_get(
         "api/task_item",
         {
+          pp_id: this.source == "plan" ? this.currentRow.pp_id : null,
           t_id: this.currentRow.t_id,
           condition: this.itemCondition,
-          source: this.source 
+          source: this.source
         },
         { loading: false }
       )
@@ -233,12 +237,13 @@ export default {
     handleRowDbClcik(row) {
       this.taskItemModel = {
         ti_id: 0,
+        pp_id: this.currentRow.pp_id,
         t_id: this.currentRow.t_id,
         item_no: row.item_no,
         item_name: row.item_name,
         ti_quantity: "",
         ti_note: "",
-        ti_source:this.source 
+        ti_source: this.source
       };
       var isContain = false;
       for (var i = 0; i < this.taskItemData.length; i++) {
@@ -406,5 +411,8 @@ export default {
 .bottomButton {
   text-align: center;
   margin: 10px 0;
+}
+.gridTable {
+  flex: 1;
 }
 </style>
