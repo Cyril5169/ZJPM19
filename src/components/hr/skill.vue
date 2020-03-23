@@ -8,9 +8,9 @@
             style="width:320px;">
             <el-button @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
           </el-input>
-          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewTaskShow('root')">新增技能信息</el-button>
+          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewskillShow('root')">新增技能信息</el-button>
          <el-button type="primary" size="small">导入</el-button>
-          <el-button type="primary" size="cnpmsmall" :disabled="selection.length!=1" @click="addNewTaskShow('children')">新增子节点</el-button>
+          <el-button type="primary" size="cnpmsmall" :disabled="selection.length!=1" @click="addNewskillShow('children')">新增子节点</el-button>
           <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">删除选中节点({{selection.length}})
           </el-button>
           <el-dropdown style="margin-left:10px;">
@@ -33,7 +33,7 @@
             <el-table-column prop="skill_note" label="技能说明" align="center" width="480"></el-table-column>
             <el-table-column label="操作" width="375" prop="handle">
               <template slot-scope="scope">
-                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
+                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editskillShow(scope.row)">
                 </el-button>
                 <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
                 </el-button>
@@ -44,25 +44,25 @@
 
       </div>
     </div>
-    <el-dialog width="500px" :title="addTaskText" :close-on-click-modal="false" :visible.sync="addTaskVisiable"
+    <el-dialog width="500px" :title="addskillText" :close-on-click-modal="false" :visible.sync="skillFormVisiable"
       top="5vh" @closed="refreshForm">
-      <el-form :model="taskModel" label-width="120px" ref="taskForm" :rules="add_rules">
+   <zj-form :newDataFlag="skillFormVisiable" :model="skillModel" :rules="rules"  label-width="120px" label-position="right" style="width:400px" ref="skillForm" >
 
         <el-form-item label="技能名称" prop="skill_name">
-          <el-input class="formItem" v-model="taskModel.skill_name" placeholder="技能名称">
+          <el-input class="formItem" v-model="skillModel.skill_name" placeholder="技能名称">
           </el-input>
         </el-form-item>
 
         <el-form-item label="技能说明">
-          <el-input class="formItem" type="textarea" :rows="4" v-model="taskModel.skill_note" placeholder="技能说明">
+          <el-input class="formItem" type="textarea" :rows="4" v-model="skillModel.skill_note" placeholder="技能说明">
           </el-input>
         </el-form-item>
 
-        <el-form-item style="text-align:center;margin-right:100px;">
-          <el-button @click="addTaskVisiable = false">取&nbsp;&nbsp;消</el-button>
-          <el-button type="primary" @click="onSaveTaskClick" style="margin-left:30px;">保&nbsp;&nbsp;存</el-button>
+        <el-form-item style="text-align:center;margin-right:30px;">
+          <el-button @click="addskillVisiable = false">取&nbsp;&nbsp;消</el-button>
+          <el-button type="primary" @click="onSaveskillClick" style="margin-left:30px;">保&nbsp;&nbsp;存</el-button>
         </el-form-item>
-      </el-form>
+        </zj-form>
     </el-dialog>
   </div>
 
@@ -74,13 +74,28 @@ export default {
   data() {
     return {
       condition: "",
+     
       skill: [], //表格数据
       selection: [],
-      addTaskVisiable: false,
-      taskModel: {},
+      addskillVisiable: false,
+      addskillFormVisiable:false,
+      skillFormVisiable:false,
+      skillModel: {},
       addOrNot: true, //是否新增
-      addTaskText: "",
+      addskillText: "",
 
+      
+    
+      rules:{ skill_name:[
+          {required:true, message:'技能名称不能为空', trigger:'blur'}
+        ],
+          skill_note:[
+          {required:true, message:'技能说明不能为空', trigger:'blur'}
+        ],    
+
+
+      },
+      
       add_rules: {
         skill_name: [{ required: true, message: "请填写技能名称", trigger: "blur" }]        
       },
@@ -92,7 +107,7 @@ export default {
   
   methods: {
     refreshData() {      
-      this.z_get("api/skill", {
+      this.z_get("api/skill/list", {
         condition: this.condition
       })
         .then(res => {
@@ -103,7 +118,7 @@ export default {
 
     //重置表单
     refreshForm() {
-      this.$refs.taskForm.resetFields();
+      this.$refs.skillForm.resetFields();
     },
     search() {
       this.condition = "";
@@ -114,28 +129,28 @@ export default {
       this.selection = val;      
     },
    
-    addNewTaskShow(type) {
+    addNewskillShow(type) {
       var titleName = "";
       var skill_name = null;
       if (type == "root") {
         titleName = "";
-        this.addTaskText = "新增技能信息";
+        this.addskillText = "新增技能信息";
       } else if (type == "children") {
         skill_name = this.selection[0].skill_name;
         titleName = this.selection[0].skill_name;
-        this.addTaskText = "新增[" + titleName + "]的子节点";
+        this.addskillText = "新增[" + titleName + "]的子节点";
       }
-      this.taskModel = {
+      this.skillModel = {
         skill_name: 1,
         skill_name: skill_name,
         skill_name: "",
         skill_note: ""
       };
       this.addOrNot = true;
-      this.addTaskVisiable = true;
+      this.addskillVisiable = true;
     },
-    onSaveTaskClick() {
-      this.$refs.taskForm.validate(valid => {
+    onSaveskillClick() {
+      this.$refs.skillForm.validate(valid => {
         if (valid) {
           if (this.addOrNot) {
             this.z_post("api/skill", this.skillModel)
@@ -146,7 +161,7 @@ export default {
                   duration: 1000
                 });
                 this.refreshData();
-                this.addTaskVisiable = false;
+                this.addskillVisiable = false;
               })
               .catch(res => {
                 this.$alert("新增失败", "提示", {
@@ -155,7 +170,8 @@ export default {
                 });
                 console.log(res);
               });
-          } else {
+          } else { this.skillModel.UpdateColumns = this.$refs.skillForm.UpdateColumns;
+            console.log(this.skillModel)
             this.z_put("api/skill", this.skillModel) 
               .then(res => {
                 this.$message({
@@ -164,7 +180,7 @@ export default {
                   duration: 1000
                 });
                 this.refreshData();
-                this.addTaskVisiable = false;
+                this.skillFormVisiable = false;
               })
               .catch(res => {
                 this.$alert("编辑失败", "提示", {
@@ -181,11 +197,11 @@ export default {
       });
     },
     //编辑数据
-    editTaskShow(row) {
-      this.taskModel = JSON.parse(JSON.stringify(row));
-      this.addTaskText = "编辑节点";
+    editskillShow(row) {
+      this.skillModel = JSON.parse(JSON.stringify(row));
+      this.addskillText = "编辑节点";
       this.addOrNot = false;
-      this.addTaskVisiable = true;
+      this.skillFormVisiable = true;
     },
     //删除一个
     deleteOne(row) {
@@ -207,7 +223,7 @@ export default {
       })
         .then(() => {
           //var realSelect = this.arrayChildrenFlatten(list, []);
-          this.z_delete("api/skill", { data: list })
+          this.z_delete("api/skill/list", { data: list })
             .then(res => {
               this.$message({
                 message: "删除成功",
@@ -240,15 +256,11 @@ export default {
       }
       return result;
     },
-    handleSelectTreeDblClick(data) {
-      this.taskModel.dept_id = data.dept_id;
-      this.taskModel.dept_name = data.dept_name;
-      this.$refs.select_dept.blur();
-    },
+
     //点击行可以切换选中状态
     handleRowClick(row, column) {
       if (column.property != "handle")
-        this.$refs.taskTable.toggleRowSelection(row);
+        this.$refs.skillTable.toggleRowSelection(row);
     },
     expandAll() {
       var icon = this.$el.getElementsByClassName("el-table__expand-icon");
