@@ -1,26 +1,20 @@
 <template>
-  <div style="problem">
+  <div class="problem">
     <div class="containALL">
       <div class="topLayout">
-
         <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
           <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入问题描述或者问题位置" v-model="condition"
             clearable style="width:295px;">
             <el-button size="small" @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
           </el-input>
-
           <span style="font-size:13px;margin-left:10px">项目名称:</span>
-         
-
-          <el-select size="small"  v-model="select_project" @change="refreshData" ref="select_project" placeholder="请选择项目">
+          <el-select size="small" style="width:180px;"  v-model="select_project" @change="refreshData" ref="select_project" placeholder="请选择项目">
               <el-option v-for="item in problemProjectFilter" :key="item.value" :label="item.display"
                 :value="item.value">
               </el-option>
             </el-select>
-
           <el-button type="primary" size="small" style="margin-left:20px;" @click="addNewproblemShow">新增问题
-
           </el-button>
           <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">
             删除选中节点({{selection.length}})
@@ -29,15 +23,15 @@
         <div class="gridTable">
           <el-table ref="problemTable" style="width: 100%;" :data="problemData" tooltip-effect="dark"
             highlight-current-row border row-key="problem_no" default-expand-all
-            @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick">
+            @selection-change="handleSelectionChange"  >
             <el-table-column type="selection" width="40" align="center"></el-table-column>
-            <el-table-column type="index" label="序号" width="50" align="center"></el-table-column>
+            <el-table-column type="index" label="序号" width="55" align="center"></el-table-column>
 
             <el-table-column prop="projectno" label="所属项目" align="center" sortable width="150">
               <template slot-scope="scope">{{scope.row.projectno | renderFilter(problemProjectFilter)}}</template>
             </el-table-column>
 
-            <el-table-column prop="p_note" label="问题描述" width="300" align="center"></el-table-column>
+            <el-table-column prop="p_note" label="问题描述" show-overflow-tooltip align="center"></el-table-column>
             <el-table-column prop="p_position" label="位置" width="120" align="center"></el-table-column>
 
             <el-table-column prop="pt_id" label="问题类型" align="center" width="100">
@@ -82,7 +76,7 @@
 
       <!-- 新增项目问题 -->
       <el-dialog v-dialogDrag width="450px" :title="addproblemText" :close-on-click-modal="false"
-        :visible.sync="addproblemVisiable" top="5vh" @closed="refreshForm">
+        :visible.sync="addproblemVisiable" top="5vh" >
         <zj-form size="small" :newDataFlag='addproblemVisiable' :model="problemModel" label-width="100px"
           ref="problemForm" :rules="add_rules">
 
@@ -132,7 +126,7 @@
 
           <el-form-item style="text-align:center;margin-right:100px;">
             <el-button size="medium" @click="addproblemVisiable = false">取&nbsp;&nbsp;消</el-button>
-            <el-button type="primary" size="medium" @click="onSaveTaskClick" style="margin-left:30px;">
+            <el-button type="primary" size="medium" @click="onSaveproblemClick" style="margin-left:30px;">
               保&nbsp;&nbsp;存
             </el-button>
           </el-form-item>
@@ -213,15 +207,7 @@ export default {
     };
   },
 
-  watch: {
-    addproblemVisiable(val) {
-      if (val) {
-        this.selectproblem_type1();
-        this.selectproblem_type2();
-        this.selectproblem_type3();
-      }
-    }
-  },
+
 
   filters: {
     statusFilter(value) {
@@ -267,21 +253,7 @@ export default {
     },
 
     //全选选中子节点
-    handleSelectAll(selection) {
-      var val = this.taskData;
-      var select = false;
-      for (var i = 0; i < selection.length; i++) {
-        if (selection[i].st_id == val[0].st_id) {
-          select = true;
-          break;
-        }
-      }
-      for (var i = 0; i < val.length; i++) {
-        if (val[i].children && val[i].children.length) {
-          this.selectChildren(val[i].children, select);
-        }
-      }
-    },
+  
 
     //显示任务dialog
     addNewproblemShow() {
@@ -305,7 +277,7 @@ export default {
     },
 
     //保存新增/编辑任务
-    onSaveTaskClick() {
+    onSaveproblemClick() {
       this.$refs.problemForm.validate(valid => {
         if (valid) {
           if (this.addOrNot) {
@@ -416,8 +388,7 @@ export default {
     }
   },
   mounted() {
-    this.refreshData();
-    this.selectproblem_type1();
+    this.refreshData();    
   }
 };
 </script>
@@ -425,7 +396,7 @@ export default {
 
 <style scoped>
 .problem {
-  width: 1100px;
+  width: 1400px;
 }
 
 .tbar {

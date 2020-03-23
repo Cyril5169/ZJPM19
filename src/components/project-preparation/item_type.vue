@@ -8,10 +8,13 @@
             style="width:240px;">
             <el-button size="small" @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
           </el-input>
-          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewTaskShow('root')">新增物料类型</el-button>
+          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewTaskShow('root')">新增物料类型
+          </el-button>
 
-          <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewTaskShow('children')">新增子节点</el-button>
-          <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">删除选中节点({{selection.length}})
+          <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewTaskShow('children')">
+            新增子节点</el-button>
+          <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">
+            删除选中节点({{selection.length}})
           </el-button>
           <el-dropdown style="margin-left:10px;">
             <el-button size="small">
@@ -24,14 +27,15 @@
           </el-dropdown>
         </div>
         <div class="gridTable">
-          <el-table ref="itemTypeTable"  style="width: 100%" :data="itemTypeData" tooltip-effect="dark"
+          <el-table ref="itemTypeTable" style="width: 100%" :data="itemTypeData" tooltip-effect="dark"
             highlight-current-row border row-key="it_id" default-expand-all @selection-change="handleSelectionChange"
             @select-all="handleSelectAll" @row-click="handleRowClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
-            <!-- <el-table-column prop="it_id" label="物料类型编号" align="center" width="150"></el-table-column> -->
-            <el-table-column prop="it_name" label="物料类型名称" align="left" width="200" ></el-table-column>
+            <el-table-column prop="it_code" label="物料编码" align="left" sortable width="200">
+            </el-table-column>
+            <el-table-column prop="it_name" label="物料类型名称" align="center" sortable width="200"></el-table-column>
             <el-table-column prop="it_note" label="说明" align="center" width="450"></el-table-column>
-            <el-table-column label="操作" width="154" prop="handle">
+            <el-table-column label="操作" width="174" prop="handle">
               <template slot-scope="scope">
                 <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
                 </el-button>
@@ -44,8 +48,7 @@
 
       </div>
     </div>
-    <el-dialog width="500px" :title="addTaskText" :close-on-click-modal="false" :visible.sync="addTaskVisiable"
-       @closed="refreshForm">
+    <el-dialog width="500px" :title="addTaskText" :close-on-click-modal="false" :visible.sync="addTaskVisiable">
       <el-form :model="itemTypeModel" label-width="120px" ref="taskForm" :rules="add_rules">
 
         <!-- <el-form-item label="项目类型编号" prop="it_id">
@@ -91,8 +94,10 @@ export default {
       addTaskText: "",
 
       add_rules: {
-        it_name: [{ required: true, message: "请填写物料类型名称", trigger: "blur" }]        
-      },
+        it_name: [
+          { required: true, message: "请填写物料类型名称", trigger: "blur" }
+        ]
+      }
     };
   },
   mounted() {
@@ -106,7 +111,7 @@ export default {
     }
   },
   methods: {
-    refreshData() {      
+    refreshData() {
       this.z_get("api/item_type/treeList", {
         condition: this.condition
       })
@@ -126,9 +131,9 @@ export default {
     },
     //表格树选中改变
     handleSelectionChange(val) {
-      this.selection = val;      
+      this.selection = val;
     },
-   
+
     addNewTaskShow(type) {
       var titleName = "";
       var it_pid = null;
@@ -145,7 +150,7 @@ export default {
         it_pid: it_pid,
         it_name: "",
         it_code: "",
-        it_note:""
+        it_note: ""
       };
       this.addOrNot = true;
       this.addTaskVisiable = true;
@@ -293,7 +298,7 @@ export default {
         }
       }
     },
-      //全选选中子节点
+    //全选选中子节点
     handleSelectAll(selection) {
       var val = this.itemTypeData;
       var select = false;
@@ -321,8 +326,7 @@ export default {
           this.selectChildren(val[i].children, select);
         }
       }
-    },
-
+    }
   }
 };
 </script>
@@ -330,7 +334,7 @@ export default {
 
 <style scoped>
 .item_type {
-  width: 900px;
+  width: 1100px;
 }
 
 .tbar {
@@ -344,5 +348,4 @@ export default {
 .gridTable {
   flex: 1;
 }
-
 </style>
