@@ -18,13 +18,15 @@
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" width="55" align="center" label="序号">
             </el-table-column>
-            <el-table-column prop="emp_name" label="任务名称" align="center"></el-table-column>
-            <el-table-column prop="dept_name" label="项目号" align="center"></el-table-column>
-            <el-table-column prop="dept_name" label="计划结束时间" align="center"></el-table-column>
-            <el-table-column prop="dept_name" label="计划结束时间" align="center"></el-table-column>
-            <el-table-column prop="dept_name" label="任务备注" align="center"></el-table-column>
-            <el-table-column prop="dept_name" label="任务状态" align="center"></el-table-column>
-            <el-table-column prop="dept_name" label="确认时间" align="center"></el-table-column>
+            <el-table-column prop="t_name" label="任务名称" width="120" align="center"></el-table-column>
+            <el-table-column prop="p_no" label="项目号" width="120" align="center"></el-table-column>
+            <el-table-column prop="t_early_startdate" label="计划开始时间" width="200" show-overflow-tooltip align="center"></el-table-column>
+            <el-table-column prop="t_last_enddate" label="计划结束时间" width="200" show-overflow-tooltip align="center"></el-table-column>
+            <el-table-column prop="t_note" label="任务备注" align="center"></el-table-column>
+            <el-table-column prop="t_status" label="任务状态"  width="120" align="center">
+              
+            </el-table-column>
+            <el-table-column prop="update_date" label="确认时间" width="220" show-overflow-tooltip align="center"></el-table-column>
           </el-table>
         </div>
       </div>
@@ -132,7 +134,7 @@ export default {
       })
         .then(res => {
           console.log(res);
-          this.tableData = res.data.dic;
+          this.tableData = res.data;
         })
         .catch(res => {});
     },

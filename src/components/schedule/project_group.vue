@@ -6,14 +6,15 @@
         <el-option v-for="item in projectData" :key="item.p_no" :label="renderFilter(item.p_no,classFilter)"
           :value="item.p_no"></el-option>
       </el-select>
+      <el-button icon="el-icon-refresh" title="刷新项目列表" size="mini" circle @click="refreshProjectData()"></el-button>
       <!-- <el-button icon="el-icon-arrow-left" size="small" style="float:right;" v-if="btnShow" @click="toProject">返回项目模板
       </el-button> -->
     </div>
     <div class="tbar">
       <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
-      <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入组织编号或名称" v-model="condition"
-        style="width:300px;">
-        <el-button @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
+      <el-input size="small" disabled @keyup.enter.native="refreshData" placeholder="请输入组织编号或名称" v-model="condition"
+        style="width:280px;">
+        <el-button disabled @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
       </el-input>
       <el-dropdown split-button type="primary" size="small" style="margin-left:10px;" :disabled="!selectProjectId"
         @click="addNewproject_groupShow('root')">新增根节点
@@ -125,12 +126,12 @@
       </zj-form>
     </el-dialog>
     <!-- 模板选择组织结构 -->
-    <el-dialog v-if="addFromTempGroupVisiable" width="1000px" title="选择组织模板" :close-on-click-modal="false"
+    <el-dialog v-if="addFromTempGroupVisiable" width="700px" title="选择组织模板" :close-on-click-modal="false"
       :visible.sync="addFromTempGroupVisiable">
       <div class="tbar">
         <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchTempGroup"></el-button>
         <el-input size="small" @keyup.enter.native="refreshTempGroupData" placeholder="请输入模板名称"
-          v-model="TempGroupCondition" clearable style="width:250px;">
+          v-model="TempGroupCondition" clearable style="width:220px;">
           <el-button size="small" @click="refreshTempGroupData" slot="append" icon="el-icon-search">搜索</el-button>
         </el-input>
         <el-button type="primary" size="small" style="margin-left:10px;" :disabled="TempGroupSelection.length==0"
@@ -143,10 +144,10 @@
           highlight-current-row row-key="tg_id" default-expand-all @select="handleSelectChildren"
           @selection-change="handleSelectionChange2" @select-all="handleSelectAll2">
           <el-table-column type="selection" width="80" align="center"></el-table-column>
-          <el-table-column prop="wp_id" label="岗位" align="left" width="300">
+          <el-table-column prop="wp_id" label="岗位" align="left" width="220">
             <template slot-scope="scope">{{scope.row.wp_id | renderFilter(postDataFilter2)}}</template>
           </el-table-column>
-          <el-table-column prop="tg_node_type" label="类型" align="left" width="200">
+          <el-table-column prop="tg_node_type" label="类型" align="left" width="100">
             <template slot-scope="scope">{{scope.row.tg_node_type | dutyTypeFilter}}</template>
           </el-table-column>
           <el-table-column prop="tg_note" label="说明" align="left" show-overflow-tooltip></el-table-column>
@@ -212,9 +213,9 @@ export default {
         case "organize":
           return "组织";
           break;
-        default:
-          return "个人";
-          break;
+        // default:
+        //   return "个人";
+        //   break;
       }
     }
   },

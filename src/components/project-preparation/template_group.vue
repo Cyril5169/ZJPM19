@@ -138,7 +138,7 @@
           </el-input>
         </el-form-item> -->
         <el-form-item label="节点类型" prop="tg_node_type">
-          <el-select class="formItem" v-model="templateModel.tg_node_type" placeholder="请选择节点类型">
+          <el-select  v-model="templateModel.tg_node_type" placeholder="请选择节点类型">
             <el-option v-for="item in stTypeTrans" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -252,8 +252,7 @@ export default {
           break;
         case "organize":
           return "组织";
-          break;
-        
+          break;        
       }
     }
   },

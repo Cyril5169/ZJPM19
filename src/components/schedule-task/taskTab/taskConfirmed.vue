@@ -9,12 +9,14 @@
             <el-button @click="refreshData" slot="append" icon="el-icon-search"></el-button>
           </el-input>
           <el-button size="mini" type="primary" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTaskList">确认({{selection.length}})</el-button>
+            @click="confirmTask(1)">确认({{selection.length}})</el-button>
+          <!-- @click="confirmTaskList(1)">确认({{selection.length}})</el-button> -->
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="rejectTaskList">拒绝({{selection.length}})</el-button>
+            @click="confirmTask(0)">拒绝({{selection.length}})</el-button>
+          <!-- @click="rejectTaskList">拒绝({{selection.length}})</el-button> -->
         </div>
         <div class="gridTable">
-          <el-table height='200px' ref="taskTable" style="width: 100%" :data="tableData" tooltip-effect="dark"
+          <el-table height='200px' ref="tableData" style="width: 100%" :data="tableData" tooltip-effect="dark"
             highlight-current-row border row-key="t_id" @selection-change="handleSelectionChange"
             @select-all="handleSelectAll" @row-click="handleRowClick" @row-dblclick="handleRowDBClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -28,9 +30,9 @@
             <!-- <el-table-column prop="dept_name" label="确认时间" align="center"></el-table-column> -->
             <el-table-column label="操作" width="130" prop="handle" align="center">
               <template slot-scope="scope">
-                <el-button type="primary" size="mini" circle @click="confirmTask(scope.row)">确认
+                <el-button type="primary" size="mini" circle @click="confirmOneTask(scope.row,1)">确认
                 </el-button>
-                <el-button type="danger" size="mini" circle @click="rejectTask(scope.row)">拒绝
+                <el-button type="danger" size="mini" circle @click="confirmOneTask(scope.row,2)">拒绝
                 </el-button>
               </template>
             </el-table-column>
@@ -139,15 +141,28 @@ export default {
     },
     //全选选中子节点
     handleSelectAll(selection) {
-      var val = this.taskData;
+      var val = this.tableData;
       var select = false; //全选还是反选
       for (var i = 0; i < selection.length; i++) {
-        if (selection[i].st_id == val[0].st_id) {
+        if (selection[i].t_id == val[0].t_id) {
           select = true;
           break;
         }
       }
       for (var i = 0; i < val.length; i++) {
+        if (val[i].children && val[i].children.length) {
+          this.selectChildren(val[i].children, select);
+        }
+      }
+    },
+    //选中子节点
+    selectChildren(val, select) {
+      for (var i = 0; i < val.length; i++) {
+        if (select && this.selection.indexOf(val[i]) == -1) {
+          this.$refs.tableData.toggleRowSelection(val[i]);
+        } else if (!select && this.selection.indexOf(val[i] > -1)) {
+          this.$refs.tableData.toggleRowSelection(val[i]);
+        }
         if (val[i].children && val[i].children.length) {
           this.selectChildren(val[i].children, select);
         }
@@ -172,75 +187,56 @@ export default {
       }
       this.bottomDivShow = true;
     },
-    //确认任务
-    OnConfirmTaskClick() {
-      this.taskModel = {
-        t_status: 1
-      };
-      this.z_put("api/task", this.taskModel)
-        .then(res => {
-          this.$message({
-            message: "确认成功!",
-            type: "success",
-            duration: 1000
-          });
-          this.refreshData();
-          this.addTaskVisiable = false;
-        })
-        .catch(res => {
-          this.$alert("确认失败!", "提示", {
-            confirmButtonText: "确定",
-            type: "error"
-          });
-        });
-    },
-    //确认一个任务
-    confirmTask(row) {
-      this.taskModel = JSON.parse(JSON.stringify(row));
-      
+    //确认一个
+    confirmOneTask(row, mark) {
       var list = [];
       list.push(row);
-      this.OnConfirmTaskClick(list);
+      this.onConfirmClick(list, mark);
     },
-    //确认任务树
-    confirmTaskList() {
+    //发布任务
+    confirmTask(mark) {
       if (this.selection.length) {
-        this.OnConfirmTaskClick(this.selection);
+        this.onConfirmClick(this.selection, mark);
       }
     },
-    //拒绝任务
-    OnRejectTaskClick() {
-      this.taskModel = {
-        t_status: null
-      };
-      this.z_put("api/task", this.taskModel)
-        .then(res => {
-          this.$message({
-            message: "拒绝成功!",
-            type: "success",
-            duration: 1000
-          });
-          this.refreshData();
-          this.addTaskVisiable = false;
+    //提交发布结果
+    onConfirmClick(list, mark) {
+      var text = "";
+      if (mark == 1) {
+        text = "确认";
+        for (var i = 0; i < list.length; i++) {
+          list[i].t_status = "1";
+        }
+      } else if (mark == 0) {
+        text = "拒绝";
+        for (var i = 0; i < list.length; i++) {
+          list[i].t_status = "0";
+        }
+      }
+      this.$confirm("是否" + text + "选中项?", "提示", {
+        confirmButtonText: "是",
+        cancelButtonText: "否",
+        type: "warning"
+      })
+        .then(() => {
+          this.z_put("api/task/list", list)
+            .then(res => {
+              this.$message({
+                message: "修改成功",
+                type: "success",
+                duration: 1000
+              });
+              this.refreshData();
+            })
+            .catch(res => {
+              this.$alert("修改失败", "提示", {
+                confirmButtonText: "确定",
+                type: "warning"
+              });
+              console.log(res);
+            });
         })
-        .catch(res => {
-          this.$alert("拒绝失败!", "提示", {
-            confirmButtonText: "确定",
-            type: "error"
-          });
-        });
-    },
-    //拒绝一个任务
-    RejectTask(row) {
-      var list = [];
-      list.push(row);
-      this.OnRejectTaskClick(list);
-    },
-    //拒绝任务树
-    RejectTaskList() {
-      if (this.selection.length) {
-        this.OnRejectTaskClick(this.selection);
-      }
+        .catch(() => {});
     }
   },
   filters: {

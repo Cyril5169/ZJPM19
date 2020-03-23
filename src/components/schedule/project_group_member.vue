@@ -45,14 +45,15 @@
       <zj-form :model="memberModel" label-width="100px" ref="memberForm" :rules="add_rules" size="small"
         :newDataFlag='addEmpVisiable'>
         <el-form-item label="部门" prop="dept_id">
-          <el-select class="formItem" v-model="memberModel.dept_id" placeholder="请选择部门">
+          <el-select v-model="memberModel.dept_id" @change="refreshEmployee(memberModel.dept_id)" placeholder="请选择部门">
             <el-option v-for="item in deptDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="人员" prop="emp_id">
-          <el-select class="formItem" v-model="memberModel.emp_id" placeholder="请选择人员">
+        <el-form-item label="人员"  prop="emp_id">
+          <el-select v-model="memberModel.emp_id" :disabled="!memberModel.dept_id" placeholder="请选择人员">
             <el-option v-for="item in empDataFilter" :key="item.value" :label="item.display" :value="item.value">
+            <!-- <el-option v-for="item in emp_options" :key="item.value" :label="item.label" :value="item.value"> -->
             </el-option>
           </el-select>
         </el-form-item>
@@ -96,6 +97,7 @@ export default {
       memberModel: {},
       empDataFilter: [],
       deptDataFilter: [],
+      emp_options: [],
       addOrNot: true, //是否新增
       addEmpText: "",
       add_rules: {
@@ -189,6 +191,34 @@ export default {
       this.condition = "";
       this.refreshData();
     },
+    //查找部门人员数据
+    selectEmployee(deptId) {
+      this.emp_options = [];
+      this.z_get(
+        "api/dept/dept_emp",
+        { condition: null, deptId: deptId },
+        { loading: false }
+      )
+        .then(res => {
+          if (
+            res.code == 0 &&
+            JSON.stringify(this.emp_options) != JSON.stringify(res.data)
+          ) {
+            this.emp_options = res.data.dic;
+            console.log(emp_options);
+            for (var i = 0; i < this.emp_options.length; i++) {
+              this.emp_options[i].label = this.emp_options[i].emp_name;
+              this.emp_options[i].value = this.emp_options[i].emp_id;
+            }
+          }
+        })
+        .catch(res => {});
+    },
+    //刷新新增及编辑任务弹出框中的负责人员信息
+    refreshEmployee(deptId) {
+      this.selectEmployee(deptId);
+      // this.$refs.form_emp_id.resetField(); //改变选中负责部门，将负责人员重置
+    },
     //表格树选中改变
     handleSelectionChange(val) {
       this.selection = val;
@@ -274,6 +304,7 @@ export default {
     //编辑数据
     editmemberShow(row) {
       this.memberModel = JSON.parse(JSON.stringify(row));
+      this.selectEmployee(this.memberModel.dept_id);
       this.addEmpText = "编辑成员";
       this.addOrNot = false;
       this.addEmpVisiable = true;
