@@ -27,8 +27,7 @@
         <el-table-column prop="pgm_endtime" label="退出时间" align="center" width="200" show-overflow-tooltip>
         </el-table-column>
         <el-table-column prop="is_enabled" label="是否生效" align="center" width="90">
-          <template slot-scope="scope">{{ scope.row.is_enabled | enabledTypeFilter}}
-          </template>
+          <template slot-scope="scope">{{scope.row.is_enabled | enabledTypeFilter}}</template>
         </el-table-column>
         <el-table-column label="操作" align="center" prop="handle">
           <template slot-scope="scope">
@@ -46,13 +45,13 @@
       <zj-form :model="memberModel" label-width="100px" ref="memberForm" :rules="add_rules" size="small"
         :newDataFlag='addEmpVisiable'>
         <el-form-item label="部门" prop="dept_id">
-          <el-select :disabled="!addOrNot" class="formItem" v-model="memberModel.dept_id" placeholder="请选择部门">
+          <el-select class="formItem" v-model="memberModel.dept_id" placeholder="请选择部门">
             <el-option v-for="item in deptDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="人员" prop="emp_id">
-          <el-select :disabled="!addOrNot" class="formItem" v-model="memberModel.emp_id" placeholder="请选择人员">
+          <el-select class="formItem" v-model="memberModel.emp_id" placeholder="请选择人员">
             <el-option v-for="item in empDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
@@ -104,17 +103,27 @@ export default {
       },
       enabledTypeOptions: [
         {
-          value: "0",
+          value: 0,
           label: "否"
         },
         {
-          value: "1",
+          value: 1,
           label: "是"
         }
       ]
     };
   },
   filters: {
+    enabledTypeFilter(value) {
+      switch (value) {
+        case 0:
+          return "否";
+          break;
+        case 1:
+          return "是";
+          break;
+      }
+    },
     datatrans(value) {
       if (!value || value == "9999-12-31") return "";
       //时间戳转化大法
@@ -131,21 +140,20 @@ export default {
       let s = date.getSeconds();
       s = s < 10 ? "0" + s : s;
       return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
-    },
-    enabledTypeFilter(value) {
-      switch (value) {
-        case "0":
-          return "否";
-          break;
-        case "1":
-          return "是";
-          break;
-        // default :
-        //   return "否";
-        //   break;
-
-      }
     }
+    // enabledTypeFilter(value) {
+    //   switch (value) {
+    //     case "0":
+    //       return "否";
+    //       break;
+    //     case "1":
+    //       return "是";
+    //       break;
+    //     // default :
+    //     //   return "否";
+    //     //   break;
+    //   }
+    // }
   },
   watch: {
     currentRow: {
@@ -192,7 +200,7 @@ export default {
         group_id: this.currentRow.group_id,
         emp_id: "",
         dept_id: "",
-        is_enabled:"",
+        is_enabled: "",
         pgm_starttime: "",
         pgm_endtime: ""
       };

@@ -121,16 +121,22 @@
       :close-on-click-modal="false" :visible.sync="addgpVisiable">
       <zj-form size="small" :newDataFlag='addgpVisiable' :model="templateModel" label-width="100px" ref="templateForm"
         :rules="add_rules">
+        <el-form-item label="模板类型" prop="tgt_id">
+          <el-select disabled v-model="templateModel.tgt_id" ref="select_post" placeholder="请选择模板类型">
+            <el-option v-for="item in classFilter" :key="item.value" :label="item.display" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="岗位名称" prop="wp_id">
           <el-select v-model="templateModel.wp_id" ref="select_post" placeholder="请选择岗位">
             <el-option v-for="item in PostDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="组织模板名称" prop="tg_name">
+        <!-- <el-form-item label="组织模板名称" prop="tg_name">
           <el-input class="formItem" v-model="templateModel.tg_name" placeholder="请填写组织模板名称">
           </el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="节点类型" prop="tg_node_type">
           <el-select class="formItem" v-model="templateModel.tg_node_type" placeholder="请选择节点类型">
             <el-option v-for="item in stTypeTrans" :key="item.value" :label="item.label" :value="item.value">
@@ -191,6 +197,7 @@ export default {
       activeName: "first",
       tgtData: [], //表格数据
       PostDataFilter: [],
+      // tgtDataFilter: [],
       tgtID: "",
       addgptVisiable: false,
       templateGroupTypeModel: {},
@@ -213,7 +220,9 @@ export default {
         tg_node_type: [
           { required: true, message: "请选择节点类型", trigger: "change" }
         ],
-        tgt_name: [{ required: true, message: "请填写模板类型名称", trigger: "flur" }]
+        tgt_name: [
+          { required: true, message: "请填写模板类型名称", trigger: "flur" }
+        ]
       },
       menuTableHeight: 0
     };
@@ -465,7 +474,22 @@ export default {
       }
       return result;
     },
-
+ //全选选中子节点
+    handleSelectAll(selection) {
+      var val = this.TemplateGroupData;
+      var select = false; //全选还是反选
+      for (var i = 0; i < selection.length; i++) {
+        if (selection[i].tg_id == val[0].tg_id) {
+          select = true;
+          break;
+        }
+      }
+      for (var i = 0; i < val.length; i++) {
+        if (val[i].children && val[i].children.length) {
+          this.selectChildren(val[i].children, select);
+        }
+      }
+    },
     //点击行可以切换选中状态
     //点击任务行显示下面
     handleRowClick(row, column) {
