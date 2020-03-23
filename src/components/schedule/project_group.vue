@@ -56,9 +56,14 @@
         @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick"
         @row-dblclick="handleRowDBClick">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
-        <el-table-column prop="wp_id" label="组织名称" align="left" width="350">
+        <el-table-column prop="wp_id" label="组织名称" align="left" width="300">
           <template slot-scope="scope">{{scope.row.wp_id | renderFilter(postDataFilter)}}</template>
         </el-table-column>
+
+        <el-table-column prop="group_node_type" label="责任类型" align="left" width="200">
+          <template slot-scope="scope">{{scope.row.group_node_type | dutyTypeFilter}}</template>
+        </el-table-column>
+
         <el-table-column label="说明" prop="group_note" align="left"></el-table-column>
         <el-table-column label="操作" width="150" prop="handle">
           <template slot-scope="scope">
@@ -137,10 +142,13 @@
           highlight-current-row row-key="tg_id" default-expand-all @select="handleSelectChildren"
           @selection-change="handleSelectionChange2" @select-all="handleSelectAll2">
           <el-table-column type="selection" width="55" align="center"></el-table-column>
-          <el-table-column prop="wp_id" label="岗位" align="center" width="180">
+          <el-table-column prop="wp_id" label="岗位" align="left" width="300">
             <template slot-scope="scope">{{scope.row.wp_id | renderFilter(postDataFilter2)}}</template>
           </el-table-column>
-          <el-table-column prop="tg_note" label="说明" align="center" show-overflow-tooltip></el-table-column>
+          <el-table-column prop="group_node_type" label="类型" align="left" width="200">
+            <template slot-scope="scope">{{scope.row.group_node_type | dutyTypeFilter}}</template>
+          </el-table-column>
+          <el-table-column prop="tg_note" label="说明" align="left" show-overflow-tooltip></el-table-column>
         </zj-table>
       </div>
     </el-dialog>
@@ -180,11 +188,35 @@ export default {
         wp_id: [
           { required: true, message: "请选择组织名称", trigger: "change" }
         ]
-      }
+      },
+      dutyTypeFilter: [
+        {
+          value: "个人",
+          label: "个人"
+        },
+        {
+          value: "组织",
+          label: "组织"
+        }
+      ]
     };
   },
 
-  filters: {},
+  filters: {
+    dutyTypeFilter(value) {
+      switch (value) {
+        case "个人":
+          return "个人";
+          break;
+        case "组织":
+          return "组织";
+          break;
+        default:
+          return "个人";
+          break;
+      }
+    }
+  },
   methods: {
     //...mapMutations("navTabs", ["addBreadCrumb"]),
     refreshProjectData() {
@@ -330,6 +362,7 @@ export default {
         p_no: this.selectProjectId,
         wp_id: "",
         group_pid: group_pid,
+        group_id:"",
         group_name: "",
         group_note: ""
       };
@@ -493,9 +526,9 @@ export default {
         var pid = this.project_groupModel.group_pid; //所有最顶层的节点的父节点
         if (!select.tg_pid) {
           //选中最顶层
-          level = "base";
+          level = "组织";
         } else {
-          level = "detail";
+          level = "个人";
           var fartherNode = this.TempGroupSelection.filter(
             item => item.tg_id == select.tg_pid
           ); //看是否有父节点选中，没有这个就是最顶层
@@ -508,6 +541,7 @@ export default {
           group_pid: pid, //后台重新赋值
           wp_id: select.wp_id,
           p_no: this.selectProjectId,
+          group_node_type:level,
           group_name: "",
           group_note: select.tg_note
         };
@@ -608,7 +642,10 @@ export default {
   },
   mounted() {
     this.refreshProjectData();
-    this.refreshData();
+    if (this.$route.params.projectNo) {
+      this.selectProjectId = this.$route.params.projectNo;
+      this.refreshData();
+    }
 
     // this.search();
   }

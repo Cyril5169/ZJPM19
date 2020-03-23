@@ -13,22 +13,23 @@
       </el-button>
     </div>
     <div class="gridTable">
-      <el-table ref="taskItemTable" v-loading="loading" style="width:100%;" height="200" :data="taskDataData"
-        tooltip-effect="dark" highlight-current-row border @selection-change="handleSelectionChange">
+      <zj-table ref="taskItemTable" v-loading="loading" style="width:100%;" :height="source =='plan'? '100%':200"
+        :data="taskDataData" tooltip-effect="dark" highlight-current-row border
+        @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
-        <el-table-column type="index" label="序号"  width="55" align="center">
+        <el-table-column type="index" label="序号" width="55" align="center">
         </el-table-column>
-        <el-table-column prop="td_name" label="资料名称" align="center" width="200" show-overflow-tooltip>
+        <el-table-column prop="td_name" label="资料名称" align="center" :width="source =='plan'?120:200" show-overflow-tooltip>
         </el-table-column>
-        <el-table-column prop="ddt_id" label="资料类型" align="center" width="130">
+        <el-table-column prop="ddt_id" label="资料类型" align="center" :width="source =='plan'?100:200">
           <template slot-scope="scope">{{scope.row.ddt_id | renderFilter(dataTypeFilter)}}</template>
         </el-table-column>
-        <el-table-column prop="td_type" label="需求类型" align="center" width="130">
+        <el-table-column prop="td_type" label="需求类型" align="center" :width="source =='plan'?100:130">
           <template slot-scope="scope">{{scope.row.td_type | tdTypeFilter}}</template>
         </el-table-column>
-        <el-table-column prop="td_quantity" label="数量(份)" align="center" width="90"></el-table-column>
+        <el-table-column prop="td_quantity" label="数量(份)" align="center" width="80"></el-table-column>
         <el-table-column prop="td_note" label="资料说明" align="center" show-overflow-tooltip></el-table-column>
-        <el-table-column label="操作" width="140" prop="handle">
+        <el-table-column label="操作" :width="source =='plan'?100:140" prop="handle">
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskDataShow(scope.row)">
             </el-button>
@@ -36,7 +37,7 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>
+      </zj-table>
     </div>
 
     <!-- 新增/编辑资料需求 -->
@@ -84,7 +85,7 @@
 
 <script>
 export default {
-  props: ["currentRow","source"],
+  props: ["currentRow", "source"],
   data() {
     return {
       dataCondition: "",
@@ -150,15 +151,16 @@ export default {
       this.z_get(
         "api/task_data",
         {
+          pp_id: this.source == "plan" ? this.currentRow.pp_id : null,
           t_id: this.currentRow.t_id,
           condition: this.itemCondition,
-          source: this.source 
+          source: this.source
         },
         { loading: false }
       )
         .then(res => {
           this.loading = false;
-          this.dataTypeFilter = res.dict.ddt_id;  
+          this.dataTypeFilter = res.dict.ddt_id;
           this.taskDataData = res.data;
         })
         .catch(res => {});
@@ -171,6 +173,7 @@ export default {
     addNewTaskDataShow() {
       this.taskDataModel = {
         td_id: 0,
+        pp_id: this.currentRow.pp_id,
         t_id: this.currentRow.t_id,
         ddt_id: "", //是否是漏了
         td_name: "",
@@ -178,7 +181,7 @@ export default {
         td_quantity: "",
         td_type: "",
         td_source: this.source,
-        td_isdone:0,
+        td_isdone: 0
       };
       this.addOrNot = true;
       this.addTaskDataVisible = true;
@@ -283,4 +286,7 @@ export default {
 </script>
 
 <style scoped>
+.gridTable {
+  flex: 1;
+}
 </style>
