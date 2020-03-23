@@ -207,11 +207,11 @@ export default {
       currentRow: {},
       stTypeTrans: [
         {
-          value: "人",
+          value: "person",
           label: "人"
         },
         {
-          value: "组织",
+          value: "organize",
           label: "组织"
         }
       ],
@@ -247,10 +247,10 @@ export default {
     },
     stTypeTrans(value) {
       switch (value) {
-        case "人":
+        case "person":
           return "人";
           break;
-        case "组织":
+        case "organize":
           return "组织";
           break;
         default:

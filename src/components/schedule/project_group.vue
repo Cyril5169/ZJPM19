@@ -5,8 +5,6 @@
       <el-select size="small" v-model="selectProjectId" placeholder="请选择项目" @change="selProject">
         <el-option v-for="item in projectData" :key="item.p_no" :label="renderFilter(item.p_no,classFilter)"
           :value="item.p_no"></el-option>
-        <!-- <el-option v-for="item in classFilter" :key="item.value" :label="item.display" :value="item.value">
-            </el-option> -->
       </el-select>
       <!-- <el-button icon="el-icon-arrow-left" size="small" style="float:right;" v-if="btnShow" @click="toProject">返回项目模板
       </el-button> -->
@@ -24,11 +22,7 @@
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-      <!-- <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewproject_groupShow('root')">新增根节点
-      </el-button> -->
-      <!-- <el-button size="small" type="primary" :disabled="!selectProjectId"
-        @click="addNewproject_groupShow('children')">新增子节点
-      </el-button> -->
+
       <el-dropdown split-button type="primary" size="small" :disabled="!currentRow.group_id"
         @click="addNewproject_groupShow('children')">
         新增子节点
@@ -110,6 +104,13 @@
             </el-option>
           </el-select> -->
         </el-form-item>
+        <el-form-item label="类型" prop="group_node_type">
+          <el-select v-model="project_groupModel.group_node_type" placeholder="请选择">
+            <el-option v-for="item in dutyTypeOpnions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
         <el-form-item label="备注">
           <el-input class="formItem" type="textarea" :rows="2" v-model="project_groupModel.group_note"
             placeholder="备注信息">
@@ -145,8 +146,8 @@
           <el-table-column prop="wp_id" label="岗位" align="left" width="300">
             <template slot-scope="scope">{{scope.row.wp_id | renderFilter(postDataFilter2)}}</template>
           </el-table-column>
-          <el-table-column prop="group_node_type" label="类型" align="left" width="200">
-            <template slot-scope="scope">{{scope.row.group_node_type | dutyTypeFilter}}</template>
+          <el-table-column prop="tg_node_type" label="类型" align="left" width="200">
+            <template slot-scope="scope">{{scope.row.tg_node_type | dutyTypeFilter}}</template>
           </el-table-column>
           <el-table-column prop="tg_note" label="说明" align="left" show-overflow-tooltip></el-table-column>
         </zj-table>
@@ -189,13 +190,13 @@ export default {
           { required: true, message: "请选择组织名称", trigger: "change" }
         ]
       },
-      dutyTypeFilter: [
+      dutyTypeOpnions: [
         {
-          value: "个人",
+          value: "person",
           label: "个人"
         },
         {
-          value: "组织",
+          value: "organize",
           label: "组织"
         }
       ]
@@ -205,10 +206,10 @@ export default {
   filters: {
     dutyTypeFilter(value) {
       switch (value) {
-        case "个人":
+        case "person":
           return "个人";
           break;
-        case "组织":
+        case "organize":
           return "组织";
           break;
         default:
@@ -362,7 +363,7 @@ export default {
         p_no: this.selectProjectId,
         wp_id: "",
         group_pid: group_pid,
-        group_id:"",
+        group_node_type:"",
         group_name: "",
         group_note: ""
       };
@@ -509,6 +510,7 @@ export default {
         group_pid: group_pid,
         wp_id: "",
         p_no: this.selectProjectId,
+        group_node_type: "",
         group_name: "",
         group_note: ""
       };
@@ -522,13 +524,13 @@ export default {
       for (var i = 0; i < this.TempGroupSelection.length; i++) {
         var select = this.TempGroupSelection[i];
 
-        var level = "";
+        //var level = "";
         var pid = this.project_groupModel.group_pid; //所有最顶层的节点的父节点
         if (!select.tg_pid) {
           //选中最顶层
-          level = "组织";
+          //level = "组织";
         } else {
-          level = "个人";
+          //level = "个人";
           var fartherNode = this.TempGroupSelection.filter(
             item => item.tg_id == select.tg_pid
           ); //看是否有父节点选中，没有这个就是最顶层
@@ -541,7 +543,7 @@ export default {
           group_pid: pid, //后台重新赋值
           wp_id: select.wp_id,
           p_no: this.selectProjectId,
-          group_node_type:level,
+          group_node_type: select.tg_node_type,
           group_name: "",
           group_note: select.tg_note
         };

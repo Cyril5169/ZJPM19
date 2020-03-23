@@ -245,6 +245,7 @@ export default {
               });
           } else {
             this.memberModel.UpdateColumns = this.$refs.memberForm.UpdateColumns;
+            console.log(this.memberModel.UpdateColumns);
             if (this.memberModel.UpdateColumns) {
               this.z_put("api/project_group_member", this.memberModel)
                 .then(res => {
