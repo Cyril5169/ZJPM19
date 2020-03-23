@@ -142,7 +142,7 @@
         <zj-table ref="TempGroupTable" style="width: 100%;" height="400" :data="TempGroupData" tooltip-effect="dark"
           highlight-current-row row-key="tg_id" default-expand-all @select="handleSelectChildren"
           @selection-change="handleSelectionChange2" @select-all="handleSelectAll2">
-          <el-table-column type="selection" width="55" align="center"></el-table-column>
+          <el-table-column type="selection" width="80" align="center"></el-table-column>
           <el-table-column prop="wp_id" label="岗位" align="left" width="300">
             <template slot-scope="scope">{{scope.row.wp_id | renderFilter(postDataFilter2)}}</template>
           </el-table-column>

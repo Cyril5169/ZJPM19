@@ -253,9 +253,7 @@ export default {
         case "organize":
           return "组织";
           break;
-        default:
-          return "人";
-          break;
+        
       }
     }
   },
