@@ -43,7 +43,7 @@
               <el-table-column prop="pp_release_status" label="发布状态" align="center" width="80">
                 <template slot-scope="scope">{{scope.row.pp_release_status | releaseStatusFilter}}</template>
               </el-table-column>
-              <el-table-column prop="pp_name" label="作业名称" align="center" width="120" show-overflow-tooltip>
+              <el-table-column prop="pp_name" label="任务名称" align="center" width="120" show-overflow-tooltip>
               </el-table-column>
               <el-table-column prop="pp_node_type" label="任务类型" align="center" width="80">
                 <template slot-scope="scope">{{scope.row.pp_node_type | stTypeFilter}}</template>
@@ -56,12 +56,13 @@
               </el-table-column>
               <el-table-column prop="pp_period" label="工期(天)" align="center" width="90">
               </el-table-column>
-              <el-table-column prop="" label="负责人" align="center" width="100">
+              <el-table-column prop="" label="负责人" align="center" width="150" show-overflow-tooltip>
+                <template slot-scope="scope">{{getCharge(scope.row)}}</template>
               </el-table-column>
               <el-table-column prop="pp_progress" label="完成进度" align="center" width="100">
                 <template slot-scope="scope">{{scope.row.pp_progress == null ?0:scope.row.pp_progress}}%</template>
               </el-table-column>
-              <el-table-column prop="pp_note" label="计划描述" align="center" width="120" show-overflow-tooltip>
+              <el-table-column prop="pp_note" label="计划描述" align="center" width="150" show-overflow-tooltip>
               </el-table-column>
               <el-table-column :fixed="projectPlanData.length>0?'right':false" label="操作" width="100" prop="handle">
                 <template slot-scope="scope">
@@ -83,19 +84,29 @@
             <el-tabs v-model="activeName" style="height:100%;" class="bottomtabs flexDiv-column">
               <el-tab-pane label="部件需求" name="first" class="flexDiv-column">
                 <keep-alive>
-                  <taskMaterial v-if="bottomDivShow" :currentRow='currentRow' class="flexDiv-column" source='plan'>
+                  <taskMaterial v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='plan'>
                   </taskMaterial>
                 </keep-alive>
               </el-tab-pane>
               <el-tab-pane label="资料需求" name="second" class="flexDiv-column">
                 <keep-alive>
-                  <taskData v-if="bottomDivShow" :currentRow='currentRow' class="flexDiv-column" source='plan'>
+                  <taskData v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='plan'>
                   </taskData>
                 </keep-alive>
               </el-tab-pane>
-              <el-tab-pane label="紧前作业" name="third" class="flexDiv-column">
+              <el-tab-pane label="紧前任务" name="third" class="flexDiv-column">
+                <keep-alive>
+                  <constraintTable v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='front'
+                    :taskData='sameLevelTask'>
+                  </constraintTable>
+                </keep-alive>
               </el-tab-pane>
-              <el-tab-pane label="紧后作业" name="forth" class="flexDiv-column">
+              <el-tab-pane label="紧后任务" name="forth" class="flexDiv-column">
+                <keep-alive>
+                  <constraintTable v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='behind'
+                    :taskData='sameLevelTask'>
+                  </constraintTable>
+                </keep-alive>
               </el-tab-pane>
               <el-tab-pane label="变更记录" name="fifth" class="flexDiv-column">
               </el-tab-pane>
@@ -112,8 +123,8 @@
         ref="projectPlanForm" :rules="add_rules">
         <el-row>
           <el-col :span="11">
-            <el-form-item label="作业名称" prop="pp_name">
-              <el-input style="width:200px;" v-model="projectPlanModel.pp_name" placeholder="请填写作业名称">
+            <el-form-item label="任务名称" prop="pp_name">
+              <el-input style="width:200px;" v-model="projectPlanModel.pp_name" placeholder="请填写任务名称">
               </el-input>
             </el-form-item>
           </el-col>
@@ -205,6 +216,7 @@ import { mapMutations } from "vuex";
 import taskMaterial from "../schedule-task/taskTab/taskMaterial";
 import taskData from "../schedule-task/taskTab/taskData";
 import schedule from "../control/ScheduleControl";
+import constraintTable from "./common/constraintTable";
 
 export default {
   data() {
@@ -237,7 +249,7 @@ export default {
       ],
       add_rules: {
         pp_name: [
-          { required: true, message: "请填写作业名称", trigger: "blur" }
+          { required: true, message: "请填写任务名称", trigger: "blur" }
         ],
         pp_period: [{ required: true, message: "请填写工期", trigger: "blur" }],
         pp_progress: [
@@ -249,7 +261,8 @@ export default {
   components: {
     taskMaterial,
     taskData,
-    schedule
+    schedule,
+    constraintTable
   },
   filters: {
     releaseStatusFilter(value) {
@@ -286,6 +299,14 @@ export default {
       if (val) {
         this.searchProjectGroupData();
       }
+    }
+  },
+  computed: {
+    sameLevelTask() {
+      var allData = this.projectPlanData.filter(
+        item => item.pp_id != this.currentRow.pp_id
+      ); //去除自身
+      return allData;
     }
   },
   methods: {
@@ -432,6 +453,22 @@ export default {
           }
         }
       });
+    },
+    //负责人
+    getCharge(row) {
+      if (row.wp_name) {
+        var charge = row.wp_name;
+        if (row.dept_name) {
+          if (row.emp_name) {
+            return charge + "(" + row.emp_name + ")";
+          } else {
+            return charge + "(" + row.dept_name + ")";
+          }
+        } else {
+          return charge;
+        }
+      }
+      return "无";
     },
     //选择组织
     handleSelectTreeClick(data) {

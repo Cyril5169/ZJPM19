@@ -2,7 +2,7 @@
   <div>
     <div class="tbar">
       <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchData"></el-button>
-      <el-input size="small" @keyup.enter.native="refreshDataData" placeholder="请输入物料名称" v-model="dataCondition"
+      <el-input size="small" @keyup.enter.native="refreshDataData" placeholder="请输入资料名称" v-model="dataCondition"
         clearable style="width:250px;">
         <el-button size="small" @click="refreshDataData" slot="append" icon="el-icon-search">搜索</el-button>
       </el-input>
