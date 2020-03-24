@@ -49,7 +49,7 @@
             style="width:100%;" :data="problemSolutionDate" tooltip-effect="dark" highlight-current-row border
             @selection-change="handleSelectionChange" @row-click="handleRowClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
-            <el-table-column type="index" width="50" align="center"></el-table-column>
+            <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
             <el-table-column prop="ps_note" label="方案描述" align="center" show-overflow-tooltip >
             </el-table-column>
             <el-table-column prop="ps_supply_user" label="提供者" align="center" width="120">
@@ -212,7 +212,7 @@
     <el-dialog v-if="addPSDVisible" v-dialogDrag width="450px" :title="addOrNot?'新增方案详情':'编辑方案详情'"
       :close-on-click-modal="false" :visible.sync="addPSDVisible">
       <zj-form size="small" :newDataFlag='addPSDVisible' :model="PSDModel" label-width="100px" ref="PSDShowForm"
-        :rules="add_rules">
+        :rules="add_PSDrules">
         <el-form-item label="详情描述" prop="psd_content">
           <el-input class="formItem" type="textarea" :rows="2" v-model="PSDModel.psd_content" placeholder="请填写详情描述">
           </el-input>
@@ -238,7 +238,7 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="提供时间" prop="psd_deadline">
+        <el-form-item label="完成时间" prop="psd_deadline">
           <el-date-picker v-model="PSDModel.psd_deadline" type="date" format="yyyy-MM-dd" value-format="yyyy-MM-dd"
             placeholder="选择时间" style="width:50%"></el-date-picker>
         </el-form-item>
@@ -354,6 +354,26 @@ export default {
           { required: true, message: "请填写解决方案", trigger: "blur" }
         ]
       },
+      add_PSDrules:{
+        psd_content: [
+          { required: true, message: "请填写方案详情", trigger: "change" }
+        ],
+        psd_deadline: [
+          { required: true, message: "请选择要求完成时间", trigger: "change" }
+        ],
+        psd_releasestate: [
+          { required: true, message: "请选择详情状态", trigger: "change" }
+        ],
+        psd_direction: [
+          { required: true, message: "请选择发布方向", trigger: "change" }
+        ],
+        psd_emp: [
+          { required: true, message: "请选择负责人", trigger: "change" }
+        ],
+        psd_dept: [
+          { required: true, message: "请选择负责部门", trigger: "change" }
+        ]
+      },
       addOrNot: true,
       activeName: "first",
       bottomDivShow: false,
@@ -444,7 +464,7 @@ export default {
       this.PSDModel.psd_dept = data.dept_id;
       this.PSDModel.dept_name = data.dept_name;
       this.$refs.select_dept.blur();
-      //this.selectEmp()
+      this.selectEmp()
     },
 
     selectEmp() {
