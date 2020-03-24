@@ -8,7 +8,7 @@
             <div slot="header" >
               <span >编码分类</span>
             </div>
-            <div>
+            <div style="height:495px">
               <div class="tbar" style="width:88%">
                 <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
                 <el-input size="small" @keyup.enter.native="refreshCodeType" v-model="condition" clearable placeholder="请输入编码" style="width:250px">
@@ -17,7 +17,7 @@
                 <el-button size="small" style="margin-left:15px" @click="addNewTypeShow" type="primary">新增</el-button>
               </div>
               <el-table ref="singleTable" :data="codeTypeData" highlight-current-row row-key="ct_id" @row-click="handleRowClick"
-                style="width: 100%" size="medium">
+                style="width: 100%;max-height:445px;overflow:auto" size="medium">
                 <el-table-column label="序号" type="index" width="50" align="center">
                 </el-table-column>
                 <el-table-column property="ct_code" label="分类编码" align="center" width="80px">
@@ -59,7 +59,7 @@
             <div slot="header">
               <span>分类明细</span>
             </div>
-            <div >
+            <div style="height:495px">
               <div class="tbar" style="width:88%">
                 <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchCode"></el-button>
                 <el-input size="small" placeholder="请输入内容" style="width:250px" @keyup.enter.native="refreshCodeData" v-model="codeCondition">
@@ -70,16 +70,16 @@
               </div>
               <div v-if="rightDataShow">
               <el-table ref="singleTable" :data="codeData" highlight-current-row
-                style="width: 100%" size = "medium">
+                style="width: 100%;max-height:445px;overflow:auto" size = "medium" >
                 <el-table-column label="序号" type="index" width="50" align="center">
                 </el-table-column>
                 <!-- <el-table-column property="ct_id" label="分类ID" align="center" width="100">
                 </el-table-column> -->
-                <!-- <el-table-column property="cc_code" label="编码code" align="center" width="100">
-                </el-table-column> -->
-                <el-table-column property="cc_name" label="编码名称"  align="center" width="150px">
+                <el-table-column property="cc_code" label="编码code" align="center" width="100">
                 </el-table-column>
-                <el-table-column property="cc_note" label="编码说明" align="center" width="150px">
+                <el-table-column property="cc_name" label="编码名称"  align="center" width="100px">
+                </el-table-column>
+                <el-table-column property="cc_note" label="编码说明" align="center" width="120px">
                 </el-table-column>
                 <!-- <el-table-column property="c_id" label="公司编号" align="center" width="80">
                 </el-table-column>
@@ -97,7 +97,7 @@
                 </el-table-column>
                 <el-table-column property="create_user" label="创建人员" align="center" width="80">
                 </el-table-column> -->
-                <el-table-column label="操作" width="130" prop="handle" align="center">
+                <el-table-column label="操作" width="120" prop="handle" align="center">
                   <template slot-scope="scope">
                     <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editCodeShow(scope.row)">
                     </el-button>
