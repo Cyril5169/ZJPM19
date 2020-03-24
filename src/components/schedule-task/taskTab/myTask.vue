@@ -33,19 +33,25 @@
             <el-table-column type="selection" width="30" align="center"></el-table-column>
             <el-table-column type="index" width="50" align="center" label="序号">
             </el-table-column>
-            <el-table-column prop="t_name" label="任务名称" align="left" width="100" show-overflow-tooltip>
+            <el-table-column prop="t_name" label="任务名称" align="center" width="100" show-overflow-tooltip>
             </el-table-column>
-            <el-table-column prop="t_status" label="执行状态" align="left" width="90" show-overflow-tooltip>
+            <el-table-column prop="t_status" label="执行状态" align="center" width="90" show-overflow-tooltip>
             </el-table-column>
-            <el-table-column prop="p_no" label="所属项目" align="left" width="100" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="t_note" label="备注" align="left" width="80" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="t_origin" label="来源" align="left" width="80" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="t_period" label="工期" align="left" width="80" show-overflow-tooltip></el-table-column>
-            <el-table-column prop="t_early_startdate" label="计划开始时间" align="left" width="110" show-overflow-tooltip>
+            <el-table-column prop="p_no" label="所属项目" align="center" width="100" show-overflow-tooltip>
+              <template slot-scope="scope">{{scope.row.p_no | renderFilter(projectDataFilter)}}</template>
             </el-table-column>
-            <el-table-column prop="t_last_enddate" label="计划结束时间" align="left" width="110" show-overflow-tooltip>
+            <el-table-column prop="t_note" label="备注" align="center" width="80" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="t_origin" label="来源" align="center" width="80" show-overflow-tooltip>
+              <!-- <template slot-scope="scope">{{scope.row.t_origin | originTypeFilter}}</template> -->
+              <template slot-scope="scope">{{scope.row.t_origin | originTrans}}</template>
             </el-table-column>
-            <el-table-column prop="t_release_state" label="进度" align="left" width="80" show-overflow-tooltip>
+            <el-table-column prop="t_period" label="工期" align="center" width="80" show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column prop="t_early_startdate" label="计划开始时间" align="center" width="110" show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column prop="t_last_enddate" label="计划结束时间" align="center" width="110" show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column prop="t_release_state" label="进度" align="center" width="80" show-overflow-tooltip>
             </el-table-column>
             <el-table-column label="操作" prop="handle" align="center">
               <template slot-scope="scope">
@@ -129,6 +135,7 @@ export default {
       selection: [], //选中行数据
       project_options: [],
       select_project: "", //下拉框绑定的项目号字段
+      projectDataFilter: [], //项目渲染数据,
       tr_mainOptions: [
         //是否为主要执行
         {
@@ -156,6 +163,28 @@ export default {
       }
     }
   },
+  filters: {
+    // originTypeFilter(value) {
+    //   switch (value) {
+    //     case "temp":
+    //       return "临时";
+    //       break;
+    //     case "plan":
+    //       return "计划";
+    //       break;
+    //   }
+    // },
+    originTrans(value) {
+      switch (value) {
+        case "temp":
+          return "临时";
+          break;
+        case "plan":
+          return "计划";
+          break;
+      }
+    }
+  },
   methods: {
     //查找项目数据
     selectProject() {
@@ -175,17 +204,18 @@ export default {
     //搜索
     search() {
       this.condition = "";
-            this.select_project = "";
+      this.select_project = "";
       this.refreshData();
     },
     //刷新任务执行者数据
     refreshData() {
       this.bottomDivShow = false;
       this.z_get("api/task/treeList", {
-       condition: this.condition,
+        condition: this.condition,
         p_no: this.select_project
       })
         .then(res => {
+          this.projectDataFilter = res.dict.p_no;
           console.log(res);
           this.tableData = res.data;
         })

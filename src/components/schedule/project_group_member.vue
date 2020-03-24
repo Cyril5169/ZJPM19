@@ -27,8 +27,7 @@
         <el-table-column prop="pgm_endtime" label="退出时间" align="center" width="200" show-overflow-tooltip>
         </el-table-column>
         <el-table-column prop="is_enabled" label="是否生效" align="center" width="90">
-          <template slot-scope="scope">{{ scope.row.is_enabled | enabledTypeFilter}}
-          </template>
+          <template slot-scope="scope">{{scope.row.is_enabled | enabledTypeFilter}}</template>
         </el-table-column>
         <el-table-column label="操作" align="center" prop="handle">
           <template slot-scope="scope">
@@ -46,14 +45,15 @@
       <zj-form :model="memberModel" label-width="100px" ref="memberForm" :rules="add_rules" size="small"
         :newDataFlag='addEmpVisiable'>
         <el-form-item label="部门" prop="dept_id">
-          <el-select :disabled="!addOrNot" class="formItem" v-model="memberModel.dept_id" placeholder="请选择部门">
+          <el-select v-model="memberModel.dept_id" @change="refreshEmployee(memberModel.dept_id)" placeholder="请选择部门">
             <el-option v-for="item in deptDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="人员" prop="emp_id">
-          <el-select :disabled="!addOrNot" class="formItem" v-model="memberModel.emp_id" placeholder="请选择人员">
+        <el-form-item label="人员"  prop="emp_id">
+          <el-select v-model="memberModel.emp_id" :disabled="!memberModel.dept_id" placeholder="请选择人员">
             <el-option v-for="item in empDataFilter" :key="item.value" :label="item.display" :value="item.value">
+            <!-- <el-option v-for="item in emp_options" :key="item.value" :label="item.label" :value="item.value"> -->
             </el-option>
           </el-select>
         </el-form-item>
@@ -97,6 +97,7 @@ export default {
       memberModel: {},
       empDataFilter: [],
       deptDataFilter: [],
+      emp_options: [],
       addOrNot: true, //是否新增
       addEmpText: "",
       add_rules: {
@@ -104,17 +105,27 @@ export default {
       },
       enabledTypeOptions: [
         {
-          value: "0",
+          value: 0,
           label: "否"
         },
         {
-          value: "1",
+          value: 1,
           label: "是"
         }
       ]
     };
   },
   filters: {
+    enabledTypeFilter(value) {
+      switch (value) {
+        case 0:
+          return "否";
+          break;
+        case 1:
+          return "是";
+          break;
+      }
+    },
     datatrans(value) {
       if (!value || value == "9999-12-31") return "";
       //时间戳转化大法
@@ -131,21 +142,20 @@ export default {
       let s = date.getSeconds();
       s = s < 10 ? "0" + s : s;
       return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
-    },
-    enabledTypeFilter(value) {
-      switch (value) {
-        case "0":
-          return "否";
-          break;
-        case "1":
-          return "是";
-          break;
-        // default :
-        //   return "否";
-        //   break;
-
-      }
     }
+    // enabledTypeFilter(value) {
+    //   switch (value) {
+    //     case "0":
+    //       return "否";
+    //       break;
+    //     case "1":
+    //       return "是";
+    //       break;
+    //     // default :
+    //     //   return "否";
+    //     //   break;
+    //   }
+    // }
   },
   watch: {
     currentRow: {
@@ -181,6 +191,34 @@ export default {
       this.condition = "";
       this.refreshData();
     },
+    //查找部门人员数据
+    selectEmployee(deptId) {
+      this.emp_options = [];
+      this.z_get(
+        "api/dept/dept_emp",
+        { condition: null, deptId: deptId },
+        { loading: false }
+      )
+        .then(res => {
+          if (
+            res.code == 0 &&
+            JSON.stringify(this.emp_options) != JSON.stringify(res.data)
+          ) {
+            this.emp_options = res.data.dic;
+            console.log(emp_options);
+            for (var i = 0; i < this.emp_options.length; i++) {
+              this.emp_options[i].label = this.emp_options[i].emp_name;
+              this.emp_options[i].value = this.emp_options[i].emp_id;
+            }
+          }
+        })
+        .catch(res => {});
+    },
+    //刷新新增及编辑任务弹出框中的负责人员信息
+    refreshEmployee(deptId) {
+      this.selectEmployee(deptId);
+      // this.$refs.form_emp_id.resetField(); //改变选中负责部门，将负责人员重置
+    },
     //表格树选中改变
     handleSelectionChange(val) {
       this.selection = val;
@@ -192,7 +230,7 @@ export default {
         group_id: this.currentRow.group_id,
         emp_id: "",
         dept_id: "",
-        is_enabled:"",
+        is_enabled: "",
         pgm_starttime: "",
         pgm_endtime: ""
       };
@@ -237,6 +275,7 @@ export default {
               });
           } else {
             this.memberModel.UpdateColumns = this.$refs.memberForm.UpdateColumns;
+            console.log(this.memberModel.UpdateColumns);
             if (this.memberModel.UpdateColumns) {
               this.z_put("api/project_group_member", this.memberModel)
                 .then(res => {
@@ -265,6 +304,7 @@ export default {
     //编辑数据
     editmemberShow(row) {
       this.memberModel = JSON.parse(JSON.stringify(row));
+      this.selectEmployee(this.memberModel.dept_id);
       this.addEmpText = "编辑成员";
       this.addOrNot = false;
       this.addEmpVisiable = true;

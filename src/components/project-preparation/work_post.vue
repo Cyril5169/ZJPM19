@@ -1,38 +1,39 @@
 <template>
   <div class="work_post">
-    
-      <div class="tbar">
-        <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
-        <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入岗位名称" v-model="condition" clearable
-          style="width:250px;">
-          <el-button size="small" @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
-        </el-input>
-        <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewWorkPost()">新增岗位</el-button>
-       <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">删除选中岗位({{selection.length}})
-        </el-button>
-      </div>
-      <div class="gridTable">
-        <el-table ref="workPostTable" style="width: 100%;" :height="menuTableHeight" :data="wpData" tooltip-effect="dark"
-          highlight-current-row row-key="wp_id" default-expand-all @selection-change="handleSelectionChange"
-          @select-all="handleSelectAll" @row-click="handleRowClick">
-          <el-table-column type="selection" width="55" align="center"></el-table-column> 
-          <el-table-column prop="wp_id" label="序号" align="left" width="130" sortable></el-table-column>
-          <el-table-column prop="wp_name" label="岗位名称" align="left" width="190" sortable></el-table-column>
-          <el-table-column prop="wp_type" label="岗位类型" align="left" width="190" sortable>
-            <template slot-scope="scope">{{scope.row.wp_type | stTypeTrans}}</template>
-          </el-table-column>
-          <el-table-column prop="wp_note" label="岗位说明" align="left" show-overflow-tooltip></el-table-column>
-          <el-table-column label="操作" width="160" prop="handle">
-            <template slot-scope="scope">
-              <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editWorkPostShow(scope.row)">
-              </el-button>
-              <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-  
+
+    <div class="tbar">
+      <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
+      <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入岗位名称" v-model="condition" clearable
+        style="width:250px;">
+        <el-button size="small" @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
+      </el-input>
+      <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewWorkPost()">新增岗位</el-button>
+      <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">
+        删除选中岗位({{selection.length}})
+      </el-button>
+    </div>
+    <div class="gridTable">
+      <el-table ref="workPostTable" style="width: 100%;" :height="menuTableHeight" :data="wpData" tooltip-effect="dark"
+        highlight-current-row row-key="wp_id" default-expand-all @selection-change="handleSelectionChange"
+        @select-all="handleSelectAll" @row-click="handleRowClick">
+        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <el-table-column type="index" label="序号" align="center" width="80" sortable></el-table-column>
+        <el-table-column prop="wp_name" label="岗位名称" align="left" width="180" sortable></el-table-column>
+        <el-table-column prop="wp_type" label="岗位类型" align="left" width="190" sortable>
+          <template slot-scope="scope">{{scope.row.wp_type | stTypeTrans}}</template>
+        </el-table-column>
+        <el-table-column prop="wp_note" label="岗位说明" align="left" show-overflow-tooltip></el-table-column>
+        <el-table-column label="操作" width="160" prop="handle">
+          <template slot-scope="scope">
+            <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editWorkPostShow(scope.row)">
+            </el-button>
+            <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+
     <el-dialog v-if="addwpVisiable" v-dialogDrag width="450px" :title="addwpText" :close-on-click-modal="false"
       :visible.sync="addwpVisiable">
       <zj-form :model="workPostModel" label-width="100px" ref="workPostForm" :rules="add_rules" size="small"
@@ -45,7 +46,7 @@
           <el-select v-model="workPostModel.wp_type" filterable placeholder="请选择岗位类型">
             <el-option v-for="item in stType_options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
-          </el-select>    
+          </el-select>
         </el-form-item>
         <el-form-item label="岗位说明" prop="wp_note">
           <el-input class="formItem" type="textarea" :rows="2" v-model="workPostModel.wp_note" placeholder="说明信息">
@@ -87,8 +88,12 @@ export default {
         }
       ],
       add_rules: {
-        wp_name: [{ required: true, message: "请填写岗位名称", trigger: "blur" }],     
-        wp_type: [{ required: true, message: "请选择岗位类型", trigger: "change" }]       
+        wp_name: [
+          { required: true, message: "请填写岗位名称", trigger: "blur" }
+        ],
+        wp_type: [
+          { required: true, message: "请选择岗位类型", trigger: "change" }
+        ]
       },
       menuTableHeight: 0
     };
@@ -136,7 +141,7 @@ export default {
     }
   },
   methods: {
- refreshData() {
+    refreshData() {
       this.z_get("api/work_post", { condition: this.condition })
         .then(res => {
           this.wpData = res.data;
@@ -275,13 +280,28 @@ export default {
       }
       return result;
     },
-
+    //全选选中子节点
+    handleSelectAll(selection) {
+      var val = this.wpData;
+      var select = false; //全选还是反选
+      for (var i = 0; i < selection.length; i++) {
+        if (selection[i].wp_id == val[0].wp_id) {
+          select = true;
+          break;
+        }
+      }
+      for (var i = 0; i < val.length; i++) {
+        if (val[i].children && val[i].children.length) {
+          this.selectChildren(val[i].children, select);
+        }
+      }
+    },
     //点击行可以切换选中状态
     handleRowClick(row, column) {
       if (column.property != "handle")
         this.$refs.workPostTable.toggleRowSelection(row);
     },
-        //重新计算table高度
+    //重新计算table高度
     resizeTable() {
       this.menuTableHeight = 0;
       let that = this;
