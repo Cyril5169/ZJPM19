@@ -1,7 +1,27 @@
 <template>
   <div class="taskManage">
     <div class="containAll">
-      <div class="topLayout">
+      <el-tabs v-model="activeName2">
+        <el-tab-pane label="待确认" name="confirmedTask">
+          <keep-alive>
+            <taskConfirmed :currentRow='currentRow'>
+            </taskConfirmed>
+          </keep-alive>
+        </el-tab-pane>
+        <el-tab-pane label="我的任务" name="myTask">
+          <keep-alive>
+            <myTask :currentRow='currentRow'>
+            </myTask>
+          </keep-alive>
+        </el-tab-pane>
+        <el-tab-pane label="已完成任务" name="completedTask">
+          <keep-alive>
+            <finishedTask :currentRow='currentRow'>
+            </finishedTask>
+          </keep-alive>
+        </el-tab-pane>
+
+        <!-- <div class="topLayout">
         <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
           <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入任务名称" v-model="condition" clearable
@@ -83,123 +103,11 @@
             </el-table-column>
           </el-table>
         </div>
-      </div>
-      <div class="bottomLayout">
-        <el-tabs v-model="activeName" style="{height:bottomDivShow?'300px':'50px'}">
-          <el-tab-pane label="任务执行者" name="executor">
-            <keep-alive>
-              <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
-              </taskExecutor>
-            </keep-alive>
-          </el-tab-pane>
-          <el-tab-pane label="物料需求" name="material">
-            <keep-alive>
-              <taskMaterial v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskMaterial>
-            </keep-alive>
-          </el-tab-pane>
-          <el-tab-pane label="资料需求" name="data">
-            <keep-alive>
-              <taskData v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskData>
-            </keep-alive>
-          </el-tab-pane>
-          <el-tab-pane label="输入文档" name="dataFile">
-            <keep-alive>
-              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow' ></taskDataFile>
-            </keep-alive>
-          </el-tab-pane>
-        </el-tabs>
-        <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
-          @click="bottomDivShow=!bottomDivShow"></i>
-      </div>
+      </div> -->
+      </el-tabs>
+
     </div>
 
-    <!-- 新增任务、子任务、编辑任务-->
-    <el-dialog width="450px" :title="addTaskText" :close-on-click-modal="false" :visible.sync="addTaskVisiable"
-      top="5vh" @closed="refreshForm">
-      <zj-form :model="taskModel" :newDataFlag='addTaskVisiable' label-width="110px" ref="taskForm" :rules="task_rules">
-        <el-form-item label="任务名称" prop="t_name">
-          <el-input class="formItem" v-model="taskModel.t_name" placeholder="请输入任务名称">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="所属项目" prop="p_no">
-          <el-select v-model="taskModel.p_no" placeholder="请选择所属项目" :disabled="taskModel.t_pid!=''">
-            <el-option v-for="item in project_options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="负责部门" prop="dept_id">
-          <el-select v-model="taskModel.dept_id" @change="refreshEmployee(taskModel.dept_id)" placeholder="请选择负责部门">
-            <el-option v-for="item in dept_options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="负责人" ref="form_emp_id" prop="emp_id">
-          <el-select v-model="taskModel.emp_id" placeholder="请选择负责人" :disabled="!taskModel.dept_id">
-            <el-option v-for="item in emp_options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="计划开始时间" prop="t_early_startdate">
-          <el-date-picker v-model="taskModel.t_early_startdate" type="date" format="yyyy 年 MM 月 dd 日"
-            value-format="yyyy-MM-dd" placeholder="请选择日期" :picker-options="pickerOptions" style="width:218px">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="计划结束时间" prop="t_last_enddate">
-          <el-date-picker v-model="taskModel.t_last_enddate" type="date" format="yyyy 年 MM 月 dd 日"
-            value-format="yyyy-MM-dd" placeholder="请选择日期" :picker-options="pickerOptions" style="width:218px">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="工期(天)" prop="t_period">
-          <el-input class="formItem" v-model="taskModel.t_period" placeholder="请填写工期" oninput="value=value.replace(/[^\d.]/g,'')
-                                .replace(/^\./g, '').replace(/\.{2,}/g, '.')
-                                .replace('.', '$#$').replace(/\./g, '')
-                                .replace('$#$', '.')
-                                .slice(0,value.indexOf('.') === -1? value.length: value.indexOf('.') + 3)">
-          </el-input>
-        </el-form-item>
-        <!-- <el-form-item label="工期(天)" prop="t_period" v-if="!p_taskModel.t_period">
-          <el-input-number v-model="taskModel.t_period" :min=0 controls-position="right"
-            style="width:218px;text-align:left">
-          </el-input-number>
-        </el-form-item>
-        <el-form-item label="工期(天)" prop="t_period" v-else>
-          <el-input-number v-model="taskModel.t_period" :min=0 :max="p_taskModel.t_period" controls-position="right"
-            style="width:218px;text-align:left">
-          </el-input-number>
-        </el-form-item> -->
-        <el-form-item label="备注">
-          <el-input class="formItem" type="textarea" :rows="2" v-model="taskModel.t_note" placeholder="">
-          </el-input>
-        </el-form-item>
-        <el-form-item style="text-align:center;margin-right:70px;">
-          <el-button type="primary" @click="onSaveTaskClick" style="margin-left:-30px;">保&nbsp;&nbsp;存</el-button>
-          <el-button @click="addTaskVisiable = false">取&nbsp;&nbsp;消</el-button>
-        </el-form-item>
-      </zj-form>
-    </el-dialog>
-    <!-- 设置执行者-->
-    <el-dialog width="450px" :title="setExecutorText" :close-on-click-modal="false" :visible.sync="setExecutorVisiable"
-      top="25vh" @closed="refreshExecutorForm" :append-to-body="true">
-      <el-form :model="executorModel" label-width="100px" ref="executorForm" :rules="executor_rules">
-        <el-form-item label="部门" prop="dept_id">
-          <el-select v-model="executorModel.dept_id" @change="refreshExecutorEmps(executorModel.dept_id)"
-            placeholder="请选择部门">
-            <el-option v-for="item in dept_options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="人员" ref="exe_emp_id" prop="emp_id">
-          <el-select v-model="executorModel.emp_id" placeholder="请选择人员" :disabled="!executorModel.dept_id">
-            <el-option v-for="item in emp_options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item style="text-align:center;margin-right:20px;">
-          <el-button type="primary" @click="EditExecutor" style="margin-left:-60px;">保&nbsp;&nbsp;存</el-button>
-          <el-button @click="setExecutorVisiable = false">取&nbsp;&nbsp;消</el-button>
-        </el-form-item>
-      </el-form>
-    </el-dialog>
   </div>
 </template>
 
@@ -209,13 +117,16 @@ import taskExecutor from "@/components/schedule-task/taskTab/taskExecutor";
 import taskMaterial from "@/components/schedule-task/taskTab/taskMaterial";
 import taskData from "@/components/schedule-task/taskTab/taskData";
 import taskDataFile from "@/components/schedule-task/taskTab/taskDataFile";
+import taskConfirmed from "@/components/schedule-task/taskTab/taskConfirmed";
+import myTask from "@/components/schedule-task/taskTab/myTask";
+import finishedTask from "./taskTab/finishedTask";
+
 export default {
   name: "taskManage",
   components: {
-    taskExecutor,
-    taskMaterial,
-    taskData,
-    taskDataFile
+    finishedTask,
+    taskConfirmed,
+    myTask
   },
   data() {
     return {
@@ -244,6 +155,7 @@ export default {
       dept_options: [],
       emp_options: [],
       activeName: "executor",
+      activeName2: "myTask",
       bottomDivShow: false,
       origin_options: [
         {
@@ -653,12 +565,22 @@ export default {
     //提交新增及编辑结果
     onSaveTaskClick() {
       this.$refs.taskForm.validate(valid => {
-        if (valid) {     //判断子节点任务的工期限制
-          if (this.p_taskModel.t_period!=""&&this.taskModel.t_period > this.p_taskModel.t_period) {
-            this.$alert("工期不能超过父节点任务的工期："+this.p_taskModel.t_period+"天", "提示", {
-              confirmButtonText: "确定",
-              type: "warning"
-            });
+        if (valid) {
+          //判断子节点任务的工期限制
+          if (
+            this.p_taskModel.t_period != "" &&
+            this.taskModel.t_period > this.p_taskModel.t_period
+          ) {
+            this.$alert(
+              "工期不能超过父节点任务的工期：" +
+                this.p_taskModel.t_period +
+                "天",
+              "提示",
+              {
+                confirmButtonText: "确定",
+                type: "warning"
+              }
+            );
             return;
           }
           if (this.addOrNot) {

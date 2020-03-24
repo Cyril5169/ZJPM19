@@ -29,7 +29,7 @@
             @select-all="handleSelectAll" @row-click="handleRowClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <!-- <el-table-column prop="pc_no" label="项目类型编号" align="center" width="150"></el-table-column> -->
-            <el-table-column prop="pc_name" label="项目类型名称" align="center" width="150"></el-table-column>
+            <el-table-column prop="pc_name" label="项目类型名称" sortable align="center" width="150"></el-table-column>
             <el-table-column prop="pc_note" label="说明" align="center" width="480"></el-table-column>
             <el-table-column label="操作" width="370" prop="handle">
               <template slot-scope="scope">
@@ -45,7 +45,7 @@
       </div>
     </div>
     <el-dialog width="500px" :title="addTaskText" :close-on-click-modal="false" :visible.sync="addTaskVisiable"
-      top="5vh" @closed="refreshForm">
+      top="5vh" >
       <el-form :model="taskModel" label-width="120px" ref="taskForm" :rules="add_rules">
 
         <!-- <el-form-item label="项目类型编号" prop="pc_no">

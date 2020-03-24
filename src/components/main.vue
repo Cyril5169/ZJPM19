@@ -451,8 +451,7 @@ export default {
 }
 .commonStyle {
   margin: 0 auto;
-  padding: 10px 20px;
-  box-sizing: border-box;
+  padding: 10px;
   background-color: white;
   flex: 1;
   display: flex;
@@ -494,6 +493,17 @@ export default {
   cursor: pointer;
   font-size: 20px;
   line-height: 35px !important;
+}
+/* flex大包围 */
+.flexDiv-column{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.flexDiv-row{
+  flex: 1;
+  display: flex;
+  flex-direction: row;
 }
 /* 水平菜单样式 */
 .el-menu--horizontal > .el-menu-item,
@@ -560,6 +570,7 @@ export default {
 .el-card__body {
   padding: 10px !important;
   width: 100%;
+  box-sizing: border-box;
 }
 .el-dialog__body {
   padding: 20px !important;
@@ -567,9 +578,6 @@ export default {
 .el-table td,
 .el-table th {
   padding: 5px 0 !important;
-}
-.el-badge__content {
-  border: none !important;
 }
 .el-table th.gutter {
   display: table-cell !important;

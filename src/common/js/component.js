@@ -38,11 +38,13 @@ Vue.component('zj-form', {
     },
     methods: {
         getUpdateColumns() {
-            this.updateColumns = [];
+            this.updateColumns = null;
             Object.keys(this.comparativeData).forEach(key => {
                 if (key == 'children') return;
                 if (key == 'UpdateColumns') return;
+                if (this.model[key] == "" && this.comparativeData[key] == null) return;
                 if (this.model[key] != this.comparativeData[key]) {
+                    if (this.updateColumns == null) this.updateColumns = [];
                     this.updateColumns.push(key);
                 }
             });
@@ -77,7 +79,7 @@ Vue.component('zj-table', {
             let that = this;
             this.$nextTick(function () {
                 let h = that.$el.parentNode.offsetHeight;
-                that.layout.setHeight(h);
+                that.layout.setHeight(h - 1);//offsetHeight被取整了，这里多减去1
                 //that.doLayout();
             });
         }

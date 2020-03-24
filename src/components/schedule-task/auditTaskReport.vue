@@ -4,21 +4,37 @@
       <div class="topLayout">
         <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
-          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入任务名称" v-model="condition" clearable
-            style="width:200px;">
+          <el-input size="mini" @keyup.enter.native="refreshData" placeholder="请输入任务名称" v-model="condition" clearable
+            style="width:150px;">
           </el-input>
           <span style="font-size:15px;margin-left:10px">项目号:</span>
-          <el-select size="small" v-model="select_project" @change="refreshData" ref="select_project"
+          <el-select size="mini" v-model="select_project" @change="refreshData" ref="select_project"
             placeholder="请选择项目">
             <el-option v-for="item in project_options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
-          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewNode('root')">新增
+          <span style="font-size:15px;margin-left:10px">任务状态:</span>
+          <el-select size="mini" v-model="select_project" @change="refreshData" ref="select_project"
+            placeholder="请选择任务状态">
+            <el-option v-for="item in project_options" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+          <span style="font-size:15px;margin-left:10px">员工姓名:</span>
+          <el-select size="mini" v-model="select_project" @change="refreshData" ref="select_project"
+            placeholder="请选择员工">
+            <el-option v-for="item in project_options" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+          <el-button type="primary" size="mini" style="margin-left:10px;">审核通过
+          </el-button>
+          <el-button type="danger" size="mini" style="margin-left:10px;">审核不通过
+          </el-button>
+          <!-- <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewNode('root')">新增
           </el-button>
           <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewNode('children')">
             新增子任务
-          </el-button>
-          <el-dropdown style="margin-left:7px;margin-right:7px;">
+          </el-button> -->
+          <!-- <el-dropdown style="margin-left:7px;margin-right:7px;">
             <el-button size="small" :disabled="selection.length==0">
               设置执行者({{selection.length}})<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
@@ -32,9 +48,9 @@
           </el-button>
           <el-button type="primary" size="small" :disabled="selection.length==0" @click="ReleseTask(2)">
             发布到个人({{selection.length}})
-          </el-button>
+          </el-button> -->
           <el-dropdown style="margin-left:10px;">
-            <el-button size="small">
+            <el-button size="mini">
               操作<i class="el-icon-arrow-down el-icon--right"></i>
             </el-button>
             <el-dropdown-menu slot="dropdown">
@@ -86,13 +102,13 @@
       </div>
       <div class="bottomLayout">
         <el-tabs v-model="activeName" style="{height:bottomDivShow?'300px':'50px'}">
-          <el-tab-pane label="任务执行者" name="executor">
+          <el-tab-pane label="任务信息" name="executor">
             <keep-alive>
               <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
               </taskExecutor>
             </keep-alive>
           </el-tab-pane>
-          <el-tab-pane label="物料需求" name="material">
+          <el-tab-pane label="班次安排" name="material">
             <keep-alive>
               <taskMaterial v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskMaterial>
             </keep-alive>
@@ -102,9 +118,34 @@
               <taskData v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskData>
             </keep-alive>
           </el-tab-pane>
+          <el-tab-pane label="部件需求" name="dataFile">
+            <keep-alive>
+              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
+            </keep-alive>
+          </el-tab-pane>
+          <el-tab-pane label="输入物料" name="dataFile">
+            <keep-alive>
+              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
+            </keep-alive>
+          </el-tab-pane>
           <el-tab-pane label="输入文档" name="dataFile">
             <keep-alive>
-              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow' ></taskDataFile>
+              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
+            </keep-alive>
+          </el-tab-pane>
+          <el-tab-pane label="输入表单" name="dataFile">
+            <keep-alive>
+              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
+            </keep-alive>
+          </el-tab-pane>
+          <el-tab-pane label="输出文档" name="dataFile">
+            <keep-alive>
+              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
+            </keep-alive>
+          </el-tab-pane>
+          <el-tab-pane label="输出表单" name="data">
+            <keep-alive>
+              <taskData v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskData>
             </keep-alive>
           </el-tab-pane>
         </el-tabs>
@@ -653,12 +694,22 @@ export default {
     //提交新增及编辑结果
     onSaveTaskClick() {
       this.$refs.taskForm.validate(valid => {
-        if (valid) {     //判断子节点任务的工期限制
-          if (this.p_taskModel.t_period!=""&&this.taskModel.t_period > this.p_taskModel.t_period) {
-            this.$alert("工期不能超过父节点任务的工期："+this.p_taskModel.t_period+"天", "提示", {
-              confirmButtonText: "确定",
-              type: "warning"
-            });
+        if (valid) {
+          //判断子节点任务的工期限制
+          if (
+            this.p_taskModel.t_period != "" &&
+            this.taskModel.t_period > this.p_taskModel.t_period
+          ) {
+            this.$alert(
+              "工期不能超过父节点任务的工期：" +
+                this.p_taskModel.t_period +
+                "天",
+              "提示",
+              {
+                confirmButtonText: "确定",
+                type: "warning"
+              }
+            );
             return;
           }
           if (this.addOrNot) {

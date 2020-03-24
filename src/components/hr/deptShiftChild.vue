@@ -1,13 +1,21 @@
 <template>
   <div class="deptShiftTab">
     <el-card shadow="hover" class="centerCard">
-         <div class="tbar">
-      <el-button type="primary" size="small" :disabled="!currentRow.st_id" @click="showDeptShift()">
-        部门班次设置
-      </el-button>
-    </div>
-        <div style="width:600px;height:400px;">
-          <el-table ref="deptShiftTable" style="width: 100%" height="100%" :data="deptShiftData" tooltip-effect="dark" border >
+      <div>
+        <div class="tbar">
+          <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
+          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入班次名称" v-model="condition"
+            style="width:300px;">
+            <el-button @click="refreshData" slot="append" icon="el-icon-search">搜 索</el-button>
+          </el-input>
+          <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewDeptShiftShow()" :disabled="!deptId">新增部门班次</el-button>
+          <el-button size="small" type="danger" :disabled="selection.length==0" @click="deleteList">
+            批量删除({{selection.length}})
+          </el-button>
+        </div>
+        <div style="width:100%;height:390px;">
+          <el-table ref="deptShiftTable" style="width: 100%" height="100%" :data="deptShiftData" tooltip-effect="dark"
+            highlight-current-row border @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" width="70" align="center" label="序号">
             </el-table-column>
@@ -106,6 +114,9 @@ export default {
       return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
     }
   },
+  created() {
+    this.searchShift();
+  }
 };
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-  <div style="item-items">
+  <div class="item-items">
     <div class="containALL">
       <div class="topLayout">
 
@@ -20,9 +20,9 @@
         <div class="gridTable">
           <el-table ref="itemTable" style="width: 100%;" :data="itemData" tooltip-effect="dark"
             highlight-current-row border row-key="item_no" default-expand-all @selection-change="handleSelectionChange"
-            @select-all="handleSelectAll" @row-click="handleRowClick">
-            <el-table-column type="selection" width="40" align="center"></el-table-column>
-            <el-table-column type="index" label="序号" width="50" align="center"></el-table-column>
+             >
+            <el-table-column type="selection" width="55" align="center"></el-table-column>
+            <el-table-column type="index" label="序号" width="55" align="center"></el-table-column>
             <el-table-column prop="item_no" label="物料编码" width="120" sortable  align="center"></el-table-column>
             <el-table-column prop="item_name" label="物料名称" align="center" width="120" sortable ></el-table-column>
 
@@ -30,11 +30,18 @@
               <template slot-scope="scope">{{scope.row.item_unit | renderFilter(unitDataFilter)}}</template>
             </el-table-column> -->
 
-            <el-table-column prop="item_unit" label="单位" align="center" width="80"></el-table-column>
-            <el-table-column prop="auxiliary_unit" label="辅助单位" align="center" width="80"></el-table-column>
+            <!-- <el-table-column prop="item_unit" label="单位" align="center" width="80"></el-table-column> -->
+            
+            <el-table-column prop="item_unit" label="单位" align="center" sortable width="80">
+              <template slot-scope="scope">{{scope.row.item_unit | renderFilter(unitFilter)}}</template>
+            </el-table-column>
+
+            <el-table-column prop="auxiliary_unit" label="辅助单位" align="center" width="85"></el-table-column>
             <el-table-column prop="item_specification" label="规格" align="center" width="100"></el-table-column>
             <el-table-column prop="item_brand" label="品牌" align="center" width="100"></el-table-column>
-            <el-table-column prop="item_weight" label="重量" align="center" width="50"></el-table-column>
+            <el-table-column prop="item_weight" label="重量" align="center" width="55"></el-table-column>
+            
+            
 
             <el-table-column prop="it_1code" label="大类" align="center" width="100">
               <template slot-scope="scope">{{scope.row.it_1code | renderFilter(ITDataFilter1)}}</template>
@@ -46,7 +53,7 @@
               <template slot-scope="scope">{{scope.row.it_3code | renderFilter(ITDataFilter2)}}</template>
             </el-table-column>
 
-            <el-table-column label="操作" width="100" prop="handle" align="center">
+            <el-table-column label="操作" width="109" prop="handle" align="center">
               <template slot-scope="scope">
 
                 <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
@@ -62,7 +69,7 @@
 
       <!-- 新增物料 -->
       <el-dialog v-dialogDrag width="450px" :title="addItemText" :close-on-click-modal="false"
-        :visible.sync="addItemVisiable" top="5vh" @closed="refreshForm">
+        :visible.sync="addItemVisiable" top="5vh" >
         <zj-form size="small" :newDataFlag='addItemVisiable' :model="itemModel" label-width="100px" ref="itemForm"
           :rules="add_rules">
           <el-form-item label="物料名称" prop="item_name" >
@@ -70,10 +77,18 @@
             </el-input>
           </el-form-item>
 
-          <el-form-item label="单位" prop="item_unit">
+          <!-- <el-form-item label="单位" prop="item_unit">
             <el-select class="formItem" v-model="itemModel.item_unit" ref="select_unit" placeholder="请选择单位">
               <el-option v-for="item in codeType_options1" :key="item.cc_name" :label="item.cc_name"
                 :value="item.cc_name">
+              </el-option>
+            </el-select>
+          </el-form-item> -->
+
+
+          <el-form-item label="单位" prop="item_unit">
+            <el-select class="formItem" v-model="itemModel.item_unit" placeholder="请选择单位">
+              <el-option v-for="item in unitFilter" :key="item.value" :label="item.display" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
@@ -171,6 +186,8 @@ export default {
       total: 0,
       condition: "",
 
+      unitFilter:[],//单位渲染
+
       itemCondition: "",
       itemListCondition: "",
       dataCondition: "",
@@ -237,6 +254,7 @@ export default {
       this.z_get("api/item", { condition: this.condition })
         .then(res => {
           this.itemData = res.data;
+          this.unitFilter = res.dict.item_unit;          
           this.ITDataFilter1 = res.dict.it_1code;
           this.ITDataFilter2 = res.dict.it_1code;
           this.ITDataFilter3 = res.dict.it_1code;
@@ -244,14 +262,15 @@ export default {
         .catch(res => {});
     },
 
-    selectCodeType1() {
-      this.codeType_options1 = [];      
-      this.z_get("api/common_code", { ct_id: 3, condition: "" })
-        .then(res => {
-          this.codeType_options1 = res.data;
-        })
-        .catch(res => {});
-    },
+    // selectCodeType1() {
+    //   //this.codeType_options1 = [];      
+    //   this.z_get("api/common_code", { ct_id: 3, condition: "" })
+    //     .then(res => {
+    //       //this.codeType_options1 = res.data;
+    //       this.unitFilter = res.dict.item_unit;
+    //     })
+    //     .catch(res => {});
+    // },
     selectCodeType2() {
       this.codeType_options2 = [];      
       this.z_get("api/common_code", { ct_id: 5, condition: "" })
@@ -317,7 +336,7 @@ export default {
     search() {
       this.condition = "";
       this.refreshData();
-      this.selectCodeType1();
+      //this.selectCodeType1();
       this.selectCodeType2();
     },
 
@@ -326,22 +345,6 @@ export default {
       this.selection = val;
     },
 
-    //全选选中子节点
-    handleSelectAll(selection) {
-      var val = this.taskData;
-      var select = false;
-      for (var i = 0; i < selection.length; i++) {
-        if (selection[i].st_id == val[0].st_id) {
-          select = true;
-          break;
-        }
-      }
-      for (var i = 0; i < val.length; i++) {
-        if (val[i].children && val[i].children.length) {
-          this.selectChildren(val[i].children, select);
-        }
-      }
-    },
 
     //显示任务dialog
     addNewItemShow() {
@@ -465,15 +468,7 @@ export default {
       this.$refs.select_IT3.blur();
     },
 
-    //筛选物料名称
-    filterITName(id) {
-      var name = id;
-      var item = this.itemDataFilter.filter(item => item.value == id);
-      if (item.length) {
-        name = item[0].display;
-      }
-      return name;
-    },
+   
 
     //删除一个任务
     deleteOne(row) {
@@ -517,7 +512,7 @@ export default {
   mounted() {
     this.refreshData();
     this.selectItem_type1();
-    this.selectCodeType1();
+    //this.selectCodeType1();
     this.selectCodeType2();
   }
 };
@@ -526,7 +521,7 @@ export default {
 
 <style scoped>
 .item-items {
-  width: 1100px;
+  width: 1200px;
 }
 
 /* .containAll {

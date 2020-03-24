@@ -27,7 +27,7 @@
           </el-dropdown-menu>
         </el-dropdown>
       </div>
-      <div class="topContent" style="height:480px;">
+      <div class="topContent" style="height:100%;">
         <el-table ref="deptTable" style="width: 100%" height="100%" :data="tableData" tooltip-effect="dark"
           highlight-current-row row-key="dept_id" default-expand-all @selection-change="handleSelectionChange"
           @select-all="handleSelectAll" @row-click="handleRowClick" @current-change="handleCurrentChange">

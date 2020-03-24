@@ -209,7 +209,7 @@
             </div>
           </div>
           <!-- 工具栏区域 -->
-          <div class="tool-split" :style="{
+          <div v-if="initIsShowToolBar" class="tool-split" :style="{
               width: toolBarCollapse ? '8px' : initToolBarWidth + 'px',
               height: initToolBarHeight + 'px',
               top: toolBarTop + 'px',
@@ -280,6 +280,10 @@ export default {
     tableHeadCellHeight: Number, //表头单元格高度
     cellRowNum: Number, //初始显示行数
     isShowDetailArea: {
+      type: Boolean,
+      default: undefined
+    }, //是否显示右边区域
+    isShowToolBar: {
       type: Boolean,
       default: undefined
     }, //是否显示右边区域
@@ -448,6 +452,9 @@ export default {
     isShowDetailArea() {
       this.initAttribute();
     },
+    isShowToolBar() {
+      this.initAttribute();
+    },
     toolBarCollapsed() {
       this.initAttribute();
     },
@@ -494,11 +501,12 @@ export default {
       initTableHeadRowNum: 2, //初始表头行数（后面需要计算得出）
       initCellRowNum: 10, //初始显示行数
       initIsShowDetailArea: false, //是否显示右边区域（暂时没想到放什么，估计可以放图示）
+      initIsShowToolBar: true, //是否显示工具栏
       initToolBarCollapsed: false, //左边工具栏是否初始折叠
-      initToolBarHeight: 350, //工具栏高度
+      initToolBarHeight: 150, //工具栏高度
       initToolBarWidth: 60, //工具栏宽度
       initXAisWeltAuto: true, //横坐标是否自动贴边，可以精确到天或者小时
-      initLoadDataRowNum: 3, //初始加载数据所在行数
+      initLoadDataRowNum: 2, //初始加载数据所在行数
       tableHeadData1: [],
       tableHeadData2: [],
       toolBarCollapse: false, //工具栏是否被折叠标志
@@ -1293,10 +1301,17 @@ export default {
       )
         this.initIsShowDetailArea = this.isShowDetailArea;
       if (
+        this.isShowToolBar != undefined &&
+        typeof this.isShowToolBar == "boolean"
+      )
+        this.initIsShowToolBar = this.isShowToolBar;
+      if (
         this.toolBarCollapsed != undefined &&
         typeof this.toolBarCollapsed == "boolean"
-      )
+      ) {
         this.initToolBarCollapsed = this.toolBarCollapsed;
+        this.toolBarCollapse = this.initToolBarCollapsed;
+      }
       if (this.toolBarHeight && typeof this.toolBarHeight == "number")
         this.initToolBarHeight = this.toolBarHeight;
       if (
@@ -1836,7 +1851,7 @@ export default {
   user-select: none;
   transition: width 0.4s;
   box-sizing: border-box;
-  z-index: 999;
+  z-index: 1000;
 }
 .tool-area {
   height: 100%;
@@ -1856,6 +1871,7 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
+  z-index: 1000;
 }
 .split-toogle-left {
   background: url("../../assets/img/mini-left.png") no-repeat;

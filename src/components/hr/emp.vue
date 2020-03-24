@@ -1,8 +1,6 @@
 <template>
   <div class="employee">
-    <div class="containAll">
-      <div class="topLayout">
-
+    
         <div class="tbar">
           <el-button
            icon="el-icon-refresh" 
@@ -39,17 +37,17 @@
             导出
           </el-button>
         </div>
-
-
         <div class="gridTable">
-          <el-table 
+          <zj-table 
+          :autoHeight='bottomDivShow' 
           ref="taskTable" 
           style="width: 100%;" 
-          height="250px" 
-          :data="taskData" tooltip-effect="dark"
-          highlight-current-row row-key="emp_no" 
-          default-expand-all 
-          @row-click="handleRowClick">
+          height='250px'
+          :data="taskData" 
+          tooltip-effect="dark"
+          highlight-current-row row-key="emp_no"
+          @row-click="handleRowClick"
+          @row-dblclick="handleRowDBClick">
             
             <el-table-column 
             prop="emp_id" 
@@ -115,14 +113,15 @@
                 </el-button>
               </template>
             </el-table-column>
-          </el-table>
+            
+          </zj-table>
         </div>
-      </div>
-
-      <div class="bottomLayout" style="min-height:300px;">
-        <el-tabs v-model="activeName">
+      <div class="bottomLayout" >
+        <el-tabs 
+        v-model="activeName" 
+        :style="{height:bottomDivShow?'300px':'50px'}">
           <el-tab-pane label="人员技能" name="first">
-            <div v-if="bottomDataShow">
+            <div v-if="bottomDivShow">
 
               <div class="tbar">
                 <el-button 
@@ -145,6 +144,7 @@
                   >搜索</el-button>
                 </el-input>
 
+
                 <el-button 
                 type="primary" 
                 size="small" 
@@ -152,13 +152,14 @@
                 @click="addNewSkill"
                 >新增人员技能信息
                 </el-button>
+
               </div>
               <div class="gridTable">
                 <el-table 
                 ref="empItemTable" 
                 v-loading="loading" 
                 style="width:100%;" 
-                height="250" 
+                height="200" 
                 :data="empSkillData"
                 tooltip-effect="dark" 
                 highlight-current-row border >
@@ -174,11 +175,15 @@
                   prop="skill_id" 
                   label="技能名称" 
                   align="center" 
-                  width="150"
-                  ></el-table-column>
+                  width="150">
+                    <template 
+                      slot-scope="scope">
+                      {{scope.row.skill_id | renderFilter(skillDataFilter)}}
+                    </template>
+                  </el-table-column>
 
                   <el-table-column 
-                  prop="sl_id" 
+                  prop="sl_name" 
                   label="技能等级" 
                   align="center" 
                   width="150"
@@ -207,7 +212,7 @@
 
                   <el-table-column 
                   label="操作" 
-                  width="140" 
+                  width="185" 
                   prop="handle">
                     <template slot-scope="scope">
                       <el-button 
@@ -230,10 +235,13 @@
               </div>
             </div>
           </el-tab-pane>
-
         </el-tabs>
+        <i 
+        class="splitButton" 
+        :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
+        @click="bottomDivShow=!bottomDivShow"></i>
       </div>
-    </div>
+    
 
     <!-- 新增/修改人员信息 -->
     <el-dialog 
@@ -339,32 +347,93 @@
       label-width="100px" 
       ref="skillForm"
         :rules="addSkill_rules">
-        <el-form-item label="技能名称" prop="">
-          <el-input
-           v-model="skillModel.skill_id" 
-           autocomplete="off" 
-           placeholder="请填写技能名称">
-          </el-input>
+
+        <el-form-item 
+        label="技能名称" 
+        prop="skill_id">
+          <el-select 
+          v-model="skillModel.skill_id" 
+          ref="select_skill" 
+          placeholder="请选择技能名称">
+            <el-option 
+            :label="skillModel.skill_name" 
+            :value="skillModel.skill_id" 
+            style="height:auto;padding:0;">
+            <el-tree 
+              :data="skillData" 
+              node-key="skill_id" 
+              ref="tree" 
+              default-expand-all 
+              :expand-on-click-node="false"
+              highlight-current 
+              :current-node-key="skillModel.skill_id">
+                <div 
+                slot-scope="{node, data}" 
+                style="width:100%;user-select:none;"
+                  @click="handleSelectTreeDblClick(data)">
+                  {{data.skill_name}}</div>
+              </el-tree>
+            </el-option>
+          </el-select>
         </el-form-item>
 
-        <el-form-item label="技能等级" prop="">
+        <!-- <el-form-item 
+        label="技能等级" 
+        prop="sl_id">
+          <el-select 
+          v-model="skillModel.skill_id" 
+          ref="select_skill_level" 
+          placeholder="请选择技能名称">
+            <el-option 
+            :label="skillModel.skill_name" 
+            :value="skillModel.skill_id" 
+            style="height:auto;padding:0;">
+            <el-tree 
+              :data="skillData" 
+              node-key="skill_id" 
+              ref="tree" 
+              default-expand-all 
+              :expand-on-click-node="false"
+              highlight-current 
+              :current-node-key="skillModel.skill_id">
+                <div 
+                slot-scope="{node, data}" 
+                style="width:100%;user-select:none;"
+                  @click="handleSelectTreeDblClick(data)">
+                  {{data.skill_name}}</div>
+              </el-tree>
+            </el-option>
+          </el-select>
+        </el-form-item>
+ -->
+
+
+        <el-form-item label="技能等级" prop="sl_name">
           <el-input
-           v-model="skillModel.sl_id" 
+           v-model="skillModel.sl_name" 
            autocomplete="off" 
            placeholder="请填写技能等级">
           </el-input>
         </el-form-item>
-  
 
         <el-form-item label="评定人" prop="se_giveperson">
+          <el-input
+           v-model="skillModel.se_giveperson" 
+           autocomplete="off" 
+           placeholder="请填写评定人">
+          </el-input>
+        </el-form-item>
+  
+
+        <!-- <el-form-item label="技能说明" prop="se_giveperson">
           <el-input 
           class="formItem" 
           type="textarea" 
           :rows="2" 
           v-model="skillModel.se_giveperson" 
-          placeholder="请填写评定人">
+          placeholder="请填写技能说明">
           </el-input>
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item style="text-align:center;margin-right:100px;">
           <el-button 
@@ -401,7 +470,10 @@ export default {
       itemCondition: "",//搜索人员技能
       skillModel:[],
       addSkillText:"",
-      
+      skillDataFilter:[],//技能名称渲染数据
+      skillData:[],
+      bottomDivShow: false,
+
 
       limit: 10,
       currentPage: 1,
@@ -508,7 +580,7 @@ export default {
 
         skill_name: [{ required: true, message: "请选择技能名称", trigger: "blur" }],
         sl_name: [
-          { required: true, message: "请选择技能等级名称", trigger: "blur" }],
+          { required: false, message: "请选择技能等级名称", trigger: "blur" }],
         skill_note: [
           { required: true, message: "请输入技能说明", trigger: "blur" }]
       },
@@ -556,7 +628,8 @@ export default {
   methods: {
     //刷新人员
     refreshData() {
-      this.taskData=[],
+      this.taskData=[];
+      this.bottomDivShow = false;
       this.z_get("api/employee", { condition: this.condition })
         .then(res => {
           this.taskData = res.data;
@@ -569,21 +642,37 @@ export default {
       this.empSkillData = [];
       this.z_get(
         "api/skill_employee",
-        {emp_id:this.currentRow.emp_id, condition: this.itemCondition },
+        {emp_id:this.currentRow.emp_id, 
+        condition: this.itemCondition },
         { loading: false }
       )
         .then(res => {
           this.loading = false;
+          this.skillDataFilter = res.dict.skill_id;
           this.empSkillData = res.data;
         })
         .catch(res => {});
     },
+//刷新人员数据
+    selectskill() {
+      
+      this.z_get("api/skill", { condition: "" }, { loading: false })
+        .then(res => {
+          //如果不一样才赋值
+          if (JSON.stringify(this.deptData) != JSON.stringify(res.data)) {
+            this.deptData = res.data;
+          }
+        })
+        .catch(res => {});
+    },
+
+
     refreshBottom() {
       this.itemCondition = "";
       this.empSkillData = [];
       this.dataCondition = "";
       this.taskDataData = [];
-      this.bottomDataShow = false;
+      this.bottomDivShow = false;
     },
     //新增人员
     addEmpShow() {
@@ -606,9 +695,11 @@ export default {
       this.addOrNot= true;
       this.addSkillText="新增人员技能信息";
       this.skillModel = {
-        sl_id:1,
-        skill_id:1,
-
+        sl_id:"",
+        skill_id:"",
+        skill_name:"",
+        sl_name:"",
+        create_user:0,
       }
     },
     //删除单个人员技能信息
@@ -638,6 +729,11 @@ export default {
     //新增技能编辑信息
     editSkillShow(row){
       this.skillModel = JSON.parse(JSON.stringify(row));
+      
+      this.skillModel.skill_name = this.renderFilter(
+        this.skillModel.skill_id,
+        this.skillDataFilter
+      );
       this.addSkillText = "编辑人员技能信息";
       this.addOrNot = false;
       this.skillFormVisible = true;
@@ -752,6 +848,11 @@ export default {
     //显示编辑技能信息
     editItemShow(row){
       this.skillModel = JSON.parse(JSON.stringify(row));
+      this.skillModel.skill_name = this.renderFilter(
+        this.skillModel.skill_id,
+        this.skillDataFilter
+      );
+
       this.addSkillText = "编辑客户信息";
       this.addOrNot = false;
       this.skillFormVisible = true;
@@ -811,57 +912,6 @@ export default {
 
     
 
-
-/*     //保存新增技能信息
-    onSaveTechClick(){
-      this.$refs.tastTechForm.validate(valid => {
-        if (valid) {
-          if (this.addOrNot) {
-            this.z_post("api/skill_employee", this.empTechModel)
-              .then(res => {
-                this.$message({
-                  message: "新增成功!",
-                  type: "success",
-                  duration: 1000
-                });
-                this.refreshData();
-                this.addTaskVisiable = false;
-              })
-              .catch(res => {
-                this.$alert("新增失败!", "提示", {
-                  confirmButtonText: "确定",
-                  type: "error"
-                });
-              });
-          } else {
-            this.tastTechForm.UpdateColumns = this.$refs.tastTechForm.UpdateColumns;
-            if (this.empTechModel.UpdateColumns) {
-              this.z_put("api/skill_employee", this.empTechModel)
-                .then(res => {
-                  this.$message({
-                    message: "编辑成功!",
-                    type: "success",
-                    duration: 1000
-                  });
-                  this.refreshData();
-                  this.addTaskVisiable = false;
-                })
-                .catch(res => {
-                  this.$alert("编辑失败!", "提示", {
-                    confirmButtonText: "确定",
-                    type: "error"
-                  });
-                });
-            } else {
-              this.addTaskVisiable = false;
-            }
-          }
-        } else {
-          return false;
-        }
-      });
-    }, */
-
     //删除一个人员
     deleteOne(row) {
       this.z_delete("api/employee", { data: row })
@@ -918,18 +968,23 @@ export default {
 
 
 
-    //刷新人员数据
+    //刷新人员技能名称数据
     selectEmp() {
-      this.z_get("api/emp", { condition: "" }, { loading: false })
+      this.z_get("api/skill", { condition: "" }, { loading: false })
         .then(res => {
           //如果不一样才赋值
-          if (JSON.stringify(this.deptData) != JSON.stringify(res.data)) {
-            this.deptData = res.data;
+          if (JSON.stringify(this.skillData) != JSON.stringify(res.data)) {
+            this.skillData = res.data;
           }
         })
         .catch(res => {});
     },
-
+    //双击选择人员
+    handleSelectTreeDblClick(data) {
+      this.skillModel.skill_id = data.skill_id;
+      this.skillModel.skill_name = data.skill_name;
+      this.$refs.select_skill.blur();
+    },
     //点击任务行显示下面
     handleRowClick(row, column) {
       if (column.property == "handle") {
@@ -941,7 +996,16 @@ export default {
         this.refreshBottom();
         this.refreshItemData();
       }
-      this.bottomDataShow = true;
+      this.bottomDivShow = true;
+    },
+    handleRowDBClick(row, column) {
+      if (column.property == "handle") {
+        return;
+      }
+      if (JSON.stringify(this.currentRow) != JSON.stringify(row)) {
+        this.currentRow = row;
+      }
+      /* this.bottomDivShow = true; */
     },
     //删除选中的物料
     deleteSelectItem(index) {
@@ -971,39 +1035,16 @@ export default {
 </script>
 
 <style scoped>
-.employee {
+.standard-task {
   width: 1100px;
-}
-.formItem {
-  width: 300px;
 }
 .formItem2 {
   width: 200px;
 }
-.transferDiv {
-  display: inline;
+.gridTable {
+  flex: 1;
 }
-.leftTransferItem {
-  display: inline-block;
-  vertical-align: middle;
-  width: 500px;
-  height: 400px;
-}
-.rightTransferItem {
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 20px;
-  width: 350px;
-  height: 400px;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-.oneItem {
-  border: 1px solid #eee;
-  margin-bottom: 10px;
-}
-.bottomButton {
-  text-align: center;
-  margin: 10px 0;
+.bottomLayout {
+  position: relative;
 }
 </style>
