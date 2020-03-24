@@ -13,8 +13,9 @@
       </el-button>
     </div>
     <div class="gridTable">
-      <el-table ref="taskItemTable" v-loading="loading" style="width:100%;" height="100%" :data="constraintData"
-        tooltip-effect="dark" highlight-current-row border @selection-change="handleSelectionChange">
+      <zj-table :autoHeight='autoHeight' ref="taskItemTable" v-loading="loading" style="width:100%;" height="100%"
+        :data="constraintData" tooltip-effect="dark" highlight-current-row border
+        @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" width="40" align="center">
         </el-table-column>
@@ -31,7 +32,7 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>
+      </zj-table>
     </div>
 
     <!-- 新增/编辑约束 -->
@@ -77,7 +78,7 @@
 
 <script>
 export default {
-  props: ["currentRow", "source", "taskData"],
+  props: ["currentRow", "source", "taskData", "autoHeight"],
   data() {
     return {
       constraintCondition: "",

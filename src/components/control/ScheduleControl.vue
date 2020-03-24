@@ -2099,16 +2099,4 @@ export default {
   border-right-color: transparent;
   border-top-color: #ffa011;
 }
-.backgroundComplete {
-  background-color: #7ed321;
-}
-.backgroundDoing {
-  background-color: #f5a623;
-}
-.backgroundStop {
-  background-color: #d0021b;
-}
-.backgroundPause {
-  background-color: #979797;
-}
 </style>

@@ -505,6 +505,22 @@ export default {
   display: flex;
   flex-direction: row;
 }
+/* 颜色 */
+.backgroundComplete {
+  background-color: #7ed321;
+}
+.backgroundDoing {
+  background-color: #f5a623;
+}
+.backgroundStop {
+  background-color: #d0021b;
+}
+.backgroundPause {
+  background-color: #979797;
+}
+
+
+/* 以下为element组件全局样式 */
 /* 水平菜单样式 */
 .el-menu--horizontal > .el-menu-item,
 .el-menu--horizontal > .el-submenu .el-submenu__title {
