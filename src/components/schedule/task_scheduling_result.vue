@@ -48,12 +48,18 @@
         </tr>
         <!-- 排列班次 ---->
         <tr>
-          <td></td>
+          <td>
+            <el-select v-model="deptId" @change="changeDept" placeholder="请选择">
+              <el-option v-for="item in shift_operates" :key="item.dept_id" :label="item.dept_name"
+                :value="item.dept_id">
+              </el-option>
+            </el-select>
+          </td>
           <td v-for="(date,dateIndex) in tableHead" :key="dateIndex">
             <table width="100% " cellspacing=0 cellpadding=0 border=1 padding=0 style="table-layout:fixed">
               <tr>
                 <td v-for="(shift,shiftIndex) in dept_shifts" :key="shiftIndex">
-                  {{shift.name}}
+                  {{shift.ds_name}}
                 </td>
               </tr>
             </table>
@@ -65,25 +71,21 @@
           <td v-for="(date,dateIndex) in em.date" :key="dateIndex">
             <table width="100% " height="100%" cellspacing=0 cellpadding=0 padding=0 style="table-layout:fixed">
               <tr>
-                <td v-for="(shift,shiftIndex) in date" :key="shiftIndex">
+                <td v-for="(shift,shiftIndex) in date.shift" :key="shiftIndex">
                   <table width="100% " height="100%" cellspacing=0 cellpadding=0 padding=0 style="table-layout:fixed">
-                    <tr v-for="(task,taskIndex) in shift" :key="taskIndex">
+                    <tr v-for="(task,taskIndex) in shift.task" :key="taskIndex">
                       <td>
-                        {{task.task}}
+                        {{task.t_name}}
                       </td>
                     </tr>
                   </table>
-
                 </td>
               </tr>
             </table>
           </td>
         </tr>
-
       </table>
-
     </el-main>
-
   </el-container>
 
 </template>
@@ -93,69 +95,52 @@ export default {
   name: "scheduling_note_type",
   data() {
     return {
+      deptId: '',
       pushFlag: 0,
       firstDay: new Date(),
+      endDay: new Date(),
       dayNum: 7,//视图显示天数,可添加下拉框前端设置一两周
-      dept_shifts: [
-        {
-          name: "早",
-          start: "7:00",
-          end: "17:00",
-        },
-        {
-          name: "中",
-          start: "17:00",
-          end: "24:00",
-        }
-      ],
+      dept_shifts: [],
+      shift_operates: [],
+      shift_operate: [],
       weeks: [],
       resultList: [
-        {
-          name: "张三",
-          date: '2020-03-18',
-          shift: "早",
-          task: "装配A",
-        },
-        {
-          name: "张三",
-          date: '2020-03-18',
-          shift: "早",
-          task: "装配C",
-        },
-        {
-          name: "张三",
-          date: '2020-03-18',
-          shift: "早",
-          task: "装配B",
-        },
-        {
-          name: "张三",
-          date: '2020-03-18',
-          shift: "中",
-          task: "质检B",
-        },
-        {
-          name: "张三",
-          date: '2020-03-19',
-          shift: "中",
-          task: "装配A",
-        },
-
-        {
-          name: "李四",
-          date: '2020-03-19',
-          shift: "早",
-          task: "装配C",
-        },
-        {
-          name: "王五",
-          date: '2020-03-16',
-          shift: "早",
-          task: "质检D",
-        },
-
+        // {
+        //   tsr_id: 1,//排班结果id
+        //   ds_id: 1,//班次id 
+        //   t_id: 3,//任务id
+        //   emp_id: 1,//员工id
+        //   tsr_date: "03-24",//任务所排日期
+        //   dept_id: 1,//部门id
+        //   emp_name: "张三",//
+        //   date: '2020-03-18',
+        //   shift: "早",
+        //   task: "装配A",//原任务名称
+        //   t_name: "装配AA",//任务名称
+        //   t_note: "任务备注",
+        //   t_period: 2,//任务工期
+        //   t_last_enddate: new Date(),//最晚结束
+        //   t_early_startdate: new Date(),//最早开始
+        //   t_shiftcount: 5,//所需总数
+        //   t_needshifts: 2,//尚需数
+        //   t_flow_status: 1,//流转状态
+        //   t_priority: 1,//优先级
+        // },
       ],
-      employees: [],
+      employees: [
+        // {
+        //   emp_name: "张三",
+        //   emp_id: '1',
+        // },
+        // {
+        //   emp_name: "李四",
+        //   emp_id: '2',
+        // },
+        // {
+        //   emp_name: "王五",
+        //   emp_id: '3',
+        // },
+      ],
       tree: [],
       page: 0,
 
@@ -164,11 +149,26 @@ export default {
   },
 
   created() {
-    this.refreshTable();
+    this.GetShiftOprate();
 
-    // console.log(this.tree);
+    this.refreshTable();
   },
   methods: {
+    //改变部门
+    changeDept() {
+      // console.log(this.shift_operates);
+      this.shift_operate.slice(0, this.shift_operate.length);
+      this.shift_operate = this.shift_operates.filter(item => item.dept_id == this.deptId);
+      this.getDayShift(this.shift_operate[0].sg_id,this.deptId);
+      // this.getShiftEmplyoee(this.deptId);
+      // this.getShiftResult(this.deptId);
+      
+      console.log(333);
+      console.log(this.employees);
+
+
+
+    },
     //日历翻页
     pageDown(val) {
       this.page = this.page + val;
@@ -176,6 +176,8 @@ export default {
     },
     //刷新排班排产日期
     refreshTable() {
+
+
 
       //排班部门确定排班班次（与日期一起确定行头），排班人员（确定列头）
       var head = [];
@@ -186,6 +188,7 @@ export default {
       var cday = currentDay.getDate();
       var cweek = (currentDay.getDay() + 6) % 7;
       this.firstDay = new Date(cyear, cmonth, cday - cweek + this.page);
+      this.endDay = new Date(cyear, cmonth, cday - cweek + this.page + 7);
       for (var i = 0; i < this.dayNum; i++) {
         var strDay = new Date(cyear, cmonth, cday - cweek + this.page + i);
         formatDate.push(this.dateFormat(strDay, "yyyy-MM-dd"));
@@ -197,7 +200,7 @@ export default {
         head.push({ day: this.dateFormat(strDay, "MM-dd"), week: this.getWeekDay(i), isOver: isOvered, strDay: this.dateFormat(strDay, "yyyy-MM-dd") });//表头日期
       }
       this.tableHead = head;//获取表头
-      this.tree = this.convertModelsToTreee(this.resultList);
+      this.getResultConstruct();//获取人员-日期-班次结构
     },
 
     //构建人员的班次任务详情数据结构
@@ -209,63 +212,47 @@ export default {
       }
       return em;
     },
-    getResultConstruct(n) {
-
-      let em = { name: n, date: [] };
-      for (let d = 0; d < this.tableHead.length; d++) {
-        let dr = [];
-        for (let s = 0; s < this.dept_shifts.length; s++) {
-          let sr = [];
-          dr.push(sr);
+    //构建人名{}，日期[]的排班结果，类似于C#中键值Dictionary
+    getResultConstruct() {
+      this.tree.splice(0, this.tree.length);
+      for (let i = 0; i < this.employees.length; i++) {
+        let em = { name: this.employees[i].emp_name, emp_id: this.employees[i].emp_id, date: [] };
+        for (let d = 0; d < this.tableHead.length; d++) {
+          let dr = { day: this.tableHead[d].day, shift: [] };
+          for (let s = 0; s < this.dept_shifts.length; s++) {
+            let sr = { shiftId: this.dept_shifts[s].ds_id, task: [] };
+            dr.shift.push(sr);
+          }
+          em.date.push(dr)
         }
-        em.date.push(dr)
+        this.tree.push(em);
       }
-      return em;
+      this.pushResultList();
+      console.log("tree");
+      console.log(this.tree);
     },
-    //将查出的班次结果信息转化成树结构数组
-    convertModelsToTreee(val) {
-      // let d1=new Date("2020-03-30");
-      // let d2=new Date("2020-03-20");
-      // console.log(d1-d2);
-      let employees = [];
-      let tree = [];
-      let name = [];
-      let task = {};
-      for (let i = 0; i < val.length; i++) {
-        task = { name: val[i].name, date: val[i].date, shift: val[i].shift, task: val[i].task }
-        let time = new Date(this.dateFormat(task.date, "yyyy-MM-dd")) - new Date(this.dateFormat(this.firstDay, "yyyy-MM-dd"))
-        let eindex = 0;
-        let dindex = parseInt(time / (1 * 24 * 60 * 60 * 1000));
-        if (dindex < 0 || dindex > this.dayNum - 1) {
-          continue
-        }
-        let sindex = 0;
-        for (let s = 0; s < this.dept_shifts.length; s++) {
-          if (task.shift == this.dept_shifts[s].name) {
-            sindex = s
-            //  console.log(s);
+    pushResultList() {
+      for (let i = 0; i < this.resultList.length; i++) {
+        for (let e = 0; e < this.tree.length; e++) {//遍历人员
+          if (this.tree[e].emp_id == this.resultList[i].emp_id) {
+            for (let d = 0; d < this.tree[e].date.length; d++) {//遍历日期
+              if (this.tree[e].date[d].day == this.resultList[i].tsr_date) {
+                for (let s = 0; s < this.tree[e].date[d].shift.length; s++) {//遍历班次
+                  if (this.tree[e].date[d].shift[s].shiftId == this.resultList[i].ds_id) {
+                    this.tree[e].date[d].shift[s].task.push(this.resultList[i]);//在班次中添加任务属性
+                    break;//跳出遍历班次循环  
+                  }
+                }
+                break;//跳出遍历日期循环   
+              }
+            }
+            break;//跳出遍历人员循环
           }
         }
-        if (employees.indexOf(task.name) == -1) {
-          employees.push(task.name)
-          eindex = employees.indexOf(task.name);
-          name = [];
-          tree.push(this.getResultConstruct(task.name));
-          tree[eindex].date[dindex][sindex].push(task);
-          this.pushFlag += 1;
-        }
-        else {
-          eindex = employees.indexOf(task.name);
-
-          tree[eindex].date[dindex][sindex].push(task);
-          this.pushFlag += 1;
-        }
       }
-      //     console.log("最后的树结构");
-      // console.log(tree);
-      return tree;
     },
 
+    //星期渲染
     getWeekDay(value) {
       switch ((value) % 7) {
         case (0): return "一"
@@ -277,8 +264,51 @@ export default {
         case (6): return "日"
       }
     },
+    GetShiftOprate() {
+      this.z_get("api/dept/shiftoprate")
+        .then(res => {
+          this.shift_operates = res.data;
+        })
+        .catch(res => { });
+    },
+    getDayShift(val1,val2) {
+      this.z_get("api/day_shift", { sg_id: val1 })
+        .then(res => {
+          this.dept_shifts = res.data;
+          this.z_get("api/dept/shiftemplyoee", { deptId: val2 })
+            .then(res => {
+              this.employees = res.data;
+              this.z_get("api/dept/shiftresult", { deptId: val2, start: this.firstDay, end: this.endDay })
+                .then(res => {
+                  this.resultList = res.data;
+                }).then(this.refreshTable())
+                .catch(res => { });
 
+            })
+            .catch(res => { });
+        })
+        .catch(res => { });
+    },
+    // getShiftEmplyoee(val) {
+    //   this.z_get("api/dept/shiftemplyoee", { deptId: val })
+    //     .then(res => {
+    //       this.employees = res.data;
+    //       this.z_get("api/dept/shiftresult", { deptId: val, start: this.firstDay, end: this.endDay })
+    //         .then(res => {
+    //           this.resultList = res.data;
+    //         })
+    //         .catch(res => { });
 
+    //     })
+    //     .catch(res => { });
+    // },
+    //   getShiftResult(val) {
+    //   this.z_get("api/dept/shiftresult", {  deptId:val, start:this.firstDay, end:this.endDay })
+    //     .then(res => {
+    //       this.resultList = res.data;  
+    //     })
+    //     .catch(res => { });
+    // },
   },
   mounted() {
     this.pushFlag = 0;
