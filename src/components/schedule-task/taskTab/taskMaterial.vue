@@ -13,8 +13,8 @@
       </el-button>
     </div>
     <div class="gridTable" :style="{width:source =='plan'?'100%':'75%'}">
-      <zj-table ref="taskItemTable" v-loading="loading" style="width:100%;" :height="source =='plan'?'100%':200"
-        :data="taskItemData" tooltip-effect="dark" highlight-current-row border
+      <zj-table :autoHeight='autoHeight' ref="taskItemTable" v-loading="loading" style="width:100%;"
+        :height="source =='plan'?'100%':200" :data="taskItemData" tooltip-effect="dark" highlight-current-row border
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column label="序号" type="index" width="55" align="center">
@@ -129,7 +129,7 @@
 
 <script>
 export default {
-  props: ["currentRow", "source"],
+  props: ["currentRow", "source", "autoHeight"],
   data() {
     return {
       itemCondition: "", //任务物料需求搜索的关键字

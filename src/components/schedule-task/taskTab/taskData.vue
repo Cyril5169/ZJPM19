@@ -13,13 +13,14 @@
       </el-button>
     </div>
     <div class="gridTable">
-      <zj-table ref="taskItemTable" v-loading="loading" style="width:100%;" :height="source =='plan'? '100%':200"
-        :data="taskDataData" tooltip-effect="dark" highlight-current-row border
+      <zj-table :autoHeight='autoHeight' ref="taskItemTable" v-loading="loading" style="width:100%;"
+        :height="source =='plan'? '100%':200" :data="taskDataData" tooltip-effect="dark" highlight-current-row border
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" label="序号" width="55" align="center">
         </el-table-column>
-        <el-table-column prop="td_name" label="资料名称" align="center" :width="source =='plan'?120:200" show-overflow-tooltip>
+        <el-table-column prop="td_name" label="资料名称" align="center" :width="source =='plan'?120:200"
+          show-overflow-tooltip>
         </el-table-column>
         <el-table-column prop="ddt_id" label="资料类型" align="center" :width="source =='plan'?100:200">
           <template slot-scope="scope">{{scope.row.ddt_id | renderFilter(dataTypeFilter)}}</template>
@@ -85,7 +86,7 @@
 
 <script>
 export default {
-  props: ["currentRow", "source"],
+  props: ["currentRow", "source", "autoHeight"],
   data() {
     return {
       dataCondition: "",

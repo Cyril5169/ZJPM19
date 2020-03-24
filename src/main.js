@@ -14,7 +14,7 @@ import store from './store'
 import { showFullScreenLoading, tryHideFullScreenLoading } from './api/loading'
 import * as custom from './common/js/filter'
 import { z_get, z_post, z_patch, z_put, z_delete } from './api/httpASP'
-import './common/js/floatCalculate'
+import './common/js/jsPrototype'
 import './common/js/directive'
 import './common/js/component'
 import  * as commonMethods from "./common/js/commonMethods";

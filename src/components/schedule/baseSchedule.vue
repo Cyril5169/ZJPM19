@@ -28,17 +28,20 @@
             <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewProjectPlanShow">新增
             </el-button>
             <!-- <el-button type="primary" size="small">进度计算</el-button> -->
-            <el-button type="primary" size="small" :disabled="projectPlanSelection.length == 0">
+            <el-button type="primary" size="small" :disabled="projectPlanSelection.length == 0"
+              @click="publishPlan('released')">
               发布选中计划({{projectPlanSelection.length}})</el-button>
-            <el-button type="primary" size="small" :disabled="projectPlanSelection.length == 0">
+            <el-button type="primary" size="small" :disabled="projectPlanSelection.length == 0"
+              @click="publishPlan('unrelease')">
               撤销发布选中计划({{projectPlanSelection.length}})</el-button>
             <el-button type="primary" size="small"
-              :disabled="!currentRow.pp_id && currentRow.pp_release_status !='published'">时间变更</el-button>
+              :disabled="!currentRow.pp_id || currentRow.pp_release_status !='released'" @click="changeTimeShow">时间变更
+            </el-button>
           </div>
           <div class="gridTable">
             <zj-table height='100%' ref="projectPlanTable" style="width: 100%;" :data="projectPlanData"
               tooltip-effect="dark" highlight-current-row @selection-change="handleSelectionChange"
-              @row-click="handleRowClick">
+              @row-click="handleRowClick" :cell-class-name="cellClass">
               <el-table-column type="selection" width="55" align="center"></el-table-column>
               <el-table-column prop="pp_release_status" label="发布状态" align="center" width="80">
                 <template slot-scope="scope">{{scope.row.pp_release_status | releaseStatusFilter}}</template>
@@ -67,9 +70,10 @@
               <el-table-column :fixed="projectPlanData.length>0?'right':false" label="操作" width="100" prop="handle">
                 <template slot-scope="scope">
                   <el-button type="primary" icon="el-icon-edit" size="mini" circle
-                    @click="editNewProjectPlanShow(scope.row)">
+                    v-if="scope.row.pp_release_status !='released'" @click="editNewProjectPlanShow(scope.row)">
                   </el-button>
-                  <el-button type="danger" icon="el-icon-delete" size="mini" circle>
+                  <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="onDeletePlanClick(scope.row)"
+                    v-if="scope.row.pp_release_status !='released'">
                   </el-button>
                 </template>
               </el-table-column>
@@ -84,31 +88,55 @@
             <el-tabs v-model="activeName" style="height:100%;" class="bottomtabs flexDiv-column">
               <el-tab-pane label="部件需求" name="first" class="flexDiv-column">
                 <keep-alive>
-                  <taskMaterial v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='plan'>
+                  <taskMaterial v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='plan'
+                    :autoHeight="activeName=='first'">
                   </taskMaterial>
                 </keep-alive>
               </el-tab-pane>
               <el-tab-pane label="资料需求" name="second" class="flexDiv-column">
                 <keep-alive>
-                  <taskData v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='plan'>
+                  <taskData v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='plan'
+                    :autoHeight="activeName=='second'">
                   </taskData>
                 </keep-alive>
               </el-tab-pane>
               <el-tab-pane label="紧前任务" name="third" class="flexDiv-column">
                 <keep-alive>
                   <constraintTable v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='front'
-                    :taskData='sameLevelTask'>
+                    :autoHeight="activeName=='third'" :taskData='sameLevelTask'>
                   </constraintTable>
                 </keep-alive>
               </el-tab-pane>
               <el-tab-pane label="紧后任务" name="forth" class="flexDiv-column">
                 <keep-alive>
                   <constraintTable v-if="bottomDivShow" class="flexDiv-column" :currentRow='currentRow' source='behind'
-                    :taskData='sameLevelTask'>
+                    :autoHeight="activeName=='forth'" :taskData='sameLevelTask'>
                   </constraintTable>
                 </keep-alive>
               </el-tab-pane>
               <el-tab-pane label="变更记录" name="fifth" class="flexDiv-column">
+                <div v-if="bottomDivShow" class="gridTable">
+                  <zj-table :autoHeight='activeName =="fifth"' style="width:100%;" height="100" :data="changeTimeData"
+                    tooltip-effect="dark" highlight-current-row border>
+                    <el-table-column type="index" width="40" align="center">
+                    </el-table-column>
+                    <el-table-column prop="change_type" label="变更类型" align="center" width="100">
+                      <template slot-scope="scope">{{scope.row.change_type | changeTypeFilter}}</template>
+                    </el-table-column>
+                    <el-table-column prop="beforetime" label="变更前时间" align="center" width="100">
+                      <template slot-scope="scope">{{scope.row.beforetime | dateFilter}}</template>
+                    </el-table-column>
+                    <el-table-column prop="aftertime" label="变更后时间" align="center" width="100">
+                      <template slot-scope="scope">{{scope.row.aftertime | dateFilter}}</template>
+                    </el-table-column>
+                    <el-table-column prop="change_reason" label="变更原因" align="center" show-overflow-tooltip>
+                    </el-table-column>
+                    <el-table-column prop="create_user" label="变更人" align="center" width="100"></el-table-column>
+                    <el-table-column prop="create_date" label="申请时间" align="center" width="140">
+                      <template slot-scope="scope">{{scope.row.create_date | dateFilter('yyyy-MM-dd HH:mm')}}</template>
+                    </el-table-column>
+                  </zj-table>
+                </div>
               </el-tab-pane>
             </el-tabs>
           </div>
@@ -119,7 +147,7 @@
     <!-- 添加/编辑项目 -->
     <el-dialog v-if="addProjectPlanVisible" v-dialogDrag width="700px" :title="addOrNot?'新建项目计划':'编辑项目计划'"
       :close-on-click-modal="false" :visible.sync="addProjectPlanVisible">
-      <zj-form size="small" :newDataFlag='addProjectPlanVisible' :model="projectPlanModel" label-width="100px"
+      <zj-form size="small" :newDataFlag='addProjectPlanVisible' :model="projectPlanModel" label-width="110px"
         ref="projectPlanForm" :rules="add_rules">
         <el-row>
           <el-col :span="11">
@@ -131,7 +159,7 @@
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="任务类型">
-              <el-select v-model="projectPlanModel.pp_node_type" placeholder="请选择任务类型">
+              <el-select v-model="projectPlanModel.pp_node_type" placeholder="请选择任务类型" @change="nodeTypeSel">
                 <el-option v-for="item in stType_options" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
@@ -141,15 +169,16 @@
         <el-row>
           <el-col :span="11">
             <el-form-item label="计划开始时间" prop="pp_early_startdate">
-              <el-date-picker style="width:200px;" v-model="projectPlanModel.pp_early_startdate"
-                placeholder="请选择计划开始时间">
+              <el-date-picker value-format="yyyy-MM-dd" :disabled="projectPlanModel.pp_node_type == 'work'"
+                style="width:200px;" v-model="projectPlanModel.pp_early_startdate" placeholder="请选择开始时间">
               </el-date-picker>
             </el-form-item>
           </el-col>
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="计划结束时间" prop="pp_last_enddate">
-              <el-date-picker style="width:200px;" v-model="projectPlanModel.pp_last_enddate" placeholder="请选择计划开始时间">
+              <el-date-picker value-format="yyyy-MM-dd" style="width:200px;" v-model="projectPlanModel.pp_last_enddate"
+                placeholder="请选择结束时间">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -208,6 +237,38 @@
         </el-form-item>
       </zj-form>
     </el-dialog>
+    <!-- 时间变更 -->
+    <el-dialog v-if="changeTimeVisible" v-dialogDrag width="450px" :title="'[' + currentRow.pp_name+']' + '时间变更'"
+      :close-on-click-modal="false" :visible.sync="changeTimeVisible">
+      <zj-form size="small" :newDataFlag='changeTimeVisible' :model="changeTimeModel" label-width="100px"
+        ref="taskItemForm" :rules="changeTime_rules">
+        <el-form-item label="变更类型">
+          <el-select v-model="changeTimeModel.change_type" placeholder="请选择变更类型" @change="changeTypeSel">
+            <el-option v-for="item in changeType_options" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="变更前时间">
+          <span>{{changeTimeModel.beforetime | dateFilter}}</span>
+        </el-form-item>
+        <el-form-item label="变更后时间" prop="pp_early_startdate">
+          <el-date-picker value-format="yyyy-MM-dd" style="width:200px;" v-model="changeTimeModel.aftertime"
+            placeholder="请选择时间">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="修改原因">
+          <el-input class="formItem" type="textarea" :rows="2" v-model="changeTimeModel.change_reason"
+            placeholder="修改原因">
+          </el-input>
+        </el-form-item>
+        <el-form-item style="text-align:center;margin-right:100px;">
+          <el-button size="medium" @click="changeTimeVisible = false">取&nbsp;&nbsp;消</el-button>
+          <el-button type="primary" size="medium" @click="onSaveChangeTimeClick" style="margin-left:30px;">
+            保&nbsp;&nbsp;存
+          </el-button>
+        </el-form-item>
+      </zj-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -230,13 +291,17 @@ export default {
       projectPlanModel: {},
       projectPlanSelection: [],
       currentRow: [],
+      changeTimeData: [],
+      changeTimeModel: {},
       btnShow: false,
       bottomDivShow: false,
       projectPlanCondition: "",
       activeName: "first",
       selectNodeLevel: "base",
       addProjectPlanVisible: false,
+      changeTimeVisible: false,
       addOrNot: false,
+      loading: false,
       stType_options: [
         {
           value: "task",
@@ -247,6 +312,16 @@ export default {
           label: "节点"
         }
       ],
+      changeType_options: [
+        {
+          value: "start",
+          label: "变更开始"
+        },
+        {
+          value: "end",
+          label: "变更结束"
+        }
+      ],
       add_rules: {
         pp_name: [
           { required: true, message: "请填写任务名称", trigger: "blur" }
@@ -254,7 +329,13 @@ export default {
         pp_period: [{ required: true, message: "请填写工期", trigger: "blur" }],
         pp_progress: [
           { required: true, message: "请填写完成进度", trigger: "blur" }
+        ],
+        pp_last_enddate: [
+          { required: true, message: "请选择结束时间", trigger: "blur" }
         ]
+      },
+      changeTime_rules: {
+        aftertime: [{ required: true, message: "请选择时间", trigger: "blur" }]
       }
     };
   },
@@ -267,10 +348,10 @@ export default {
   filters: {
     releaseStatusFilter(value) {
       switch (value) {
-        case "published":
+        case "released":
           return "已发布";
           break;
-        case "unpublish":
+        case "unrelease":
           return "未发布";
           break;
       }
@@ -282,6 +363,16 @@ export default {
           break;
         case "work":
           return "节点";
+          break;
+      }
+    },
+    changeTypeFilter(value) {
+      switch (value) {
+        case "start":
+          return "变更开始";
+          break;
+        case "end":
+          return "变更结束";
           break;
       }
     }
@@ -345,6 +436,18 @@ export default {
           .catch(res => {});
       }
     },
+    refreshChangeTimeData() {
+      this.changeTimeData = [];
+      this.loading = true;
+      this.z_get("api/project_plan_change/list", {
+        pp_id: this.currentRow.pp_id
+      })
+        .then(res => {
+          this.loading = false;
+          this.changeTimeData = res.data;
+        })
+        .catch(res => {});
+    },
     searchProjectGroupData() {
       this.z_get(
         "api/project_group/treeList",
@@ -389,7 +492,8 @@ export default {
           pp_progress: "0",
           pp_node_level: this.selectNodeLevel,
           pp_pid:
-            this.selectNodeLevel == "base" ? null : this.selectBasePlan.pp_id
+            this.selectNodeLevel == "base" ? null : this.selectBasePlan.pp_id,
+          pp_release_status: "unrelease"
         };
         this.addOrNot = true;
         this.addProjectPlanVisible = true;
@@ -406,9 +510,24 @@ export default {
       this.addOrNot = false;
       this.addProjectPlanVisible = true;
     },
+    nodeTypeSel() {
+      if (this.projectPlanModel.pp_node_type == "work") {
+        this.projectPlanModel.pp_early_startdate = "";
+      }
+    },
     onSaveProjectPlanClick() {
       this.$refs.projectPlanForm.validate(valid => {
         if (valid) {
+          if (
+            this.projectPlanModel.pp_node_type == "task" &&
+            this.projectPlanModel.pp_early_startdate == ""
+          ) {
+            this.$alert("请选择计划开始时间!", "提示", {
+              confirmButtonText: "确定",
+              type: "error"
+            });
+            return;
+          }
           if (this.addOrNot) {
             this.z_post("api/project_plan", this.projectPlanModel)
               .then(res => {
@@ -440,9 +559,7 @@ export default {
                   this.addProjectPlanVisible = false;
                 })
                 .catch(res => {
-                  var msg = res.msg;
-                  if (msg.indexOf("重复键") > -1) msg = "已存在该项目号";
-                  this.$alert("编辑失败!" + msg, "提示", {
+                  this.$alert("编辑失败!", "提示", {
                     confirmButtonText: "确定",
                     type: "error"
                   });
@@ -453,6 +570,106 @@ export default {
           }
         }
       });
+    },
+    onDeletePlanClick(row){
+      this.$confirm("是否删除该计划?", "提示", {
+        confirmButtonText: "是",
+        cancelButtonText: "否",
+        type: "warning"
+      })
+        .then(() => {
+          this.z_delete("api/project_plan", { data: row })
+            .then(res => {
+              this.$message({
+                message: "删除成功!",
+                type: "success",
+                duration: 1000
+              });
+              this.refreshProjectPlanData();
+            })
+            .catch(res => {
+              var msg = res.msg;
+              if (msg.indexOf("FK") > -1) msg = "该数据已被使用，无法删除";
+              this.$alert("删除失败:" + msg, "提示", {
+                confirmButtonText: "确定",
+                type: "error"
+              });
+            });
+        })
+        .catch(() => {});
+    },
+    publishPlan(status) {
+      var selection_temp = JSON.parse(
+        JSON.stringify(this.projectPlanSelection)
+      );
+      for (var i = 0; i < selection_temp.length; i++) {
+        selection_temp[i].pp_release_status = status;
+        selection_temp[i].pp_releaser = 0;
+        selection_temp[i].UpdateColumns = ["pp_release_status","pp_releaser"];
+      }
+      var title = status == "unrelease" ? "撤销" : "";
+      this.z_put("api/project_plan/list", selection_temp)
+        .then(res => {
+          this.$message({
+            message: title + "发布成功!",
+            type: "success",
+            duration: 1000
+          });
+          this.refreshProjectPlanData();
+          this.addProjectPlanVisible = false;
+        })
+        .catch(res => {
+          this.$alert(title + "发布失败!", "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
+    },
+    changeTimeShow() {
+      this.changeTimeModel = {
+        pp_id: this.currentRow.pp_id,
+        beforetime: this.currentRow.pp_early_startdate,
+        aftertime: "",
+        change_reason: "",
+        change_type: "start"
+      };
+      this.changeTimeVisible = true;
+    },
+    changeTypeSel() {
+      if (this.changeTimeModel.change_type == "start") {
+        this.changeTimeModel.beforetime = this.currentRow.pp_early_startdate;
+      } else if (this.changeTimeModel.change_type == "end") {
+        this.changeTimeModel.beforetime = this.currentRow.pp_last_enddate;
+      }
+    },
+    onSaveChangeTimeClick() {
+      var selRow = JSON.parse(JSON.stringify(this.currentRow));
+      if (this.changeTimeModel.change_type == "start") {
+        selRow.pp_early_startdate = this.changeTimeModel.aftertime;
+        selRow.UpdateColumns = ["pp_early_startdate"];
+      } else if (this.changeTimeModel.change_type == "end") {
+        selRow.pp_last_enddate = this.changeTimeModel.aftertime;
+        selRow.UpdateColumns = ["pp_last_enddate"];
+      }
+      this.z_post("api/project_plan_change/changeRecord", {
+        model: this.changeTimeModel,
+        plan: selRow
+      })
+        .then(res => {
+          this.$message({
+            message: "变更成功!",
+            type: "success",
+            duration: 1000
+          });
+          this.refreshProjectPlanData();
+          this.changeTimeVisible = false;
+        })
+        .catch(res => {
+          this.$alert("变更失败!", "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
     },
     //负责人
     getCharge(row) {
@@ -490,6 +707,7 @@ export default {
       if (JSON.stringify(this.currentRow) != JSON.stringify(row)) {
         this.currentRow = row;
       }
+      this.refreshChangeTimeData();
       this.bottomDivShow = true;
     },
     //跳转路由
@@ -517,6 +735,13 @@ export default {
         secondTab.style.color =
           this.selectNodeLevel == "base" ? "#C0C4CC" : "#409EFF";
       });
+    },
+    cellClass({ row, column, rowIndex, columnIndex }) {
+      if (columnIndex == 1) {
+        if (row.pp_release_status == "released") {
+          return "backgroundComplete";
+        }
+      }
     }
   },
   mounted() {
@@ -543,8 +768,8 @@ export default {
   flex-direction: column;
 }
 .rightLayout {
-  width: 740px;
-  margin-left: 2px;
+  width: 735px;
+  margin-left: 3px;
   display: flex;
   flex-direction: column;
 }

@@ -85,23 +85,22 @@ let dateFormat = function (time, format) {
     if (format == "yyyy-MM-dd") {
         date = year + "-" + month + "-" + day;
     }
-    if(format=="HH:mm"){
+    if (format == "HH:mm") {
         date = hour + ":" + minute;
     }
     return date;
 }
-let yesOrNo=function(value,format){
-    if (format=="是否"){
-    if(value==1){
-      return "是"
-   }
-   else return "否"
-   }
+let yesOrNo = function (value, format) {
+    if (format == "是否") {
+        if (value == 1) {
+            return "是"
+        }
+        else return "否"
+    }
 }
 
-function dateFilter(value) {
+function dateFilter(value, format) {
     if (!value || value == "9999-12-31") return "";
-    //时间戳转化大法
     let date = new Date(value);
     let y = date.getFullYear();
     let MM = date.getMonth() + 1;
@@ -114,7 +113,27 @@ function dateFilter(value) {
     m = m < 10 ? "0" + m : m;
     let s = date.getSeconds();
     s = s < 10 ? "0" + s : s;
-    return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
+
+    const opt = {
+        "y+": y,         // 年
+        "M+": MM,        // 月
+        "d+": d,         // 日
+        "H+": h,         // 时
+        "m+": m,         // 分
+        "s+": s          // 秒
+    };
+    if (format) {
+        let fmt = format;
+        let ret;
+        for (let k in opt) {
+            ret = new RegExp("(" + k + ")").exec(fmt);
+            if (ret) {
+                fmt = fmt.replace(ret[1], opt[k])
+            };
+        };
+        return fmt
+    }
+    return y + "-" + MM + "-" + d + " ";
 }
 
 /**全局渲染方法*/
