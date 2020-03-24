@@ -95,8 +95,7 @@ export default {
     return {
       pushFlag: 0,
       firstDay: new Date(),
-      dayNum: 7,//视图显示天数
-      renshu: 2,
+      dayNum: 7,//视图显示天数,可添加下拉框前端设置一两周
       dept_shifts: [
         {
           name: "早",

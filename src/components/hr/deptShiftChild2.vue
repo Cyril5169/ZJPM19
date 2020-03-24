@@ -15,9 +15,7 @@
       
     </el-card>
 
-  
-
-   
+     
   </div>
 </template>
 
@@ -59,7 +57,7 @@ export default {
     },
   },
   methods: {
-  
+ 
     //查找带筛选条件的部门班次数据
     refreshData(){
       this.z_get("api/dept_emp", {

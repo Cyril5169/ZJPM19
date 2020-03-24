@@ -1,6 +1,11 @@
 <template>
   <div class="deptShiftTab">
     <el-card shadow="hover" class="centerCard">
+         <div class="tbar">
+      <el-button type="primary" size="small" :disabled="!currentRow.st_id" @click="showDeptShift()">
+        部门班次设置
+      </el-button>
+    </div>
         <div style="width:600px;height:400px;">
           <el-table ref="deptShiftTable" style="width: 100%" height="100%" :data="deptShiftData" tooltip-effect="dark" border >
             <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -17,12 +22,7 @@
             </el-table-column>
           </el-table>
         </div>
-      
     </el-card>
-
-  
-
-   
   </div>
 </template>
 
@@ -64,7 +64,13 @@ export default {
     },
   },
   methods: {
-  
+     //打开编辑班次框
+    showDeptShift() {
+      this.deptshift = this.tableDataFlat.filter(item => item.dept_id == this.deptId);
+      this.shiftSelectItem = this.deptshift[0].sg_id;
+      this.refreshShiftList();
+      this.addDeptShiftVisiable = true;
+    },
     //查找带筛选条件的部门班次数据
     refreshData(){
        console.log("历史记录方法");

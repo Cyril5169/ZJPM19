@@ -101,12 +101,12 @@
 
 <script>
 import deptShiftChild from "@/components/hr/deptShiftChild";
-import deptShiftChild2 from "@/components/hr/deptShiftChild2";
+import depEmpChild from "@/components/hr/depEmpChild";
 export default {
   name: "deptShift",
   components: {
     child1: deptShiftChild,
-    child2: deptShiftChild2,
+    child2: depEmpChild,
   },
   data() {
     return {
