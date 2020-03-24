@@ -13,7 +13,7 @@
       </el-button>
     </div>
 
-    <div class="gridTable" style="width:75%;">
+    <div class="gridTable" style="width:800px;">
       <el-table ref="dataFileTable" v-loading="loading" style="width:100%;" height="200" :data="dataFileList"
         tooltip-effect="dark" highlight-current-row border @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -23,7 +23,7 @@
         </el-table-column>
         <el-table-column prop="file_name" label="文档" align="center" width="200">
         </el-table-column>
-        <el-table-column prop="note" label="备注" align="center" width="150"></el-table-column>
+        <el-table-column prop="note" label="备注" align="center"></el-table-column>
         <el-table-column label="操作" width="140" prop="handle">
           <template slot-scope="scope">
             <el-button type="info" icon="el-icon-download" size="mini" circle @click="downLoadOne(scope.row.file_path)">
@@ -90,7 +90,7 @@
                 <el-upload class="upload-de" action="#" list-type="text"
                   :on-change="function(file,fileList){return  handleChange(file,fileList,index)}"
                   :on-remove="function(file,fileList){return  handleRemove(file,fileList,index)}"
-                  :file-list="item.fileList" :limit=1  :http-request="uploadFiles">   <!-- :auto-upload="false"-->
+                  :file-list="item.fileList" :limit=1 :http-request="uploadFiles" ref="upload1" :auto-upload="false">
                   <i class="el-icon-upload2"> <span style="font-size:13px;">上传</span></i>
                 </el-upload>
               </el-form-item>
@@ -110,13 +110,13 @@
       </div>
     </el-dialog>
 
-    <!-- 修改输入文档_暂时不用 -->
+    <!-- 上传输入文档（一次输一个文件） -->
     <el-dialog v-if="selectDataVisible" v-dialogDrag width="450px" :title="addOrNot?'上传输入文档':'编辑输入文档'"
       :close-on-click-modal="false" :visible.sync="selectDataVisible">
       <zj-form size="small" :newDataFlag='selectDataVisible' :model="dataFileModel" label-width="100px"
         ref="dataFileForm" :rules="addItem_rules">
-        <el-form-item label="资料类型" prop="ddt_id">
-          <el-select v-model="dataFileModel.ddt_id" placeholder="请选择资料类型">
+        <el-form-item label="资料类型" prop="ddt_id" >
+          <el-select v-model="dataFileModel.ddt_id" placeholder="请选择资料类型" disabled>
             <el-option v-for="item in dataTpyeList" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -130,8 +130,8 @@
         <el-form-item label="输入文档">
           <el-upload class="upload-de" action="#" list-type="text"
             :on-change="function(file,fileList){return  handleChange(file,fileList,index)}"
-            :on-remove="function(file,fileList){return  handleRemove(file,fileList,index)}" :file-list="item.fileList"
-            :http-request="uploadFiles">
+            :on-remove="function(file,fileList){return  handleRemove(file,fileList,index)}"
+            :file-list="dataFileModel.fileList" :limit=1 :http-request="uploadFiles" ref="upload2" :auto-upload="false">
             <i class="el-icon-upload2"> <span style="font-size:13px;">上传</span></i>
           </el-upload>
         </el-form-item>
@@ -161,9 +161,10 @@ export default {
       dataFileList: [], //某任务的输入文档记录集合
       DataFileModelList: [], //待提交的输入文档集合
       dataFileModel: {}, //匹配资料需求的输入文档实体
-      // uploadFileModel: {}, //上传的文件记录实例ist
-      // uploadFileModelList: [], //上传的文件记录集合
-      fileNameList: [], //输入文档名称集合
+      // objectModel: {}, //存储dataFileModel和文件名的实例
+      // objectModelList: [], //objectModel的实例集合
+      // uploadNum: 0, //上传次数
+      file_name: "",
       addOrNot: false,
       addDataFileVisible: false,
       loading: false,
@@ -175,7 +176,6 @@ export default {
       dataTpyeList: [], //新增输入文档中资料类型的下拉框数据集合
       fileChange: false,
       deleteFile: [],
-      dateStamp: "",
       tdfType_options: [
         {
           value: 1,
@@ -282,10 +282,11 @@ export default {
     },
     //显示上传任务的输入文档界面
     addNewDataFileShow() {
-      this.DataFileModelList = [];
-      this.fileNameList = [];
+      // this.DataFileModelList = [];
+      // this.objectModelList = [];
+      // this.uploadNum = 0;
+      this.file_name = "";
       this.searchDataList();
-      this.dateStamp = new Date().getTime();
       this.addOrNot = true;
       this.addDataFileVisible = true;
     },
@@ -301,43 +302,75 @@ export default {
         c_id: 1, //暂时写死，之后用缓存
         fileList: []
       };
-      // this.uploadFileModel = {
-      //   file_id: 0,
-      //   file_path: "",
-      //   file_note: "",
-      //   c_id: 1 //暂时写死，之后用缓存
+      // this.objectModel = {
+      //   task_data_file:[],
+      //   file_name: ""
       // };
       //新增
-      this.DataFileModelList.push(
-        JSON.parse(JSON.stringify(this.dataFileModel))
-      );
+      // this.objectModel.task_data_file.push(this.dataFileModel);
+      // this.objectModelList.push(JSON.parse(JSON.stringify(this.objectModel)));
+      // this.DataFileModelList.push(
+      //   JSON.parse(JSON.stringify(this.dataFileModel))
+      // );
       this.addOrNot = true;
+      this.selectDataVisible = true;
     },
     //保存选中输入文档至待提交的输入文档集合/编辑任务输入文档
     onSaveDataFileClick() {
       this.$refs.dataFileForm.validate(valid => {
         if (valid) {
-          //修改
-          this.dataFileModel.UpdateColumns = this.$refs.dataFileForm.UpdateColumns;
-          if (this.dataFileModel.UpdateColumns) {
-            this.z_put("api/task_data_file", this.dataFileModel)
+          if (this.addOrNot) {
+            //判断是否上传了文档
+            if (this.dataFileModel.fileList.length == 0) {
+              this.$alert("必须上传输入文档", "提示", {
+                confirmButtonText: "确定",
+                type: "warning"
+              });
+              return;
+            }
+            this.$refs.upload2.submit();
+            this.z_post("api/task_data_file", this.dataFileModel, {
+              params: { file_name: this.file_name }
+            })
               .then(res => {
                 this.$message({
-                  message: "编辑成功!",
+                  message: "新增成功!",
                   type: "success",
                   duration: 1000
                 });
-                this.refreshDataFile();
                 this.selectDataVisible = false;
+                this.addDataFileVisible = false;
+                this.refreshDataFile();
               })
               .catch(res => {
-                this.$alert("编辑失败!", "提示", {
+                this.$alert("新增失败!", "提示", {
                   confirmButtonText: "确定",
                   type: "error"
                 });
               });
           } else {
-            this.selectDataVisible = false;
+            //修改
+            this.dataFileModel.UpdateColumns = this.$refs.dataFileForm.UpdateColumns;
+            if (this.dataFileModel.UpdateColumns) {
+              this.z_put("api/task_data_file", this.dataFileModel)
+                .then(res => {
+                  this.$message({
+                    message: "编辑成功!",
+                    type: "success",
+                    duration: 1000
+                  });
+                  this.refreshDataFile();
+                  this.selectDataVisible = false;
+                })
+                .catch(res => {
+                  this.$alert("编辑失败!", "提示", {
+                    confirmButtonText: "确定",
+                    type: "error"
+                  });
+                });
+            } else {
+              this.selectDataVisible = false;
+            }
           }
         }
       });
@@ -354,9 +387,30 @@ export default {
           return;
         }
       }
-      this.z_post("api/task_data_file/list", this.DataFileModelList,{
-            params: { fileNameList:this.fileNameList }
-          })
+      // for (var i = 0; i < this.objectModelList.length; i++) {
+      //   if (this.objectModelList[i].dataFileModel.fileList.length == 0) {
+      //     this.$alert("每条记录都必须上传输入文档", "提示", {
+      //       confirmButtonText: "确定",
+      //       type: "warning"
+      //     });
+      //     return;
+      //   }
+      // }
+      //上传文档
+      // for (var i = 0; i < this.objectModelList.length; i++) {
+      //   this.$refs.upload[i].submit();
+      // }
+      for (var i = 0; i < this.DataFileModelList.length; i++) {
+        this.$refs.upload[i].submit();
+      }
+      this.z_post(
+        "api/task_data_file/list",
+        // this.objectModelList
+        this.DataFileModelList
+        // {
+        //   params: { fileNameList: this.fileNameList }
+        // }
+      )
         .then(res => {
           this.$message({
             message: "新增成功!",
@@ -376,11 +430,11 @@ export default {
     //删除待提交的输入文档集合中的元素
     deleteSelectFile(index) {
       this.DataFileModelList.splice(index, 1);
+      // this.objectModelList.splice(index, 1);
     },
     //显示编辑任务物料需求记录的框体
     editDataFileShow(row) {
       this.dataFileModel = JSON.parse(JSON.stringify(row));
-      this.dateStamp = new Date().getTime();
       this.addOrNot = false;
       this.selectDataVisible = true;
     },
@@ -442,46 +496,27 @@ export default {
     uploadFiles(param) {
       const formData = new FormData();
       formData.append("file", param.file);
-      this.fileNameList.push(param.file.name);
+      this.file_name = param.file.name;
+      // this.DataFileModelList[this.uploadNum].file_name = param.file.name;
+      // this.objectModelList[this.uploadNum].file_name = param.file.name;
       this.z_post("api/file_manager/upload", formData).then(res => {});
-      // const formData = new FormData();
-      // formData.append("file", param.file);
-      // this.fileNameList.push(param.file.name);
-      // this.z_post("api/file_manager/upload", formData).then(res => {});
+      // this.uploadNum = this.uploadNum + 1;
     },
     //下载文件
     downLoadOne(path) {
       this.downLoadFile(this.Global.baseUrl + `api/DownLoadAPI?path=${path}`);
     },
     handleChange(file, fileList, index) {
-      this.DataFileModelList[index].fileList = fileList;
+      this.dataFileModel.fileList = fileList;
+      // this.DataFileModelList[index].fileList = fileList;
+      // this.objectModelList[index].dataFileModel.fileList = fileList;
     },
     handleRemove(file, fileList, index) {
-      this.DataFileModelList[index].fileList = fileList;
+      this.dataFileModel.fileList = fileList;
+      // this.DataFileModelList[index].fileList = fileList;
+      // this.objectModelList[index].dataFileModel.fileList = fileList;
       if ((file.status = "success")) {
         this.deleteFile.push(file.url);
-      }
-    },
-    handleSuccess(res, file, fileList, index) {
-      var flag = true;
-      for (let i = 0; i < this.DataFileModelList.length; i++) {
-        if (
-          this.DataFileModelList[i].fileList.filter(
-            item => item.status == "uploading"
-          ).length == 0 &&
-          this.DataFileModelList[i].fileList.filter(
-            item => item.status == "success"
-          ).length == this.DataFileModelList[i].fileList.length
-        ) {
-          this.fileNameList.push(file.name);
-        } else {
-          flag = false;
-          break;
-        }
-      }
-      if (flag) {
-        if (this.addOrNot) {
-        }
       }
     }
   },
