@@ -156,7 +156,7 @@ export default {
       emp_options: [],
       activeName: "executor",
       activeName2: "myTask",
-      bottomDivShow: false,
+      // bottomDivShow: false,
       origin_options: [
         {
           value: "temp",
@@ -320,7 +320,7 @@ export default {
     refreshData() {
       this.taskData = [];
       this.currentRow = {};
-      this.bottomDivShow = false;
+      // this.bottomDivShow = false;
       this.z_get("api/task/treeList", {
         condition: this.condition,
         p_no: this.select_project

@@ -15,27 +15,30 @@
             </el-option>
           </el-select>
           <el-button size="mini" type="primary" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask('confirm')">开始</el-button>
+            @click="confirmTask(1)">开始</el-button>
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask('reject')">暂停/恢复</el-button>
+            @click="confirmTask(3)">暂停</el-button>
+          <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
+            @click="confirmTask(2)">恢复</el-button>
           <el-button size="mini" type="primary" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask('confirm')">完成</el-button>
+            @click="confirmTask(5)">完成</el-button>
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask('reject')">变更申请</el-button>
+            @click="confirmTask()">变更申请</el-button>
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask('confirm')">异常</el-button>
+            @click="confirmTask(4)">异常</el-button>
 
         </div>
         <div class="gridTable">
-          <el-table ref="taskTable" style="width: 100%" height="200px" :data="tableData" tooltip-effect="dark"
+          <zj-table ref="taskTable" style="width: 100%" :height="bottomDivShow?'200px':'350px'" :data="tableData" tooltip-effect="dark"
             highlight-current-row border row-key="t_id" @selection-change="handleSelectionChange"
-            @select-all="handleSelectAll" @row-click="handleRowClick" @row-dblclick="handleRowDBClick">
+            @select-all="handleSelectAll" @row-click="handleRowClick" >
             <el-table-column type="selection" width="30" align="center"></el-table-column>
             <el-table-column type="index" width="50" align="center" label="序号">
             </el-table-column>
             <el-table-column prop="t_name" label="任务名称" align="center" width="100" show-overflow-tooltip>
             </el-table-column>
             <el-table-column prop="t_status" label="执行状态" align="center" width="90" show-overflow-tooltip>
+              transStatus
             </el-table-column>
             <el-table-column prop="p_no" label="所属项目" align="center" width="100" show-overflow-tooltip>
               <template slot-scope="scope">{{scope.row.p_no | renderFilter(projectDataFilter)}}</template>
@@ -51,28 +54,30 @@
             </el-table-column>
             <el-table-column prop="t_last_enddate" label="计划结束时间" align="center" width="110" show-overflow-tooltip>
             </el-table-column>
-            <el-table-column prop="t_release_state" label="进度" align="center" width="80" show-overflow-tooltip>
+            <el-table-column prop="t_progress" label="进度" align="center" width="80" show-overflow-tooltip>
             </el-table-column>
             <el-table-column label="操作" prop="handle" align="center">
               <template slot-scope="scope">
-                <el-button size="mini" type="primary" style="margin-left:10px;" circle :disabled="selection.length==0"
-                  @click="confirmTask(scope.row)">开始</el-button>
-                <el-button size="mini" type="danger" style="margin-left:10px;" circle :disabled="selection.length==0"
-                  @click="confirmTask(scope.row)">暂停/恢复</el-button>
-                <el-button size="mini" type="primary" style="margin-left:10px;" circle :disabled="selection.length==0"
-                  @click="confirmTask(scope.row)">完成</el-button>
-                <el-button size="mini" type="danger" style="margin-left:10px;" circle :disabled="selection.length==0"
-                  @click="confirmTask(scope.row)">变更申请</el-button>
-                <el-button size="mini" type="danger" style="margin-left:10px;" circle :disabled="selection.length==0"
-                  @click="confirmTask(scope.row)">异常</el-button>
+                <el-button size="mini" type="primary" style="margin-left:3px;"  circle
+                  @click="confirmOneTask(scope.row,1)">开始</el-button>
+                <el-button size="mini" type="danger" style="margin-left:3px;"  circle
+                  @click="confirmOneTask(scope.row,3)">暂停</el-button>
+                <el-button size="mini" type="primary" style="margin-left:3px;"  circle
+                  @click="confirmOneTask(scope.row,2)">恢复</el-button>
+                <el-button size="mini" type="primary" style="margin-left:3px;"  circle
+                  @click="confirmOneTask(scope.row,5)">完成</el-button>
+                <el-button size="mini" type="danger" style="margin-left:3px;"  circle
+                  @click="confirmOneTask(scope.row)">变更申请</el-button>
+                <el-button size="mini" type="danger" style="margin-left:3px;" circle
+                  @click="confirmOneTask(scope.row,4)">异常</el-button>
               </template>
             </el-table-column>
-          </el-table>
+          </zj-table>
         </div>
       </div>
       <div class="bottomLayout">
         <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
-          <el-tab-pane label="任务信息" name="executor">
+          <el-tab-pane label="任务信息" name="taskInfo">
             <keep-alive>
               <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
               </taskExecutor>
@@ -109,8 +114,8 @@
             </keep-alive>
           </el-tab-pane>
         </el-tabs>
-        <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
-          @click="bottomDivShow=!bottomDivShow"></i>
+      <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
+        @click="bottomDivShow=!bottomDivShow"></i>
       </div>
     </div>
   </div>
@@ -120,12 +125,24 @@
 import print from "print-js";
 import Axios from "axios";
 import Cookies from "js-cookie";
+import taskExecutor from "@/components/schedule-task/taskTab/taskExecutor";
+import taskMaterial from "@/components/schedule-task/taskTab/taskMaterial";
+import taskData from "@/components/schedule-task/taskTab/taskData";
+import taskDataFile from "@/components/schedule-task/taskTab/taskDataFile";
+
 export default {
   name: "myTask",
   props: ["currentRow"],
+  components: {
+    taskExecutor,
+    taskMaterial,
+    taskData,
+    taskDataFile
+  },
   data() {
     return {
       condition: "", //搜索栏关键字
+      recovery: false,
       tableData: [],
       bottomDivShow: false,
       executorModel: {}, //执行者表单对象
@@ -136,6 +153,8 @@ export default {
       project_options: [],
       select_project: "", //下拉框绑定的项目号字段
       projectDataFilter: [], //项目渲染数据,
+      t_status: 0,
+      activeName:"taskInfo",
       tr_mainOptions: [
         //是否为主要执行
         {
@@ -174,6 +193,28 @@ export default {
     //       break;
     //   }
     // },
+    transStatus(value) {
+      switch (value) {
+        case 0:
+          return "待确认";
+          break;
+        case 1:
+          return "未开始";
+          break;
+        case 2:
+          return "执行中";
+          break;
+        case 3:
+          return "暂停";
+          break;
+        case 4:
+          return "终止";
+          break;
+        case 5:
+          return "完工";
+          break;
+      }
+    },
     originTrans(value) {
       switch (value) {
         case "temp":
@@ -212,7 +253,8 @@ export default {
       this.bottomDivShow = false;
       this.z_get("api/task/treeList", {
         condition: this.condition,
-        p_no: this.select_project
+        p_no: this.select_project,
+        t_status: this.t_status
       })
         .then(res => {
           this.projectDataFilter = res.dict.p_no;
@@ -225,6 +267,7 @@ export default {
     handleSelectionChange(val) {
       this.selection = val;
     },
+    
     //全选选中子节点
     handleSelectAll(selection) {
       var val = this.taskData;
@@ -248,7 +291,7 @@ export default {
       }
       if (JSON.stringify(this.currentRow) != JSON.stringify(row)) {
         this.currentRow = row;
-        this.bottomDivShow = false;
+        // this.bottomDivShow = false;
       }
       this.bottomDivShow = true;
     },
@@ -283,40 +326,88 @@ export default {
         }
       }
     },
-
     //确认
-    async confirmTask(type) {}
-  },
-  filters: {
-    datetrans(value) {
-      if (!value || value == "9999-12-31") return "";
-      //时间戳转化大法
-      let date = new Date(value);
-      let y = date.getFullYear();
-      let MM = date.getMonth() + 1;
-      MM = MM < 10 ? "0" + MM : MM;
-      let d = date.getDate();
-      d = d < 10 ? "0" + d : d;
-      let h = date.getHours();
-      h = h < 10 ? "0" + h : h;
-      let m = date.getMinutes();
-      m = m < 10 ? "0" + m : m;
-      let s = date.getSeconds();
-      s = s < 10 ? "0" + s : s;
-      return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
+    // async confirmTask (type) {}
+    //确认一个
+    confirmOneTask(row, mark) {
+      var list = [];
+      list.push(row);
+      this.onConfirmClick(list, mark);
     },
-    transMainExecute: function(value) {
-      switch (value) {
-        case true:
-          return "是";
-          break;
-        case false:
-          return "否";
-          break;
+    //确认任务
+    confirmTask(mark) {
+      if (this.selection.length) {
+        this.onConfirmClick(this.selection, mark);
       }
+    },
+    //提交确认结果
+    onConfirmClick(list, mark) {
+      var text = "";
+      if (mark == 1) {
+        text = "开始";
+        for (var i = 0; i < list.length; i++) {
+          list[i].t_status = "1";
+        }
+      } else if (mark == 0) {
+        text = "拒绝";
+        for (var i = 0; i < list.length; i++) {
+          list[i].t_status = "0";
+        }
+      } else if (mark == 2) {
+        // if (list.t_status) {
+        text = "恢复";
+        this.recovery = true;
+        for (var i = 0; i < list.length; i++) {
+          list[i].t_status = "2";
+        }
+        // }
+      } else if (mark == 3) {
+        text = "暂停";
+        for (var i = 0; i < list.length; i++) {
+          list[i].t_status = "3";
+        }
+        this.recovery = true;
+      } else if (mark == 4) {
+        text = "异常";
+        for (var i = 0; i < list.length; i++) {
+          list[i].t_status = "4";
+        }
+      } else if (mark == 5) {
+        text = "完成";
+        for (var i = 0; i < list.length; i++) {
+          list[i].t_status = "5";
+        }
+      }
+      this.$confirm("是否" + text + "选中项?", "提示", {
+        confirmButtonText: "是",
+        cancelButtonText: "否",
+        type: "warning"
+      })
+        .then(() => {
+          this.z_put("api/task/list", list)
+            .then(res => {
+              this.$message({
+                message: "修改成功",
+                type: "success",
+                duration: 1000
+              });
+              this.refreshData();
+            })
+            .catch(res => {
+              this.$alert("修改失败", "提示", {
+                confirmButtonText: "确定",
+                type: "warning"
+              });
+              console.log(res);
+            });
+        })
+        .catch(() => {});
     }
   },
-  created() {},
+
+  created() {
+    this.bottomDivShow = false;
+  },
   mounted() {
     this.selectProject();
     this.refreshData();
@@ -333,5 +424,8 @@ export default {
 }
 .bottomLayout {
   position: relative;
+}
+.gridTable {
+  flex: 1;
 }
 </style>

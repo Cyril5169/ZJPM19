@@ -11,8 +11,8 @@
           <el-button size="mini" type="primary" style="margin-left:10px;" :disabled="selection.length==0"
             @click="confirmTask(1)">确认({{selection.length}})</el-button>
           <!-- @click="confirmTaskList(1)">确认({{selection.length}})</el-button> -->
-          <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask(0)">拒绝({{selection.length}})</el-button>
+          <!-- <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
+            @click="confirmTask(0)">拒绝({{selection.length}})</el-button> -->
           <!-- @click="rejectTaskList">拒绝({{selection.length}})</el-button> -->
         </div>
         <div class="gridTable">
@@ -32,8 +32,8 @@
               <template slot-scope="scope">
                 <el-button type="primary" size="mini" circle @click="confirmOneTask(scope.row,1)">确认
                 </el-button>
-                <el-button type="danger" size="mini" circle @click="confirmOneTask(scope.row,2)">拒绝
-                </el-button>
+                <!-- <el-button type="danger" size="mini" circle @click="confirmOneTask(scope.row,2)">拒绝
+                </el-button> -->
               </template>
             </el-table-column>
           </el-table>
@@ -193,13 +193,13 @@ export default {
       list.push(row);
       this.onConfirmClick(list, mark);
     },
-    //发布任务
+    //确认任务
     confirmTask(mark) {
       if (this.selection.length) {
         this.onConfirmClick(this.selection, mark);
       }
     },
-    //提交发布结果
+    //提交确认结果
     onConfirmClick(list, mark) {
       var text = "";
       if (mark == 1) {
