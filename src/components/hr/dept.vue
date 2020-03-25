@@ -7,7 +7,7 @@
           style="width:300px;">
           <el-button @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
         </el-input>
-        <el-button size="small" type="primary" :disabled="selection.length!=1" @click="addNewNode('children')">新增子部门
+        <el-button style="margin-left:10px;" size="small" type="primary" :disabled="selection.length!=1" @click="addNewNode('children')">新增子部门
         </el-button>
         <el-button size="small" type="danger" :disabled="selection.length==0" @click="deleteList">
           删除选中部门({{selection.length}})

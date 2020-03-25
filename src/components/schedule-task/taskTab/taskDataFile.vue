@@ -36,7 +36,7 @@
     </div>
 
     <!-- 上传输入文档 -->
-    <el-dialog :width=" DataFileModelList.length? '935px':'565px'" title="新增输入文档" :close-on-click-modal="false"
+    <el-dialog :width=" DataFileModelList.length? '935px':'385px'" title="新增输入文档" :close-on-click-modal="false"
       :visible.sync="addDataFileVisible">
       <div class="transferDiv">
         <div class="leftTransferItem">
@@ -47,16 +47,11 @@
               <el-option v-for="item in dataTpyeList" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
-            <el-input size="small" @keyup.enter.native="refreshDataList" placeholder="请输入资料名称"
-              v-model="dataListCondition" clearable style="width:240px;">
-              <el-button size="small" @click="refreshDataList" slot="append" icon="el-icon-search">搜索</el-button>
-            </el-input>
           </div>
           <div>
             <span style="color:gray;font-size:12px;">*双击选择资料</span>
-            <el-table ref="itemListTable" v-loading="loading2" style="width:160%;" height="300" :data="dataList"
+            <el-table ref="itemListTable" v-loading="loading2" style="width:100%;" height="320" :data="dataList"
               tooltip-effect="dark" @row-dblclick="handleRowDbClcik" border stripe>
-              <el-table-column prop="td_name" label="资料名称" align="center" width="160"></el-table-column>
               <el-table-column prop="ddt_id" label="资料类型" align="center">
                 <template slot-scope="scope">{{scope.row.ddt_id | renderFilter(dataTypeFilter)}}</template>
               </el-table-column>
@@ -121,8 +116,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="需求类型" prop="tdf_type">
-          <el-select v-model="dataFileModel.tdf_type" placeholder="请选择需求类型">
+        <el-form-item label="需求类型" prop="tdf_type" > 
+          <el-select v-model="dataFileModel.tdf_type" placeholder="请选择需求类型" disabled>
             <el-option v-for="item in tdfType_options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -298,7 +293,7 @@ export default {
         ddt_id: row.ddt_id,
         file_id: 0,
         note: "",
-        tdf_type: "",
+        tdf_type: 1,
         c_id: 1, //暂时写死，之后用缓存
         fileList: []
       };
@@ -533,14 +528,14 @@ export default {
 .leftTransferItem {
   display: inline-block;
   vertical-align: middle;
-  width: 500px;
+  width: 335px;
   height: 400px;
 }
 .rightTransferItem {
   display: inline-block;
   vertical-align: middle;
   margin-left: 20px;
-  width: 350px;
+  width: 345px;
   height: 400px;
   overflow-x: hidden;
   overflow-y: auto;

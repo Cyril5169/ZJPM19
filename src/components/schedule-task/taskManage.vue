@@ -44,14 +44,16 @@
           </el-dropdown>
         </div>
         <div class="gridTable">
-          <el-table ref="taskTable" style="width: 100%;" :height="bottomDivShow?'300px':'450px'" :data="taskData"
+          <el-table ref="taskTable" style="width: 100%;" :height="bottomDivShow?'280px':'430px'" :data="taskData"
             tooltip-effect="dark" highlight-current-row row-key="t_id" default-expand-all
             @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" width="55" align="center" label="序号">
             </el-table-column>
             <el-table-column prop="t_name" label="任务名称" align="center" width="130"></el-table-column>
-            <el-table-column prop="t_status" label="执行状态" align="center" width="115"></el-table-column>
+            <el-table-column prop="t_status" label="执行状态" align="center" width="115">
+              <template slot-scope="scope">{{scope.row.t_status | taskStatusFilter}}</template>
+            </el-table-column>
             <el-table-column prop="t_flow_status" label="流转状态" align="center" width="115"></el-table-column>
             <el-table-column prop="p_no" label="所属项目" align="center" width="130">
               <template slot-scope="scope">{{scope.row.p_no | renderFilter(projectDataFilter)}}</template>
@@ -85,7 +87,7 @@
         </div>
       </div>
       <div class="bottomLayout">
-        <el-tabs v-model="activeName" style="{height:bottomDivShow?'300px':'50px'}">
+        <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
           <el-tab-pane label="任务执行者" name="executor">
             <keep-alive>
               <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
@@ -104,7 +106,7 @@
           </el-tab-pane>
           <el-tab-pane label="输入文档" name="dataFile">
             <keep-alive>
-              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow' ></taskDataFile>
+              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
           </el-tab-pane>
         </el-tabs>
@@ -303,6 +305,25 @@ export default {
           return "计划";
           break;
       }
+    },
+    taskStatusFilter(value) {
+      switch (value) {
+        case 0:
+          return "未处理";
+          break;
+        case 1:
+          return "执行中";
+          break;
+        case 2:
+          return "暂停";
+          break;
+        case 3:
+          return "中止";
+          break;
+        case 4:
+          return "完工";
+          break;
+      }
     }
   },
   methods: {
@@ -458,12 +479,13 @@ export default {
         this.p_taskModel.t_last_enddate = this.selection[0].t_last_enddate;
       }
       this.taskModel = {
-        // c_id: 1, //现在先写死，到时候通过缓存给该变量赋值
+        c_id: 1, //现在先写死，到时候通过缓存给该变量赋值
         t_origin: t_origin,
         t_pid: t_pid,
         dept_id: dept_id,
         emp_id: emp_id,
-        p_no: p_no
+        p_no: p_no,
+        t_status: 0
       };
       if (type == "children") {
         this.selectEmployee(dept_id); //获取部门人员信息
@@ -653,12 +675,22 @@ export default {
     //提交新增及编辑结果
     onSaveTaskClick() {
       this.$refs.taskForm.validate(valid => {
-        if (valid) {     //判断子节点任务的工期限制
-          if (this.p_taskModel.t_period!=""&&this.taskModel.t_period > this.p_taskModel.t_period) {
-            this.$alert("工期不能超过父节点任务的工期："+this.p_taskModel.t_period+"天", "提示", {
-              confirmButtonText: "确定",
-              type: "warning"
-            });
+        if (valid) {
+          //判断子节点任务的工期限制
+          if (
+            this.p_taskModel.t_period != "" &&
+            this.taskModel.t_period > this.p_taskModel.t_period
+          ) {
+            this.$alert(
+              "工期不能超过父节点任务的工期：" +
+                this.p_taskModel.t_period +
+                "天",
+              "提示",
+              {
+                confirmButtonText: "确定",
+                type: "warning"
+              }
+            );
             return;
           }
           if (this.addOrNot) {
@@ -831,7 +863,10 @@ export default {
   width: 100%;
 }
 .formItem {
-  width: 218px;
+  width: 200px;
+}
+.gridTable {
+  flex: 1;
 }
 .bottomLayout {
   position: relative;

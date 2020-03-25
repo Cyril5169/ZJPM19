@@ -1,46 +1,40 @@
 <template>
-  <div class="deptEmp">
+  <div class="documentType">
     <div class="containAll">
-        <div class="leftContent">
-          <div>
-          <div class="tbar">
-            <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
-            <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入部门名称" v-model="condition"
-              style="width:180px;">
-              <el-button @click="refreshData" slot="append" icon="el-icon-search"></el-button>
-            </el-input>
-            <el-dropdown style="margin-left:10px;">
-              <el-button size="small">
-                操作<i class="el-icon-arrow-down el-icon--right"></i>
+      <div class="tbar">
+        <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
+        <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入类别名称" v-model="condition"
+          style="width:300px;">
+          <el-button @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
+        </el-input>
+        <el-button style="margin-left:10px;" size="small" type="primary" @click="addNewType">新增类别
+        </el-button>
+      </div>
+
+      <div class="topContent" style="height:100%;">
+        <el-table ref="deptTable" style="width: 100%" height="100%" :data="tableData" tooltip-effect="dark"
+          highlight-current-row row-key="dept_id" default-expand-all  border>
+          <el-table-column type="index" width="55" align="center" label="序号">
+          </el-table-column>
+          <el-table-column prop="ddt_name" label="类别名称" align="center" width="150"></el-table-column>
+          <el-table-column prop="ddt_note" label="类别说明" align="center" >
+          </el-table-column>
+          <el-table-column label="生单类型" prop="ddt_type" align="center" width="150"></el-table-column>
+          <el-table-column label="操作" width="150" prop="handle">
+            <template slot-scope="scope">
+              <el-button  type="primary" icon="el-icon-edit" size="mini" circle
+                @click="editDeptShow(scope.row)">
               </el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item @click.native="expandAll">展开所有节点</el-dropdown-item>
-                <el-dropdown-item @click.native="collapseAll" divided>折叠所有节点</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-          </div>
-          <div class="topContent" style="height:475px;">
-            <el-table ref="deptTable" style="width: 100%" height="100%" :data="tableData" tooltip-effect="dark"
-              highlight-current-row row-key="dept_id" default-expand-all @row-dblclick="handleRowDbClick">
-              <el-table-column prop="dept_name" label="部门名称" style="width:95%" align="left"></el-table-column>
-            </el-table>
-          </div>
-          </div>
-        </div>
-        <div class="rightContent">
-          <div>
-            <div>
-              <el-tabs style="display:inline-block;width:100%;" v-model="activeName" >
-                <el-tab-pane label="部门员工" name="deptEmp">
-                  <child1 v-if="isChildUpdate1" :deptName="deptNameSelect" :deptId="deptIdSelect"></child1>
-                </el-tab-pane>
-              </el-tabs>
-            </div>
-          </div>
-        </div>
+              <el-button  type="danger" icon="el-icon-delete" size="mini" circle
+                @click="deleteOne(scope.row)">
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
     </div>
 
-    
+
     <el-dialog width="500px" :title="addDeptText" :close-on-click-modal="false" :visible.sync="addDeptVisiable"
       top="5vh" @closed="refreshForm">
       <el-form :model="deptModel" label-width="100px" ref="deptForm" :rules="add_rules">
@@ -78,26 +72,19 @@
 </template>
 
 <script>
-import depEmpChild from "@/components/hr/depEmpChild";
 export default {
-  name: "deptEmp",
-  components: {
-    child1: depEmpChild,
-  },
+  name: "documentType",
   data() {
     return {
       condition: "",
       tableData: [], //表格数据
-      deptDataFilter: [],
+      currentRow: {},
       selection: [],
       addDeptVisiable: false,
       deptModel: {},
       addOrNot: true, //是否新增
       addDeptText: "",
-      activeName: "deptEmp",
-      deptIdSelect: 0, //传入tab的部门id，注意类型
-      deptNameSelect: "  ", //传入tab的部门名称
-      isChildUpdate1: true, //保证tab不会同时渲染所有tab，且每次点击某tab都会重新渲染该tab
+      showMoveBtn: false,
       deptType_options: [
         {
           value: 1,
@@ -145,13 +132,13 @@ export default {
           return "小组";
           break;
       }
-    },
+    }
   },
   methods: {
+    //查询满足条件的文件类别数据
     refreshData() {
-      this.z_get("api/dept/tree", { condition: this.condition })
-        .then(res => {
-          this.deptDataFilter = res.dict.dept_id;
+      this.z_get("api/document_data_type", { condition: this.condition })
+        .then(res => {          
           this.tableData = res.data;
         })
         .catch(res => {});
@@ -160,9 +147,44 @@ export default {
     refreshForm() {
       this.$refs.deptForm.resetFields();
     },
+    //查询所有的文件类别数据
     search() {
       this.condition = "";
       this.refreshData();
+    },
+    //选中子节点
+    selectChildren(val, select) {
+      for (var i = 0; i < val.length; i++) {
+        if (select && this.selection.indexOf(val[i]) == -1) {
+          this.$refs.deptTable.toggleRowSelection(val[i]);
+        } else if (!select && this.selection.indexOf(val[i] > -1)) {
+          this.$refs.deptTable.toggleRowSelection(val[i]);
+        }
+        if (val[i].children && val[i].children.length) {
+          this.selectChildren(val[i].children, select);
+        }
+      }
+    },
+    //新增类别
+    addNewType(type) {
+      var dept_pid = ""; //创建根节点时，若pid为空，前端后台不匹配；若pid为0，因为pid和id外键关联，后台无法插入
+      if (type == "root") {
+        this.addDeptText = "新增根节点";
+      } else if (type == "children") {
+        dept_pid = this.selection[0].dept_id;
+        this.addDeptText = "新增[" + this.selection[0].dept_name + "]的子节点";
+      }
+      this.deptModel = {
+        c_id: 1, //现在先写死，到时候通过缓存给该变量赋值
+        dept_name: "",
+        dept_pname: "",
+        dept_type_id: "",
+        dept_note: "",
+        dept_pid: dept_pid
+      };
+      this.deptModel.dept_pname = this.filterDeptName(this.deptModel.dept_pid);
+      this.addOrNot = true;
+      this.addDeptVisiable = true;
     },
     onSaveTDempClick() {
       this.$refs.deptForm.validate(valid => {
@@ -255,69 +277,18 @@ export default {
         })
         .catch(() => {});
     },
-    //筛选部门名称
-    filterDeptName(id) {
-      var name = id;
-      var dept = this.deptDataFilter.filter(item => item.value == id);
-      if (dept.length) {
-        name = dept[0].display;
-      }
-      return name;
-    },
-    handleRowDbClick(row, column) {
-      this.deptIdSelect = row.dept_id;
-      this.deptNameSelect = row.dept_name;
-    },
-    expandAll() {
-      var icon = this.$el.getElementsByClassName("el-table__expand-icon");
-      if (icon && icon.length) {
-        for (var i = 0; i < icon.length; i++) {
-          var classList = [];
-          for (var j = 0; j < icon[i].classList.length; j++) {
-            classList.push(icon[i].classList[j]);
-          }
-          if (classList.indexOf("el-table__expand-icon--expanded") == -1) {
-            icon[i].click();
-          }
-        }
-      }
-    },
-    collapseAll() {
-      var icon = this.$el.getElementsByClassName("el-table__expand-icon");
-      if (icon && icon.length) {
-        for (var i = 0; i < icon.length; i++) {
-          var classList = [];
-          for (var j = 0; j < icon[i].classList.length; j++) {
-            classList.push(icon[i].classList[j]);
-          }
-          if (classList.indexOf("el-table__expand-icon--expanded") > -1) {
-            icon[i].click();
-          }
-        }
-      }
-    }
   },
   mounted() {
-    this.refreshData();
+    this.search();
   }
 };
 </script>
 
 <style scoped>
-.deptEmp {
-  width: 1250px;
+.documentType {
+  width: 1100px;
 }
 .formItem {
   width: 300px;
-}
-.leftContent {
-  width: 40%;
-  position: absolute;
-  display: flex;
-  display: -webkit-flex;
-}
-.rightContent {
-  float: right;
-  width: 71%;
 }
 </style>

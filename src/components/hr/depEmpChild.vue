@@ -33,7 +33,7 @@
           <el-table ref="deptEmpTable" style="width: 100%" height="100%" :data="deptEmpData" tooltip-effect="dark"
             highlight-current-row border @selection-change="handleSelectionChange" :cell-style="cellStyle">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
-            <el-table-column type="index" width="70" align="center" label="序号">
+            <el-table-column type="index" width="55" align="center" label="序号">
             </el-table-column>
             <el-table-column prop="emp_name" label="姓名" align="center" width="140"></el-table-column>
             <el-table-column prop="emp_no" label="工号" align="center"></el-table-column>
