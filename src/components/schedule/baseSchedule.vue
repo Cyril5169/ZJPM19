@@ -103,7 +103,8 @@
         </div>
         <div class="rightLayout">
           <div class="rightTop" style="height:330px;">
-            <schedule :height="330" :width="'100%'" :isShowToolBar='false'></schedule>
+            <schedule :height="330" :width="'100%'" v-model="projectPlanData" :isShowToolBar='false' :hightLightNo="hightLightNo" :canControll="false"
+            startTimeField='pp_early_startdate' endTimeField='pp_last_enddate' taskNameField='pp_name' noField='sort' :expandSatrtMonth='1' :expandEndMonth='1' :cellWidth ='280'></schedule>
           </div>
           <div class="rightBottom" style="flex:1;">
             <el-tabs v-model="activeName" style="height:100%;" class="bottomtabs flexDiv-column">
@@ -323,6 +324,7 @@ export default {
       changeTimeVisible: false,
       addOrNot: false,
       loading: false,
+      hightLightNo: 0,
       stType_options: [
         {
           value: "task",
@@ -799,6 +801,7 @@ export default {
       }
       this.refreshChangeTimeData();
       this.bottomDivShow = true;
+      this.hightLightNo = row.no;
     },
     //跳转到详细计划
     handleRowDBClick(row) {

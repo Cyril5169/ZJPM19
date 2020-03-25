@@ -20,7 +20,8 @@
       </el-table>
     </div>
     <div style="width:64%;min-height:500px;display:inline-block;">
-      <schedule v-model="tableData" :height="500" :width="'100%'" :hightLightNo="hightLightNo"></schedule>
+      <schedule v-model="tableData" :height="500" :width="'100%'" :hightLightNo="hightLightNo" startTimeField='StartTime'
+      endTimeField='EndTime' taskNameField='TaskName' noField='no'></schedule>
     </div>
   </div>
 </template>
