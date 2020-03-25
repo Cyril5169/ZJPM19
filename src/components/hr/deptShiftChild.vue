@@ -1,19 +1,19 @@
 <template>
   <div class="deptShiftTab">
     <el-card shadow="hover" class="centerCard">
-      <div>
+      
         <div class="tbar">
-          <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
+          <!-- <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
           <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入班次名称" v-model="condition"
             style="width:300px;">
             <el-button @click="refreshData" slot="append" icon="el-icon-search">搜 索</el-button>
-          </el-input>
-          <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewDeptShiftShow()" :disabled="!deptId">新增部门班次</el-button>
-          <el-button size="small" type="danger" :disabled="selection.length==0" @click="deleteList">
+          </el-input> -->
+          <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewDeptShiftShow()">设置部门班次</el-button>
+          <!-- <el-button size="small" type="danger" :disabled="selection.length==0" @click="deleteList">
             批量删除({{selection.length}})
-          </el-button>
+          </el-button> -->
         </div>
-        <div style="width:100%;height:390px;">
+        <div style="width:100%;height:370px;">
           <el-table ref="deptShiftTable" style="width: 100%" height="100%" :data="deptShiftData" tooltip-effect="dark"
             highlight-current-row border @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -39,7 +39,7 @@
             </el-table-column>
           </el-table>
         </div>
-      </div>
+      
     </el-card>
 
     <!-- 新增部门班次 -->
@@ -439,7 +439,7 @@ export default {
     }
   },
   created() {
-    this.searchShift();
+    // this.searchShift();
   }
 };
 </script>
@@ -449,9 +449,7 @@ export default {
   margin: 0 auto;
   position: relative;
 }
-.formItem {
-  width: 200px;
-}
+
 .transferDiv {
   display: inline;
 }
