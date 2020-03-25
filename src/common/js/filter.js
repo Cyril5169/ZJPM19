@@ -157,7 +157,7 @@ export {
     dosageFilter,
     digitUppercase,
     toLocale,
-    dateFormat,
+    // dateFormat,统一用dateFilter
     dateFilter,
     yesOrNo,
     renderFilter

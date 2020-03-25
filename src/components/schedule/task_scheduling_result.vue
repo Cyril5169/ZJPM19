@@ -180,9 +180,6 @@ export default {
     },
     //刷新排班排产日期
     refreshTable() {
-
-
-
       //排班部门确定排班班次（与日期一起确定行头），排班人员（确定列头）
       var head = [];
       var formatDate = [];
