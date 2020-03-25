@@ -23,27 +23,44 @@
       <div class="tabPanel flexDiv-row" style="margin-top:5px;">
         <div class="leftLayout">
           <div class="tbar">
+            <el-button icon="el-icon-back" v-if="selectNodeLevel == 'detail'" title="返回基准计划" size="mini" circle
+              @click="returnBasePlan"></el-button>
             <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchProjectPlanData">
             </el-button>
-            <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewProjectPlanShow">新增
+            <el-button v-if="selectNodeLevel == 'base'" type="primary" size="small" style="margin-left:10px;"
+              @click="addNewProjectPlanShow">新增
             </el-button>
             <!-- <el-button type="primary" size="small">进度计算</el-button> -->
             <el-button type="primary" size="small" :disabled="projectPlanSelection.length == 0"
               @click="publishPlan('released')">
-              发布选中计划({{projectPlanSelection.length}})</el-button>
+              发布选中({{projectPlanSelection.length}})</el-button>
             <el-button type="primary" size="small" :disabled="projectPlanSelection.length == 0"
               @click="publishPlan('unrelease')">
-              撤销发布选中计划({{projectPlanSelection.length}})</el-button>
+              撤销发布选中({{projectPlanSelection.length}})</el-button>
             <el-button type="primary" size="small"
               :disabled="!currentRow.pp_id || currentRow.pp_release_status !='released'" @click="changeTimeShow">时间变更
             </el-button>
+            <el-dropdown style="margin-left:10px;">
+              <el-button size="small">
+                操作<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :disabled="!currentRow.pp_id" @click.native="moveUp">上移</el-dropdown-item>
+                <el-dropdown-item :disabled="!currentRow.pp_id" @click.native="moveDown" divided>下移</el-dropdown-item>
+                <el-dropdown-item v-if="selectNodeLevel == 'detail'" @click.native="expandAll" divided>展开所有节点
+                </el-dropdown-item>
+                <el-dropdown-item v-if="selectNodeLevel == 'detail'" @click.native="collapseAll" divided>折叠所有节点
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </div>
           <div class="gridTable">
-            <zj-table height='100%' ref="projectPlanTable" style="width: 100%;" :data="projectPlanData"
-              tooltip-effect="dark" highlight-current-row @selection-change="handleSelectionChange"
-              @row-click="handleRowClick" :cell-class-name="cellClass">
-              <el-table-column type="selection" width="55" align="center"></el-table-column>
-              <el-table-column prop="pp_release_status" label="发布状态" align="center" width="80">
+            <zj-table height='100%' ref="projectPlanTable" class="projectPlanTable" style="width: 100%;"
+              :data="projectPlanData" tooltip-effect="dark" row-key="pp_id" default-expand-all highlight-current-row
+              @selection-change="handleSelectionChange" @row-click="handleRowClick" @row-dblclick="handleRowDBClick"
+              :cell-class-name="cellClass">
+              <el-table-column type="selection" width="55" align="center" :selectable='canSelect'></el-table-column>
+              <el-table-column prop="pp_release_status" label="发布状态" width="100">
                 <template slot-scope="scope">{{scope.row.pp_release_status | releaseStatusFilter}}</template>
               </el-table-column>
               <el-table-column prop="pp_name" label="任务名称" align="center" width="120" show-overflow-tooltip>
@@ -67,13 +84,17 @@
               </el-table-column>
               <el-table-column prop="pp_note" label="计划描述" align="center" width="150" show-overflow-tooltip>
               </el-table-column>
-              <el-table-column :fixed="projectPlanData.length>0?'right':false" label="操作" width="100" prop="handle">
+              <el-table-column :fixed="handleFix()" label="操作" width="120" prop="handle">
                 <template slot-scope="scope">
-                  <el-button type="primary" icon="el-icon-edit" size="mini" circle
-                    v-if="scope.row.pp_release_status !='released'" @click="editNewProjectPlanShow(scope.row)">
+                  <el-button type="primary" icon="el-icon-right" size="mini" circle
+                    v-if="scope.row.pp_node_type == 'task' && selectNodeLevel == 'base'"
+                    @click="handleRowDBClick(scope.row)">
                   </el-button>
-                  <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="onDeletePlanClick(scope.row)"
-                    v-if="scope.row.pp_release_status !='released'">
+                  <el-button type="primary" icon="el-icon-edit" size="mini" circle
+                    v-if="scope.row.pp_release_status !='released'" @click="editProjectPlanShow(scope.row)">
+                  </el-button>
+                  <el-button type="danger" icon="el-icon-delete" size="mini" circle
+                    @click="onDeletePlanClick(scope.row)" v-if="scope.row.pp_release_status !='released'">
                   </el-button>
                 </template>
               </el-table-column>
@@ -431,6 +452,7 @@ export default {
           pp_id: this.selectBasePlan.pp_id
         })
           .then(res => {
+            console.log(res.data);
             this.projectPlanData = res.data;
           })
           .catch(res => {});
@@ -439,9 +461,13 @@ export default {
     refreshChangeTimeData() {
       this.changeTimeData = [];
       this.loading = true;
-      this.z_get("api/project_plan_change/list", {
-        pp_id: this.currentRow.pp_id
-      })
+      this.z_get(
+        "api/project_plan_change/list",
+        {
+          pp_id: this.currentRow.pp_id
+        },
+        { loading: false }
+      )
         .then(res => {
           this.loading = false;
           this.changeTimeData = res.data;
@@ -475,7 +501,7 @@ export default {
     selProject(val) {
       this.selectProjectNo = val;
       this.selectNodeLevel = "base";
-      this.searchProjectPlanData();
+      this.refreshProjectPlanData();
     },
     addNewProjectPlanShow() {
       if (this.selectProjectNo) {
@@ -505,7 +531,7 @@ export default {
         });
       }
     },
-    editNewProjectPlanShow(row) {
+    editProjectPlanShow(row) {
       this.projectPlanModel = JSON.parse(JSON.stringify(row));
       this.addOrNot = false;
       this.addProjectPlanVisible = true;
@@ -571,7 +597,7 @@ export default {
         }
       });
     },
-    onDeletePlanClick(row){
+    onDeletePlanClick(row) {
       this.$confirm("是否删除该计划?", "提示", {
         confirmButtonText: "是",
         cancelButtonText: "否",
@@ -605,7 +631,7 @@ export default {
       for (var i = 0; i < selection_temp.length; i++) {
         selection_temp[i].pp_release_status = status;
         selection_temp[i].pp_releaser = 0;
-        selection_temp[i].UpdateColumns = ["pp_release_status","pp_releaser"];
+        selection_temp[i].UpdateColumns = ["pp_release_status", "pp_releaser"];
       }
       var title = status == "unrelease" ? "撤销" : "";
       this.z_put("api/project_plan/list", selection_temp)
@@ -687,6 +713,70 @@ export default {
       }
       return "无";
     },
+    moveUp() {
+      var index = this.projectPlanData.indexOf(this.currentRow);
+      if (index == 0) {
+        this.$message({
+          message: "第一行不能上移",
+          type: "warning",
+          duration: 1000
+        });
+        return;
+      }
+      this.projectPlanData.splice(index, 1)[0];
+      this.projectPlanData.splice(index - 1, 0, this.currentRow);
+      for (let i = 0; i < this.projectPlanData.length; i++) {
+        const item = this.projectPlanData[i];
+        item.sort = i;
+        item.UpdateColumns = ["sort"];
+      }
+      this.z_put("api/project_plan/list", this.projectPlanData)
+        .then(res => {
+          this.$message({
+            message: "上移成功",
+            type: "success",
+            duration: 1000
+          });
+        })
+        .catch(res => {
+          this.$alert("上移失败" + res.msg, "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
+    },
+    moveDown() {
+      var index = this.projectPlanData.indexOf(this.currentRow);
+      if (index == this.projectPlanData.length - 1) {
+        this.$message({
+          message: "最后一行不能下移",
+          type: "warning",
+          duration: 1000
+        });
+        return;
+      }
+      this.projectPlanData.splice(index, 1)[0];
+      this.projectPlanData.splice(index + 1, 0, this.currentRow);
+      for (let i = 0; i < this.projectPlanData.length; i++) {
+        const item = this.projectPlanData[i];
+        item.sort = i;
+        item.UpdateColumns = ["sort"];
+      }
+      this.z_put("api/project_plan/list", this.projectPlanData)
+        .then(res => {
+          this.$message({
+            message: "下移成功",
+            type: "success",
+            duration: 1000
+          });
+        })
+        .catch(res => {
+          this.$alert("下移失败" + res.msg, "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
+    },
     //选择组织
     handleSelectTreeClick(data) {
       this.projectPlanModel.group_id = data.group_id;
@@ -709,6 +799,26 @@ export default {
       }
       this.refreshChangeTimeData();
       this.bottomDivShow = true;
+    },
+    //跳转到详细计划
+    handleRowDBClick(row) {
+      if (this.selectNodeLevel == "detail") return;
+      if (row.pp_node_type == "work") {
+        this.$message({
+          message: "节点类型无详细计划！",
+          type: "warning",
+          duration: 1000
+        });
+        return;
+      }
+      this.selectNodeLevel = "detail";
+      this.selectBasePlan = row;
+      this.refreshProjectPlanData();
+    },
+    //返回基准计划
+    returnBasePlan() {
+      this.selectNodeLevel = "base";
+      this.refreshProjectPlanData();
     },
     //跳转路由
     toProject() {
@@ -736,10 +846,62 @@ export default {
           this.selectNodeLevel == "base" ? "#C0C4CC" : "#409EFF";
       });
     },
+    //是否固定操作栏
+    handleFix() {
+      if (this.selectNodeLevel == "base") {
+        if (this.projectPlanData.length > 0) {
+          return "right";
+        }
+      } else if (this.selectNodeLevel == "detail") {
+        if (this.projectPlanData.length > 0) {
+          return "right";
+        }
+      }
+      return false;
+    },
+    canSelect(row, index) {
+      if (
+        this.selectNodeLevel == "detail" &&
+        row.pp_id == this.selectBasePlan.pp_id
+      ) {
+        return false;
+      }
+      return true;
+    },
     cellClass({ row, column, rowIndex, columnIndex }) {
       if (columnIndex == 1) {
         if (row.pp_release_status == "released") {
           return "backgroundComplete";
+        }
+      }
+    },
+    //展开所有节点
+    expandAll() {
+      var icon = this.$el.getElementsByClassName("el-table__expand-icon");
+      if (icon && icon.length) {
+        for (var i = 0; i < icon.length; i++) {
+          var classList = [];
+          for (var j = 0; j < icon[i].classList.length; j++) {
+            classList.push(icon[i].classList[j]);
+          }
+          if (classList.indexOf("el-table__expand-icon--expanded") == -1) {
+            icon[i].click();
+          }
+        }
+      }
+    },
+    //折叠所有节点
+    collapseAll() {
+      var icon = this.$el.getElementsByClassName("el-table__expand-icon");
+      if (icon && icon.length) {
+        for (var i = 0; i < icon.length; i++) {
+          var classList = [];
+          for (var j = 0; j < icon[i].classList.length; j++) {
+            classList.push(icon[i].classList[j]);
+          }
+          if (classList.indexOf("el-table__expand-icon--expanded") > -1) {
+            icon[i].click();
+          }
         }
       }
     }
@@ -787,5 +949,8 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+.projectPlanTable .el-button + .el-button {
+  margin-left: 3px;
 }
 </style>
