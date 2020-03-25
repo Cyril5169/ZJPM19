@@ -50,12 +50,12 @@
                   <el-table-column prop="ds_name" label="班次名称" align="center" width="80"></el-table-column>
                   <el-table-column prop="ds_starttime" label="开始时间" align="center" width="80">
                     <template slot-scope="scope">
-                      <span>{{ scope.row.ds_starttime|dateFormat("HH:mm")}}</span>
+                      <span>{{ scope.row.ds_starttime|dateFilter("HH:mm")}}</span>
                     </template>
                   </el-table-column>
                   <el-table-column prop="ds_endtime" label="结束时间" align="center" width="80">
                     <template slot-scope="scope">
-                      <span>{{ scope.row.ds_endtime|dateFormat("HH:mm")}}</span>
+                      <span>{{ scope.row.ds_endtime|dateFilter("HH:mm")}}</span>
                     </template>
                   </el-table-column>
                   <el-table-column prop="is_report" label="是否报工" align="center" width="120">
@@ -485,8 +485,8 @@ export default {
       this.addOrNot = false;
       this.addDayShiftText = "编辑班次明细";
       this.addDayShiftVisible = true;
-      this.starttime = this.dateFormat(this.DayShiftModel.ds_starttime, "HH:mm");
-      this.endtime = this.dateFormat(this.DayShiftModel.ds_endtime, "HH:mm");
+      this.starttime = this.dateFilter(this.DayShiftModel.ds_starttime, "HH:mm");
+      this.endtime = this.dateFilter(this.DayShiftModel.ds_endtime, "HH:mm");
     },
 
 

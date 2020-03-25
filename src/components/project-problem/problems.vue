@@ -44,7 +44,7 @@
             <el-table-column prop="p_recorddate" label="记录时间" align="center" width="110" type='datetime'
               format="yyyy-MM-dd">
               <template slot-scope="scope">
-                <span>{{ scope.row.p_recorddate|dateFormat("yyyy-MM-dd")}}</span>
+                <span>{{ scope.row.p_recorddate|dateFilter("yyyy-MM-dd")}}</span>
               </template>
             </el-table-column>
             <!-- <el-table-column prop="p_state" label="状态" align="center" width="80"></el-table-column> -->

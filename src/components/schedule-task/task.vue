@@ -67,12 +67,12 @@ create_user	create_user	int			FALSE	FALSE	FALSE -->
 	<el-table-column prop="emp_id" label="员工" align="center" width="40"></el-table-column>
             <el-table-column label="最早开始时间" align="center" width="110" type='datetime' format="yyyy-MM-dd">
               <template slot-scope="scope">
-                <span>{{ scope.row.t_early_startdate|dateFormat("yyyy-MM-dd")}}</span>
+                <span>{{ scope.row.t_early_startdate|dateFilter("yyyy-MM-dd")}}</span>
               </template>
             </el-table-column>
             <el-table-column prop="t_last_enddate" label="最晚结束时间" align="center" width="110" format="yyyy-MM-dd">
               <template slot-scope="scope">
-                <span>{{ scope.row.t_last_enddate|dateFormat("yyyy-MM-dd") }}</span>
+                <span>{{ scope.row.t_last_enddate|dateFilter("yyyy-MM-dd") }}</span>
               </template>
             </el-table-column>
             <el-table-column prop="t_period" label="工期(天)" align="center" width="100"></el-table-column>

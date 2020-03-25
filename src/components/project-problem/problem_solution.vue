@@ -58,7 +58,7 @@
             <el-table-column prop="ps_supply_date" label="提供时间" align="center" width="150" type='datetime'
               format="yyyy-MM-dd">
               <template slot-scope="scope">
-                <span>{{ scope.row.ps_supply_date|dateFormat("yyyy-MM-dd")}}</span>
+                <span>{{ scope.row.ps_supply_date|dateFilter("yyyy-MM-dd")}}</span>
               </template>
             </el-table-column>
             <el-table-column prop="ps_state" label="状态" align="center" width="120">
@@ -122,7 +122,7 @@
                     <el-table-column prop="psd_deadline" label="要求完成时间" align="center" show-overflow-tooltip
                       type='datetime' format="yyyy-MM-dd">
                       <template slot-scope="scope">
-                        <span>{{ scope.row.psd_deadline|dateFormat("yyyy-MM-dd")}}</span>
+                        <span>{{ scope.row.psd_deadline|dateFilter("yyyy-MM-dd")}}</span>
                       </template>
                     </el-table-column>
 
