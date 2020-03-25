@@ -17,9 +17,9 @@
         <!-- <el-table-column type="selection" width="55" align="center"></el-table-column> -->
         <!-- <el-table-column prop="st_id" label="任务编号" align="center" width="150"></el-table-column> -->
         <el-table-column prop="sg_id" label="序号" align="center" width="60"></el-table-column>
-        <el-table-column prop="sg_name" label="班次名称" align="center" width="150"></el-table-column>
-        <el-table-column prop="sg_note" label="班次说明" align="center" width="180"></el-table-column>
-        <el-table-column label="操作" width="140" prop="handle">
+        <el-table-column prop="sg_name" label="班次名称" align="center" width="200"></el-table-column>
+        <el-table-column prop="sg_note" label="班次说明" align="center" width="200"></el-table-column>
+        <el-table-column label="操作"  prop="handle">
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
             </el-button>
@@ -63,7 +63,7 @@
                       <span>{{ scope.row.is_report|yesOrNo("是否")}}</span>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="ds_period" label="时长" align="center" width="60"></el-table-column>
+                  <el-table-column prop="ds_period" label="时长" align="center" ></el-table-column>
                   <el-table-column label="操作" width="140" prop="handle">
                     <template slot-scope="scope">
                       <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editItemShow(scope.row)">
@@ -561,7 +561,7 @@ export default {
 
 <style scoped>
 .shift_group {
-  width: 1100px;
+  width: 650px;
 }
 .gridTable {
   flex: 1;
