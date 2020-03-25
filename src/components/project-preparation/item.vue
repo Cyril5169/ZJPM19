@@ -26,17 +26,15 @@
             <el-table-column prop="item_no" label="物料编码" width="120" sortable  align="center"></el-table-column>
             <el-table-column prop="item_name" label="物料名称" align="center" width="120" sortable ></el-table-column>
 
-            <!-- <el-table-column prop="item_unit" label="单位" align="center" width="80">
-              <template slot-scope="scope">{{scope.row.item_unit | renderFilter(unitDataFilter)}}</template>
-            </el-table-column> -->
-
-            <!-- <el-table-column prop="item_unit" label="单位" align="center" width="80"></el-table-column> -->
-            
-            <el-table-column prop="item_unit" label="单位" align="center" sortable width="80">
+            <el-table-column prop="item_unit" label="单位" align="center"  width="80">
               <template slot-scope="scope">{{scope.row.item_unit | renderFilter(unitFilter)}}</template>
             </el-table-column>
 
-            <el-table-column prop="auxiliary_unit" label="辅助单位" align="center" width="85"></el-table-column>
+            <el-table-column prop="auxiliary_unit" label="辅助单位" align="center"  width="80">
+              <template slot-scope="scope">{{scope.row.auxiliary_unit | renderFilter(unitFilter)}}</template>
+            </el-table-column>
+
+            
             <el-table-column prop="item_specification" label="规格" align="center" width="100"></el-table-column>
             <el-table-column prop="item_brand" label="品牌" align="center" width="100"></el-table-column>
             <el-table-column prop="item_weight" label="重量" align="center" width="55"></el-table-column>
@@ -77,32 +75,22 @@
             </el-input>
           </el-form-item>
 
-          <!-- <el-form-item label="单位" prop="item_unit">
-            <el-select class="formItem" v-model="itemModel.item_unit" ref="select_unit" placeholder="请选择单位">
-              <el-option v-for="item in codeType_options1" :key="item.cc_name" :label="item.cc_name"
-                :value="item.cc_name">
-              </el-option>
-            </el-select>
-          </el-form-item> -->
-
-
+          
           <el-form-item label="单位" prop="item_unit">
-            <el-select class="formItem" v-model="itemModel.item_unit" placeholder="请选择单位">
-              <el-option v-for="item in unitFilter" :key="item.value" :label="item.display" :value="item.value">
+            <el-select class="formItem" v-model="itemModel.item_unit"  placeholder="请选择单位">
+              <el-option v-for="item in Unitcode_options" :key="item.cc_code" :label="item.cc_name"
+                :value="item.cc_code">
               </el-option>
             </el-select>
           </el-form-item>
+          
 
           <el-form-item label="辅助单位" prop="auxiliary_unit">
-            <!-- <el-input class="formItem" v-model="itemModel.auxiliary_unit" placeholder="请填写辅助单位">
-            </el-input> -->
-
-            <el-select class="formItem" v-model="itemModel.auxiliary_unit" ref="select_auxiliary_unit" placeholder="请选择单位">
-              <el-option v-for="item in codeType_options2" :key="item.cc_name" :label="item.cc_name"
-                :value="item.cc_name">
+            <el-select class="formItem" v-model="itemModel.auxiliary_unit"  placeholder="请选择辅助单位">
+              <el-option v-for="item in Unitcode_options" :key="item.cc_code" :label="item.cc_name"
+                :value="item.cc_code">
               </el-option>
             </el-select>
-
           </el-form-item>
 
           <el-form-item label="规格" prop="item_specification">
@@ -196,8 +184,7 @@ export default {
       itemTypeData2: [],
       itemTypeData3: [],
 
-      codeType_options1: [],
-      codeType_options2:[],
+      Unitcode_options:[],
 
       ITDataFilter1: [], //物料类型渲染数据
       ITDataFilter2: [],
@@ -262,20 +249,12 @@ export default {
         .catch(res => {});
     },
 
-    // selectCodeType1() {
-    //   //this.codeType_options1 = [];      
-    //   this.z_get("api/common_code", { ct_id: 3, condition: "" })
-    //     .then(res => {
-    //       //this.codeType_options1 = res.data;
-    //       this.unitFilter = res.dict.item_unit;
-    //     })
-    //     .catch(res => {});
-    // },
-    selectCodeType2() {
-      this.codeType_options2 = [];      
-      this.z_get("api/common_code", { ct_id: 5, condition: "" })
+ 
+    selectUnitcode_options() {
+      this.Unitcode_options = [];      
+      this.z_get("api/common_code", { ct_id: 3, condition: "" })
         .then(res => {
-          this.codeType_options2 = res.data;
+          this.Unitcode_options = res.data;
         })
         .catch(res => {});
     },
@@ -336,8 +315,7 @@ export default {
     search() {
       this.condition = "";
       this.refreshData();
-      //this.selectCodeType1();
-      this.selectCodeType2();
+      this.selectUnitcode_options();
     },
 
     //当前选中的节点
@@ -512,8 +490,7 @@ export default {
   mounted() {
     this.refreshData();
     this.selectItem_type1();
-    //this.selectCodeType1();
-    this.selectCodeType2();
+    this.selectUnitcode_options();
   }
 };
 </script>

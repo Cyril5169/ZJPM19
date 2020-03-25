@@ -33,7 +33,7 @@
           </div> -->
         <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchProblemSolution"></el-button>
-          <el-input size="small" @keyup.enter.native="refreshProblemSolutionData" placeholder="请输入方案名称"
+          <el-input size="small" @keyup.enter.native="refreshProblemSolutionData" placeholder="请输入方案描述"
             v-model="condition" clearable style="width:250px;">
             <el-button size="small" @click="refreshProblemSolutionData" slot="append" icon="el-icon-search">搜索
             </el-button>
@@ -49,7 +49,7 @@
             style="width:100%;" :data="problemSolutionDate" tooltip-effect="dark" highlight-current-row border
             @selection-change="handleSelectionChange" @row-click="handleRowClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
-            <el-table-column type="index" width="50" align="center"></el-table-column>
+            <el-table-column type="index" width="55" label="序号" align="center"></el-table-column>
             <el-table-column prop="ps_note" label="方案描述" align="center" show-overflow-tooltip >
             </el-table-column>
             <el-table-column prop="ps_supply_user" label="提供者" align="center" width="120">
@@ -64,7 +64,7 @@
             <el-table-column prop="ps_state" label="状态" align="center" width="120">
               <template slot-scope="scope">{{scope.row.ps_state | statusFilterPS}}</template>
             </el-table-column>
-            <el-table-column label="操作" width="155" prop="handle">
+            <el-table-column label="操作" width="100" prop="handle">
               <template slot-scope="scope">
                 <el-tooltip class="item" effect="dark" content="编辑方案信息" placement="top-start">
                   <el-button type="primary" icon="el-icon-edit" size="mini" circle
@@ -79,7 +79,7 @@
         </div>
 
         <div class="bottomLayout">
-          <el-tabs v-model="activeName" :style="{height:bottomDivShow?'310px':'50px'}">
+          <el-tabs v-model="activeName" :style="{height:bottomDivShow?'350px':'50px'}">
             <el-tab-pane label="方案详情" name="first">
               <div v-if="bottomDivShow">
                 <div class="tbar">
@@ -100,7 +100,7 @@
                   <el-button type="primary" size="small" style="margin-left:10px;" disabled="" >查看任务
                   </el-button>
                   <el-button type="danger" size="small" :disabled="PSDSelection.length==0" @click="deleteListPSD">
-                    删除选中产品({{PSDSelection.length}})
+                    删除选中方案详情({{PSDSelection.length}})
                   </el-button>
                 </div>
                 <div class="gridTable">
@@ -212,7 +212,7 @@
     <el-dialog v-if="addPSDVisible" v-dialogDrag width="450px" :title="addOrNot?'新增方案详情':'编辑方案详情'"
       :close-on-click-modal="false" :visible.sync="addPSDVisible">
       <zj-form size="small" :newDataFlag='addPSDVisible' :model="PSDModel" label-width="100px" ref="PSDShowForm"
-        :rules="add_rules">
+        :rules="add_PSDrules">
         <el-form-item label="详情描述" prop="psd_content">
           <el-input class="formItem" type="textarea" :rows="2" v-model="PSDModel.psd_content" placeholder="请填写详情描述">
           </el-input>
@@ -231,14 +231,21 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="负责人" prop="psd_emp">
+        <!-- <el-form-item label="负责人" prop="psd_emp">
           <el-select class="formItem" v-model="PSDModel.psd_emp" placeholder="方案提供者">
             <el-option v-for="item in employeePSDFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
+        </el-form-item> -->
+
+        <el-form-item label="负责人"  prop="psd_emp">
+          <el-select v-model="PSDModel.psd_emp" ref="p_psd_emp" placeholder="请选择人员" :disabled="!PSDModel.psd_dept">
+            <el-option v-for="item in emp_options" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
 
-        <el-form-item label="提供时间" prop="psd_deadline">
+        <el-form-item label="完成时间" prop="psd_deadline">
           <el-date-picker v-model="PSDModel.psd_deadline" type="date" format="yyyy-MM-dd" value-format="yyyy-MM-dd"
             placeholder="选择时间" style="width:50%"></el-date-picker>
         </el-form-item>
@@ -292,6 +299,8 @@ export default {
       selectProblem: {},
       currentRow: {},
       currentPSRow: {},
+
+      emp_options:[],
 
       selection: [],
       PSDSelection: [],
@@ -352,6 +361,26 @@ export default {
         ],
         ps_note: [
           { required: true, message: "请填写解决方案", trigger: "blur" }
+        ]
+      },
+      add_PSDrules:{
+        psd_content: [
+          { required: true, message: "请填写方案详情", trigger: "change" }
+        ],
+        psd_deadline: [
+          { required: true, message: "请选择要求完成时间", trigger: "change" }
+        ],
+        psd_releasestate: [
+          { required: true, message: "请选择详情状态", trigger: "change" }
+        ],
+        psd_direction: [
+          { required: true, message: "请选择发布方向", trigger: "change" }
+        ],
+        psd_emp: [
+          { required: true, message: "请选择负责人", trigger: "change" }
+        ],
+        psd_dept: [
+          { required: true, message: "请选择负责部门", trigger: "change" }
         ]
       },
       addOrNot: true,
@@ -440,30 +469,39 @@ export default {
         .catch(res => {});
     },
     //双击选择部门
-    handleSelectTreeClick(data) {
+    handleSelectTreeClick(data) {      
       this.PSDModel.psd_dept = data.dept_id;
       this.PSDModel.dept_name = data.dept_name;
       this.$refs.select_dept.blur();
-      //this.selectEmp()
+      this.selectEmployee(data.dept_id);
+      this.PSDModel.psd_emp = ""
     },
 
-    selectEmp() {
-      var conditionIT2 = "selectItemTypeCode2" + this.itemModel.it_1code;
-      this.itemTypeData3 = [];
+
+    //查找部门人员数据
+    selectEmployee(deptId) {
+      this.emp_options = [];
       this.z_get(
-        "api/item_type",
-        { 
-          condition: conditionIT2 },
+        "api/dept/dept_emp",
+        { condition: null, deptId: deptId },
         { loading: false }
       )
         .then(res => {
-          //如果不一样才赋值
-          if (JSON.stringify(this.itemTypeData2) != JSON.stringify(res.data)) {
-            this.itemTypeData2 = res.data;
+          if (
+            res.code == 0 &&
+            JSON.stringify(this.emp_options) != JSON.stringify(res.data)
+          ) {
+            this.emp_options = res.data.dic;
+            for (var i = 0; i < this.emp_options.length; i++) {
+              this.emp_options[i].label = this.emp_options[i].emp_name;
+              this.emp_options[i].value = this.emp_options[i].emp_id;
+            }
           }
         })
         .catch(res => {});
     },
+    
+  
 
     refreshProblemSolutionData() {
       this.loading = true;
@@ -492,6 +530,7 @@ export default {
       this.currentRow = {};
       this.currentPSRow = {};
       this.refreshProblemData();
+      this.refreshBottom();
     },
 
     refreshProblemData() {
@@ -548,6 +587,9 @@ export default {
         this.refreshProblemSolutionData();
       }
       this.rightDataShow = true;
+
+      this.currentPSRow = {};
+      this.refreshPSDData();      
     },
 
     handleSelectionChange(val) {
@@ -736,6 +778,7 @@ export default {
       );
       this.addOrNot = false;
       this.addPSDVisible = true;
+      this.selectEmployee(this.PSDModel.psd_dept);
     },
 
     deleteOnePSD(row) {
