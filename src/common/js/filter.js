@@ -71,8 +71,7 @@ let toLocale = function (time) {
     let date = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second
     return date
 };
-let dateFormat = function (time, format) {
-    if (!isNaN(time)) return "";
+let dateFormat = function(time,format){
     let _time = new Date(time);
     let year = _time.getFullYear();
     let month = addZeroIfNeed(_time.getMonth() + 1);
@@ -80,23 +79,28 @@ let dateFormat = function (time, format) {
     let hour = addZeroIfNeed(_time.getHours());
     let minute = addZeroIfNeed(_time.getMinutes());
     let second = addZeroIfNeed(_time.getSeconds());
-    let date =
-        year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+    let date = year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
     if (format == "yyyy-MM-dd") {
         date = year + "-" + month + "-" + day;
     }
-    if (format == "HH:mm") {
+    else if (format == "MM-dd") {
+        date =  month + "-" + day;
+    }
+    else if(format=="HH:mm"){
         date = hour + ":" + minute;
     }
     return date;
 }
-let yesOrNo = function (value, format) {
-    if (format == "是否") {
-        if (value == 1) {
-            return "是"
-        }
-        else return "否"
-    }
+   
+
+
+let yesOrNo=function(value,format){
+    if (format=="是否"){
+    if(value==1){
+      return "是"
+   }
+   else return "否"
+   }
 }
 
 function dateFilter(value, format) {
