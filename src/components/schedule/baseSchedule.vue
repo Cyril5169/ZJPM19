@@ -19,6 +19,8 @@
         </el-tab-pane>
         <el-tab-pane label="详细计划" name="detail" disabled>
         </el-tab-pane>
+        <!-- <el-tab-pane label="合并视图" name="union">
+        </el-tab-pane> -->
       </el-tabs>
       <div class="tabPanel flexDiv-row" style="margin-top:5px;">
         <div class="leftLayout">
@@ -31,11 +33,19 @@
               @click="addNewProjectPlanShow">新增
             </el-button>
             <!-- <el-button type="primary" size="small">进度计算</el-button> -->
-            <el-button type="primary" size="small" :disabled="projectPlanSelection.length == 0"
+            <el-button v-if="selectNodeLevel == 'base'" type="primary" size="small"
+              :disabled="!currentRow.pp_id ||(currentRow.pp_release_status !='unrelease' || currentRow.pp_node_type!='work')"
               @click="publishPlan('released')">
-              发布选中({{projectPlanSelection.length}})</el-button>
-            <el-button type="primary" size="small" :disabled="projectPlanSelection.length == 0"
+              发布</el-button>
+            <el-button v-if="selectNodeLevel == 'base'" type="primary" size="small"
+              :disabled="!currentRow.pp_id ||( currentRow.pp_release_status !='released' || currentRow.pp_node_type!='work')"
               @click="publishPlan('unrelease')">
+              撤销发布</el-button>
+            <el-button v-if="selectNodeLevel == 'detail'" type="primary" size="small"
+              :disabled="projectPlanSelection.length == 0" @click="publishPlanList('released')">
+              发布选中({{projectPlanSelection.length}})</el-button>
+            <el-button v-if="selectNodeLevel == 'detail'" type="primary" size="small"
+              :disabled="projectPlanSelection.length == 0" @click="publishPlanList('unrelease')">
               撤销发布选中({{projectPlanSelection.length}})</el-button>
             <el-button type="primary" size="small"
               :disabled="!currentRow.pp_id || currentRow.pp_release_status !='released'" @click="changeTimeShow">时间变更
@@ -102,11 +112,13 @@
           </div>
         </div>
         <div class="rightLayout">
-          <div class="rightTop" style="height:330px;">
-            <schedule :height="330" :width="'100%'" v-model="projectPlanData" :isShowToolBar='false' :hightLightNo="hightLightNo" :canControll="false"
-            startTimeField='pp_early_startdate' endTimeField='pp_last_enddate' taskNameField='pp_name' noField='sort' :expandSatrtMonth='1' :expandEndMonth='1' :cellWidth ='280'></schedule>
+          <div class="rightTop" style="flex:1">
+            <schedule :height="'100%'" :width="'100%'" v-model="projectPlanData" :isShowToolBar='false'
+              :hightLightNo="hightLightNo" :canControll="false" :cellHeight='75' startTimeField='pp_early_startdate'
+              endTimeField='pp_last_enddate' taskNameField='pp_name' noField='sort' :expandSatrtMonth='1'
+              :expandEndMonth='1' :cellWidth='280'></schedule>
           </div>
-          <div class="rightBottom" style="flex:1;">
+          <div class="rightBottom" style="height:260px;">
             <el-tabs v-model="activeName" style="height:100%;" class="bottomtabs flexDiv-column">
               <el-tab-pane label="部件需求" name="first" class="flexDiv-column">
                 <keep-alive>
@@ -181,7 +193,8 @@
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="任务类型">
-              <el-select v-model="projectPlanModel.pp_node_type" placeholder="请选择任务类型" @change="nodeTypeSel">
+              <el-select :disabled="projectPlanData.length == 0" v-model="projectPlanModel.pp_node_type"
+                placeholder="请选择任务类型" @change="nodeTypeSel">
                 <el-option v-for="item in stType_options" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
@@ -259,6 +272,7 @@
         </el-form-item>
       </zj-form>
     </el-dialog>
+
     <!-- 时间变更 -->
     <el-dialog v-if="changeTimeVisible" v-dialogDrag width="450px" :title="'[' + currentRow.pp_name+']' + '时间变更'"
       :close-on-click-modal="false" :visible.sync="changeTimeVisible">
@@ -417,9 +431,12 @@ export default {
   },
   computed: {
     sameLevelTask() {
-      var allData = this.projectPlanData.filter(
-        item => item.pp_id != this.currentRow.pp_id
-      ); //去除自身
+      var allData = this.arrayChildrenFlatten(this.projectPlanData, []);
+      allData = allData.filter(
+        item =>
+          item.level == this.currentRow.level &&
+          item.pp_id != this.currentRow.pp_id
+      );
       return allData;
     }
   },
@@ -510,7 +527,7 @@ export default {
         this.projectPlanModel = {
           p_no: this.selectProjectNo,
           pp_name: "",
-          pp_node_type: "task",
+          pp_node_type: "work",
           pp_early_startdate: "",
           pp_last_enddate: "",
           pp_period: "0",
@@ -627,6 +644,29 @@ export default {
         .catch(() => {});
     },
     publishPlan(status) {
+      var selection_temp = JSON.parse(JSON.stringify(this.currentRow));
+      selection_temp.pp_release_status = status;
+      selection_temp.pp_releaser = 0;
+      selection_temp.UpdateColumns = ["pp_release_status", "pp_releaser"];
+      var title = status == "unrelease" ? "撤销" : "";
+      this.z_put("api/project_plan", selection_temp)
+        .then(res => {
+          this.$message({
+            message: title + "发布成功!",
+            type: "success",
+            duration: 1000
+          });
+          this.refreshProjectPlanData();
+          this.addProjectPlanVisible = false;
+        })
+        .catch(res => {
+          this.$alert(title + "发布失败!", "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
+    },
+    publishPlanList(status) {
       var selection_temp = JSON.parse(
         JSON.stringify(this.projectPlanSelection)
       );
@@ -842,11 +882,17 @@ export default {
     changeTabColor() {
       this.$nextTick(function() {
         var firstTab = document.getElementById("tab-base");
-        firstTab.style.color =
-          this.selectNodeLevel == "base" ? "#409EFF" : "#C0C4CC";
         var secondTab = document.getElementById("tab-detail");
-        secondTab.style.color =
-          this.selectNodeLevel == "base" ? "#C0C4CC" : "#409EFF";
+        if (this.selectNodeLevel == "base"){
+          firstTab.style.color = "#409EFF";
+          secondTab.style.color = "#C0C4CC";
+        }else if (this.selectNodeLevel == "detail"){
+          firstTab.style.color = "#C0C4CC";
+          secondTab.style.color = "#409EFF";
+        }else{
+          firstTab.style.color = "#C0C4CC";
+          secondTab.style.color = "#C0C4CC";
+        }
       });
     },
     //是否固定操作栏

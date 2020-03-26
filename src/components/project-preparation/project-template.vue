@@ -166,9 +166,29 @@
             <span style="color:gray;font-size:12px;">*双击选择物料</span>
             <el-table ref="itemListTable" v-loading="loading2" style="width:100%;" height="300" :data="itemListData"
               tooltip-effect="dark" @row-dblclick="handleRowDbClcik" border stripe>
-              <el-table-column prop="item_no" label="物料编码" align="center" width="130"></el-table-column>
-              <el-table-column prop="item_name" label="物料名称" align="center" width="200"></el-table-column>
-              <el-table-column prop="item_specification" label="描述" align="center"></el-table-column>
+              <el-table-column prop="item_no" label="物料编码" align="center" width="100"></el-table-column>
+              <el-table-column prop="item_name" label="物料名称" align="center" width="120" show-overflow-tooltip>
+              </el-table-column>
+              <el-table-column prop="item_unit" label="单位" align="center" width="80">
+                <template slot-scope="scope">{{scope.row.item_unit | renderFilter(unitFilter)}}</template>
+              </el-table-column>
+              <el-table-column prop="auxiliary_unit" label="辅助单位" align="center" width="80">
+                <template slot-scope="scope">{{scope.row.auxiliary_unit | renderFilter(unitFilter)}}</template>
+              </el-table-column>
+              <el-table-column prop="item_specification" label="规格" align="center" width="100" show-overflow-tooltip>
+              </el-table-column>
+              <el-table-column prop="item_brand" label="品牌" align="center" width="100" show-overflow-tooltip>
+              </el-table-column>
+              <el-table-column prop="item_weight" label="重量" align="center" width="55"></el-table-column>
+              <el-table-column prop="it_1code" label="大类" align="center" width="100">
+                <template slot-scope="scope">{{scope.row.it_1code | renderFilter(itCodeFilter)}}</template>
+              </el-table-column>
+              <el-table-column prop="it_2code" label="中类" align="center" width="100">
+                <template slot-scope="scope">{{scope.row.it_2code | renderFilter(itCodeFilter)}}</template>
+              </el-table-column>
+              <el-table-column prop="it_3code" label="小类" align="center" width="100">
+                <template slot-scope="scope">{{scope.row.it_3code | renderFilter(itCodeFilter)}}</template>
+              </el-table-column>
             </el-table>
             <div style="margin:0 15%;">
               <el-pagination @current-change="handleCurrentChange" :current-page.sync="currentPage" :page-size="limit"
@@ -256,6 +276,8 @@ export default {
       projectTemplateData: [],
       productData: [],
       itemListData: [],
+      unitFilter: [],
+      itCodeFilter: [],
       classFilter: [],
       selectClass: {},
       currentRow: {},
@@ -358,6 +380,8 @@ export default {
       )
         .then(res => {
           this.loading2 = false;
+          this.itCodeFilter = res.dict.it_1code;
+          this.unitFilter = res.dict.item_unit;
           this.itemListData = res.data;
           this.total = res.total;
         })

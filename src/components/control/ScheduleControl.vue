@@ -2,7 +2,7 @@
   <div class="controller-container">
     <!-- 定义控件大小范围 -->
     <div :style="{
-        height: initHeight + 'px',
+        height: initHeight.toString().indexOf('%') == -1 ? initWidth + 'px' : initWidth,
         width:
           initWidth.toString().indexOf('%') == -1 ? initWidth + 'px' : initWidth
       }">
@@ -273,7 +273,7 @@ export default {
       type: Array,
       default: () => []
     },
-    height: Number, //整个控件的高度（不要使用百分比，计算不出来）
+    height: [String, Number], //整个控件的高度
     width: [String, Number], //整个控件的宽度（没有地方用到，可以使用百分比）
     cellHeight: Number, //画图区域单元格高度(再小可能放不下了)
     cellWidth: Number, //画图区域单元格宽度,最好是7的倍数
@@ -532,7 +532,7 @@ export default {
   data() {
     return {
       data: this.value,
-      initHeight: 650, //整个控件的高度（不要使用百分比，计算不出来）
+      initHeight: 100, //整个控件的高度
       initWidth: "100%", //整个控件的宽度（没有地方用到，可以使用百分比）
       initCellHeight: 60, //画图区域单元格高度(再小可能放不下了)
       initCellWidth: 84, //画图区域单元格宽度
@@ -1331,7 +1331,7 @@ export default {
     //初始化属性
     initAttribute() {
       //初始化各属性
-      if (this.height && typeof this.height == "number")
+      if (this.height && typeof this.height == "number" || typeof this.height == "string")
         this.initHeight = this.height;
       if (
         this.width &&
@@ -1838,10 +1838,15 @@ export default {
     //第二个距离上面 toolBarTop + 52 + 5
   },
   mounted() {
+    let that = this;
     this.initAttribute(); //初始化各属性
     this.initAxis(); //初始化坐标轴数据
     this.initData(); //初始化集合数据
     this.initFunc(); //初始化方法
+    this.$nextTick(function () {
+      let h = that.$el.parentNode.offsetHeight;
+          that.initHeight  = h-3;//上下border
+     });
   }
   // activated() {
   //   this.initAttribute();
@@ -1854,10 +1859,12 @@ export default {
 <style scoped>
 .controller-container {
   background-color: white;
+  box-sizing: border-box;
 }
 .area-paint {
   height: 100%;
   float: left;
+  box-sizing: border-box;
   border: 1px solid black;
 }
 .area-graphic-expression {
