@@ -15,11 +15,11 @@
             </el-option>
           </el-select>
           <el-button size="mini" type="primary" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask(2)">开始</el-button>
+            @click="confirmTask(21)">开始</el-button>
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
             @click="confirmTask(3)">暂停</el-button>
           <el-button size="mini" type="primary" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask(2)">恢复</el-button>
+            @click="confirmTask(22)">恢复</el-button>
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
             @click="confirmTask()">变更申请</el-button>
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
@@ -59,17 +59,17 @@
             </el-table-column>
             <el-table-column label="操作" prop="handle" align="center">
               <template slot-scope="scope">
-                <el-button :disabled="!currentRow.t_tatus==1" size="mini" type="primary" style="margin-left:3px;" circle
-                  @click="confirmOneTask(scope.row,2)">开始</el-button>
-                <el-button :disabled="currentRow.t_tatus==3" size="mini" type="danger" style="margin-left:3px;" circle
+                <el-button size="mini" type="primary" style="margin-left:3px;" circle
+                  @click="confirmOneTask(scope.row,21)">开始</el-button>
+                <el-button size="mini" type="danger" style="margin-left:3px;" circle
                   @click="confirmOneTask(scope.row,3)">暂停</el-button>
-                <el-button :disabled="!currentRow.t_tatus==3" size="mini" type="primary" style="margin-left:3px;" circle
-                  @click="confirmOneTask(scope.row,2)">恢复</el-button>
-                <el-button :disabled="!currentRow.t_tatus==2" size="mini" type="danger" style="margin-left:3px;" circle @click="confirmOneTask(scope.row)">
+                <el-button size="mini" type="primary" style="margin-left:3px;" circle
+                  @click="confirmOneTask(scope.row,22)">恢复</el-button>
+                <el-button size="mini" type="danger" style="margin-left:3px;" circle @click="confirmOneTask(scope.row)">
                   变更申请</el-button>
-                <el-button :disabled="!currentRow.t_tatus==2" size="mini" type="danger" style="margin-left:3px;" circle
+                <el-button size="mini" type="danger" style="margin-left:3px;" circle
                   @click="confirmOneTask(scope.row,4)">异常</el-button>
-                <el-button :disabled="!currentRow.t_tatus==2" size="mini" type="primary" style="margin-left:3px;" circle
+                <el-button size="mini" type="primary" style="margin-left:3px;" circle
                   @click="confirmOneTask(scope.row,5)">完成</el-button>
               </template>
             </el-table-column>
@@ -114,6 +114,16 @@
               <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
           </el-tab-pane>
+          <el-tab-pane label="输出文档" name="dataFile2">
+            <keep-alive>
+              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
+            </keep-alive>
+          </el-tab-pane>
+          <el-tab-pane label="输出表单" name="dataFile2">
+            <keep-alive>
+              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
+            </keep-alive>
+          </el-tab-pane>
         </el-tabs>
         <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
           @click="bottomDivShow=!bottomDivShow"></i>
@@ -140,6 +150,7 @@ export default {
     return {
       condition: "", //搜索栏关键字
       recovery: false,
+      bigin: true,
       currentRow: "",
       tableData: [],
       bottomDivShow: false,
@@ -147,7 +158,7 @@ export default {
       project_options: [],
       select_project: "", //下拉框绑定的项目号字段
       projectDataFilter: [], //项目渲染数据,
-      t_status: 0,
+      t_status: null,
       activeName: "taskInfo"
     };
   },
@@ -205,20 +216,27 @@ export default {
     //搜索
     search() {
       this.condition = "";
-      this.select_project = "";
+      // this.select_project = "";
+      // this.t_status = "";
       this.refreshData();
     },
-    //刷新任务执行者数据
+    //刷新 数据
     refreshData() {
       this.bottomDivShow = false;
-      this.z_get("api/task/treeList", {
+      this.z_get("api/task", {
         condition: this.condition,
-        p_no: this.select_project
-        // t_status: this.t_status
+        p_no: this.select_project,
+        t_status: this.t_status,
+        // t_status: 1,
+        emp_id: 14
       })
+        // this.z_get("api/task", {
+        //   condition: this.condition,
+        //   p_no: this.select_project
+        // })
         .then(res => {
           this.projectDataFilter = res.dict.p_no;
-          console.log(res);
+          // console.log(res);
           this.tableData = res.data;
         })
         .catch(res => {});
@@ -275,18 +293,48 @@ export default {
         for (var i = 0; i < list.length; i++) {
           list[i].t_status = 0;
         }
-      } else if (mark == 2) {
-        text = "恢复";
-        this.recovery = true;
+      } else if (mark == 21) {
         for (var i = 0; i < list.length; i++) {
           if (list[i].t_status == 1) {
             text = "开始";
+            list[i].t_status = 2;
+          } else {
+            this.$alert("所选任务包含执行中任务！请不要重复开始");
+            return;
           }
-          list[i].t_status = 2;
         }
+      } else if (mark == 22) {
+        text = "恢复";
+        // this.recovery = true;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].t_status == 3) {
+            list[i].t_status = 2;
+          } else if (list[i].t_status == 2) {//若是执行中，不可点击
+            this.$alert("所选任务包含执行中任务！无需恢复");
+            return;
+          }  else if (list[i].t_status == 1) {//若是执行中，不可点击
+            this.$alert("所选任务包含未开始任务！");
+            return;
+          }  else {
+            this.$alert("该任务已终止！");
+            return;
+          }
+        }
+        // this.recovery = true;
       } else if (mark == 3) {
         text = "暂停";
+        // this.recovery = true;
         for (var i = 0; i < list.length; i++) {
+          if (list[i].t_status == 3) {
+            this.$alert("该任务已暂停！");
+            return;
+          } else if (list[i].t_status == 4) {//若是执行中，不可点击
+            this.$alert("该任务已终止！");
+            return;
+          } else if (list[i].t_status == 1) {//若是执行中，不可点击
+            this.$alert("该任务未开始！");
+            return;
+          }
           list[i].t_status = 3;
         }
         this.recovery = true;
@@ -301,7 +349,8 @@ export default {
           list[i].t_status = 5;
         }
       }
-      this.$confirm("确定将任务状态修改为‘" + text + "’吗?", "提示", {
+      // this.$confirm("确定将任务状态修改为‘" + text + "’吗?", "提示", {
+      this.$confirm("确定‘" + text + "’吗?", "提示", {
         confirmButtonText: "是",
         cancelButtonText: "否",
         type: "warning"
@@ -325,12 +374,15 @@ export default {
             });
         })
         .catch(() => {});
+      this.refreshData();
+      this.bigin = true;
     }
   },
 
-  created() {
-    this.bottomDivShow = false;
-  },
+  // created() {
+  //   // this.bottomDivShow = false;
+  //   this.refreshData();
+  // },
   mounted() {
     this.selectProject();
     this.refreshData();
