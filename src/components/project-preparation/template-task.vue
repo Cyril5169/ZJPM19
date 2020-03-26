@@ -190,7 +190,6 @@
 import taskItem from "./common/taskItem";
 import taskDataComponent from "./common/taskData";
 import constraintTable from "./common/constraintTable";
-import { mapMutations } from "vuex";
 
 export default {
   data() {
@@ -273,7 +272,6 @@ export default {
     }
   },
   methods: {
-    ...mapMutations("navTabs", ["addBreadCrumb"]),
     refreshTemplateData() {
       this.projectTemplateData = [];
       this.z_get("api/project_template", { pc_no: 0, condition: "" })
@@ -683,7 +681,6 @@ export default {
       this.$router.push({
         name: "project-preparation/project-template"
       });
-      this.addBreadCrumb("project-preparation/project-template");
     }
   },
   mounted() {

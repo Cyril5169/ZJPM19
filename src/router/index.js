@@ -29,11 +29,6 @@ const router = new Router({
     }
   ]
 })
-//解决刷新后点击tab报错
-const originalPush = Router.prototype.push
-Router.prototype.push = function push(location) {
-  return originalPush.call(this, location).catch(err => err)
-}
 
 //路由守卫
 router.beforeEach((to, from, next) => {
@@ -41,17 +36,21 @@ router.beforeEach((to, from, next) => {
   //   next('/login')
   // } else {
   if (from.path == '/') {
+    //刷新进来
     if ((to.name == 'login' && (!to.redirectedFrom || (to.redirectedFrom && to.redirectedFrom == '/')))
        || to.name == 'main') {
-      next()
+      next();
     }
     else {
+      //刷新回到主页
       next('/main');
     }
   }
-  else {//不是刷新
+  else {
+    //不是刷新
     next();
-    history.pushState(null, null, location.href);//禁止后退，搭配APP.VUE里面的mounted
+    store.commit('navTabs/addBreadCrumb',to.name);
+    //history.pushState(null, null, location.href);//禁止后退，搭配APP.VUE里面的mounted
   }
   // }
 })

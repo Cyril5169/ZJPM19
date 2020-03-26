@@ -8,31 +8,34 @@
             style="width:200px;">
             <el-button @click="refreshData" slot="append" icon="el-icon-search"></el-button>
           </el-input>
-          
 
         </div>
         <div class="gridTable">
-          <el-table ref="taskTable" style="width: 100%" height="200px" :data="tableData" tooltip-effect="dark"
-            highlight-current-row border row-key="t_id" @selection-change="handleSelectionChange"
-            @select-all="handleSelectAll" @row-click="handleRowClick" @row-dblclick="handleRowDBClick">
+          <el-table ref="taskTable" style="width: 100%" :height="bottomDivShow?'200px':'350px'" :data="tableData"
+            tooltip-effect="dark" highlight-current-row border row-key="t_id" @selection-change="handleSelectionChange"
+            @select-all="handleSelectAll" @row-click="handleRowClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" width="55" align="center" label="序号">
             </el-table-column>
             <el-table-column prop="t_name" label="任务名称" width="120" align="center"></el-table-column>
             <el-table-column prop="p_no" label="项目号" width="120" align="center"></el-table-column>
-            <el-table-column prop="t_early_startdate" label="计划开始时间" width="200" show-overflow-tooltip align="center"></el-table-column>
-            <el-table-column prop="t_last_enddate" label="计划结束时间" width="200" show-overflow-tooltip align="center"></el-table-column>
-            <el-table-column prop="t_note" label="任务备注" align="center"></el-table-column>
-            <el-table-column prop="t_status" label="任务状态"  width="120" align="center">
-              
+            <el-table-column prop="t_early_startdate" label="计划开始时间" width="200" show-overflow-tooltip align="center">
+              <template slot-scope="scope">{{scope.row.t_early_startdate | renderFilter(datetrans)}}</template>
             </el-table-column>
-            <el-table-column prop="update_date" label="确认时间" width="220" show-overflow-tooltip align="center"></el-table-column>
+            <el-table-column prop="t_last_enddate" label="计划结束时间" width="200" show-overflow-tooltip align="center">
+              <template slot-scope="scope">{{scope.row.t_last_enddate | renderFilter(datetrans)}}</template>
+            </el-table-column>
+            <el-table-column prop="t_note" label="任务备注" align="center"></el-table-column>
+            <el-table-column prop="t_status" label="任务状态" width="120" align="center">
+              <template slot-scope="scope">{{scope.row.t_status | transStatus}}</template>
+            </el-table-column>
+            <!-- <el-table-column prop="update_date" label="确认时间" width="220" show-overflow-tooltip align="center"></el-table-column> -->
           </el-table>
         </div>
       </div>
       <div class="bottomLayout">
         <el-tabs v-model="activeName" style="{height:bottomDivShow?'300px':'50px'}">
-          <el-tab-pane label="任务信息" name="executor">
+          <el-tab-pane label="任务信息" name="taskInfo">
             <keep-alive>
               <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
               </taskExecutor>
@@ -48,12 +51,12 @@
               <taskData v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskData>
             </keep-alive>
           </el-tab-pane>
-          <el-tab-pane label="部件需求" name="dataFile">
+          <el-tab-pane label="部件需求" name="dataFile1">
             <keep-alive>
               <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
           </el-tab-pane>
-          <el-tab-pane label="输入物料" name="dataFile">
+          <el-tab-pane label="输入物料" name="dataFile2">
             <keep-alive>
               <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
@@ -63,7 +66,7 @@
               <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
           </el-tab-pane>
-          <el-tab-pane label="输入表单" name="dataFile">
+          <el-tab-pane label="输入表单" name="dataFile3">
             <keep-alive>
               <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
@@ -77,48 +80,29 @@
 </template>
 
 <script>
-import print from "print-js";
-import Axios from "axios";
-import Cookies from "js-cookie";
+import taskExecutor from "@/components/schedule-task/taskTab/taskExecutor";
+import taskMaterial from "@/components/schedule-task/taskTab/taskMaterial";
+import taskData from "@/components/schedule-task/taskTab/taskData";
+import taskDataFile from "@/components/schedule-task/taskTab/taskDataFile";
+
 export default {
   name: "finishedTask",
-  props: ["currentRow"],
+  components: {
+    taskExecutor,
+    taskMaterial,
+    taskData,
+    taskDataFile
+  },
   data() {
     return {
       condition: "", //搜索栏关键字
+      activeName: "taskInfo",
       tableData: [],
+      t_status: 0,
+      currentRow: "",
       bottomDivShow: false,
-      executorModel: {}, //执行者表单对象
-      emp_options: [], //存储部门员工数据
-      dept_options: [], //存储部门数据
-      addOrNot: false,
-      selection: [], //选中行数据
-      tr_mainOptions: [
-        //是否为主要执行
-        {
-          value: true,
-          label: "是"
-        },
-        {
-          value: false,
-          label: "否"
-        }
-      ],
-      executor_rules: {
-        dept_id: [
-          { required: true, message: "请选择执行部门", trigger: "change" }
-        ]
-      }
+      selection: [] //选中行数据
     };
-  },
-  watch: {
-    currentRow: {
-      deep: true,
-      immediate: true,
-      handler() {
-        this.search();
-      }
-    }
   },
   methods: {
     //搜索
@@ -130,7 +114,8 @@ export default {
     refreshData() {
       this.bottomDivShow = false;
       this.z_get("api/task/treeList", {
-        condition: this.condition
+        condition: this.condition,
+        t_status: 5
       })
         .then(res => {
           console.log(res);
@@ -147,14 +132,9 @@ export default {
       var val = this.taskData;
       var select = false; //全选还是反选
       for (var i = 0; i < selection.length; i++) {
-        if (selection[i].st_id == val[0].st_id) {
+        if (selection[i].t_id == val[0].t_id) {
           select = true;
           break;
-        }
-      }
-      for (var i = 0; i < val.length; i++) {
-        if (val[i].children && val[i].children.length) {
-          this.selectChildren(val[i].children, select);
         }
       }
     },
@@ -165,44 +145,10 @@ export default {
       }
       if (JSON.stringify(this.currentRow) != JSON.stringify(row)) {
         this.currentRow = row;
-        this.bottomDivShow = false;
+        // this.bottomDivShow = false;
       }
       this.bottomDivShow = true;
-    },
-
-    //展开所有节点
-    expandAll() {
-      var icon = this.$el.getElementsByClassName("el-table__expand-icon");
-      if (icon && icon.length) {
-        for (var i = 0; i < icon.length; i++) {
-          var classList = [];
-          for (var j = 0; j < icon[i].classList.length; j++) {
-            classList.push(icon[i].classList[j]);
-          }
-          if (classList.indexOf("el-table__expand-icon--expanded") == -1) {
-            icon[i].click();
-          }
-        }
-      }
-    },
-    //折叠所有节点
-    collapseAll() {
-      var icon = this.$el.getElementsByClassName("el-table__expand-icon");
-      if (icon && icon.length) {
-        for (var i = 0; i < icon.length; i++) {
-          var classList = [];
-          for (var j = 0; j < icon[i].classList.length; j++) {
-            classList.push(icon[i].classList[j]);
-          }
-          if (classList.indexOf("el-table__expand-icon--expanded") > -1) {
-            icon[i].click();
-          }
-        }
-      }
-    },
-
-    //确认
-    async confirmTask(type) {}
+    }
   },
   filters: {
     datetrans(value) {
@@ -222,27 +168,36 @@ export default {
       s = s < 10 ? "0" + s : s;
       return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
     },
-    transMainExecute: function(value) {
+    transStatus(value) {
       switch (value) {
-        case true:
-          return "是";
+        case 0:
+          return "待确认";
           break;
-        case false:
-          return "否";
+        case 1:
+          return "未开始";
+          break;
+        case 2:
+          return "执行中";
+          break;
+        case 3:
+          return "暂停";
+          break;
+        case 4:
+          return "终止";
+          break;
+        case 5:
+          return "完工";
           break;
       }
     }
   },
-  created() {}
+  mounted() {this.refreshData();}
 };
 </script>
 
 <style scoped>
 .finishedTask {
   width: 100%;
-}
-.formItem {
-  width: 200px;
 }
 .bottomLayout {
   position: relative;

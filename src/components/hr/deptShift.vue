@@ -205,8 +205,8 @@ export default {
     },
     //转时间段
     timeRange(end, start) {
-      let str1 = this.dateFormat(start, "HH:mm");
-      let str2 = this.dateFormat(end, "HH:mm");
+      let str1 = this.dateFilter(start, "HH:mm");
+      let str2 = this.dateFilter(end, "HH:mm");
       return str1 + "~" + str2;
     },
     //平铺部门班次

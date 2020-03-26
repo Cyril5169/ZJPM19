@@ -37,7 +37,7 @@
     <el-main>
       <!-- 制作表格 -->
 
-      <table id="top-table" cellspacing=0 cellpadding=0 border=1 style="table-layout:fixed">
+      <table id="top-table" border="1"  >
         <!-- 排列日期 -->
         <tr>
           <th class="top-firstBox"><span @click="pageDown(-7)" class="buttonLike">&nbsp; -</span> 日期 <span
@@ -56,9 +56,10 @@
             </el-select>
           </td>
           <td v-for="(date,dateIndex) in tableHead" :key="dateIndex">
-            <table width="100% " cellspacing=0 cellpadding=0 border=1 padding=0 style="table-layout:fixed">
+            <table>
+              <!-- width="100% " height="100%" cellspacing=0 cellpadding=0  padding=0 style="table-layout:fixed" -->
               <tr>
-                <td v-for="(shift,shiftIndex) in dept_shifts" :key="shiftIndex">
+                <td  v-for="(shift,shiftIndex) in dept_shifts" :key="shiftIndex">
                   {{shift.ds_name}}
                 </td>
               </tr>
@@ -66,20 +67,23 @@
           </td>
         </tr>
         <!-- 排列事项 -->
-        <tr v-for="(em, index) in tree" :key="index" height="40px" class="alt">
+        <tr v-for="(em, index) in tree" :key="index" height="40px" >
           <td> {{em.name}}</td>
           <td v-for="(date,dateIndex) in em.date" :key="dateIndex">
-            <table width="100% " height="100%" cellspacing=0 cellpadding=0 padding=0 style="table-layout:fixed">
+            <table class="dateTable">
+                
+                 <!-- {{task.t_name}} -->
               <tr>
-                <td v-for="(shift,shiftIndex) in date.shift" :key="shiftIndex">
-                  <table width="100% " height="100%" cellspacing=0 cellpadding=0 padding=0 style="table-layout:fixed">
+                {{"背景颜色"}}
+                <!-- <td v-for="(shift,shiftIndex) in date.shift" :key="shiftIndex">
+                  <table  class="shiftTable">
                     <tr v-for="(task,taskIndex) in shift.task" :key="taskIndex">
-                      <td>
-                        {{task.t_name}}
+                      <td class="taskTabble">
+                      
                       </td>
                     </tr>
                   </table>
-                </td>
+                </td> -->
               </tr>
             </table>
           </td>
@@ -176,9 +180,6 @@ export default {
     },
     //刷新排班排产日期
     refreshTable() {
-
-
-
       //排班部门确定排班班次（与日期一起确定行头），排班人员（确定列头）
       var head = [];
       var formatDate = [];
@@ -191,13 +192,13 @@ export default {
       this.endDay = new Date(cyear, cmonth, cday - cweek + this.page + 7);
       for (var i = 0; i < this.dayNum; i++) {
         var strDay = new Date(cyear, cmonth, cday - cweek + this.page + i);
-        formatDate.push(this.dateFormat(strDay, "yyyy-MM-dd"));
+        formatDate.push(this.dateFilter(strDay, "yyyy-MM-dd"));
         var y = strDay.getFullYear();
         var m = strDay.getMonth() + 1;
         var d = strDay.getDate();
         var m_d = m + "-" + d;
         var isOvered = strDay > currentDay ? 0 : 1;
-        head.push({ day: this.dateFormat(strDay, "MM-dd"), week: this.getWeekDay(i), isOver: isOvered, strDay: this.dateFormat(strDay, "yyyy-MM-dd") });//表头日期
+        head.push({ day: this.dateFilter(strDay, "MM-dd"), week: this.getWeekDay(i), isOver: isOvered, strDay: this.dateFilter(strDay, "yyyy-MM-dd") });//表头日期
       }
       this.tableHead = head;//获取表头
       this.getResultConstruct();//获取人员-日期-班次结构
@@ -403,27 +404,12 @@ export default {
 .fontSize {
   font-size: 12px;
 }
-.div1-box {
-  height: 39px;
-  width: 80px;
-  background-color: #dcdfe6;
-  float: left;
-  border-top: 1px solid #fff;
-  border-left: 1px solid #fff;
-}
-
-.shift-box {
-  width: 49%;
-  background-color: #67c23a;
-  float: left;
-  border-top: 1px solid #fff;
-  border-left: 1px solid #fff;
-}
 .top-dateBox {
   background-color: #fff;
 }
 
 #top-table {
+  table-layout:fixed;
   width: 100%;
   word-wrap: break-word;
   font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
@@ -434,21 +420,29 @@ export default {
   color: #000000;
   background-color: #67c23a;
 }
-#top-table td,
-#top-table th {
-  font-size: 1em;
-  /* border: 1px solid #000; */
+#top-table td{
+  /* border:1px solid #000; */
   padding: 0px;
+  
 }
-
 #top-table th {
   font-size: 1.1em;
+    padding: 0px;
   text-align: left;
   padding-top: 5px;
   padding-bottom: 4px;
   background-color: #a7c942;
   color: #ffffff;
 }
+#top-table tr td table{
+  width: 100%;
+  height: 100%;
+  border:0;
+  /* background-color: #a7c942; */
+  /* border:3px solid #000; */
+  background-color:  #0af;
+}
+/* #top-table tr td table.dateTable tr */
 /* #innertable {
   word-wrap: break-word;
 } */
@@ -456,5 +450,31 @@ export default {
   /* border-top: 1px solid #fff; */
   border-left: 1px solid #000;
   word-wrap: break-word;
+}
+.nullTable {
+   
+  width:"100% " ;
+  height:"100%";
+   /* cellspacing=0 ; */
+   border-collapse:collapse; 
+   /* cellpadding=0 ; */
+   border:solid 0px Black; 
+    padding:0 ;
+    table-layout:fixed;
+}
+.nullTable td {
+      background-color: #0af; /* 鼠标停留时背景颜色变化 */
+}
+.blocks {
+   background-color: #0af;  /* 鼠标停留时背景颜色变化 */
+    line-height: 30px;
+    display: block;   /* 让span以block方式显示 */
+    text-align: center;
+    border: solid 1px #000;
+    user-select: none;  /* 设置不可拖拽选中 */
+    cursor: pointer;  /* 设置鼠标停留样式 */
+}
+.blocks:hover {
+    background: #0af;  /* 鼠标停留时背景颜色变化 */
 }
 </style>

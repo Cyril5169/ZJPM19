@@ -15,61 +15,62 @@
             </el-option>
           </el-select>
           <el-button size="mini" type="primary" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask(1)">开始</el-button>
+            @click="confirmTask(2)">开始</el-button>
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
             @click="confirmTask(3)">暂停</el-button>
-          <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask(2)">恢复</el-button>
           <el-button size="mini" type="primary" style="margin-left:10px;" :disabled="selection.length==0"
-            @click="confirmTask(5)">完成</el-button>
+            @click="confirmTask(2)">恢复</el-button>
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
             @click="confirmTask()">变更申请</el-button>
           <el-button size="mini" type="danger" style="margin-left:10px;" :disabled="selection.length==0"
             @click="confirmTask(4)">异常</el-button>
+          <el-button size="mini" type="primary" style="margin-left:10px;" :disabled="selection.length==0"
+            @click="confirmTask(5)">完成</el-button>
 
         </div>
         <div class="gridTable">
-          <zj-table ref="taskTable" style="width: 100%" :height="bottomDivShow?'200px':'350px'" :data="tableData" tooltip-effect="dark"
-            highlight-current-row border row-key="t_id" @selection-change="handleSelectionChange"
-            @select-all="handleSelectAll" @row-click="handleRowClick" >
+          <zj-table ref="taskTable" style="width: 100%" :height="bottomDivShow?'200px':'350px'" :data="tableData"
+            tooltip-effect="dark" highlight-current-row border row-key="t_id" @selection-change="handleSelectionChange"
+            @select-all="handleSelectAll" @row-click="handleRowClick">
             <el-table-column type="selection" width="30" align="center"></el-table-column>
             <el-table-column type="index" width="50" align="center" label="序号">
             </el-table-column>
             <el-table-column prop="t_name" label="任务名称" align="center" width="100" show-overflow-tooltip>
             </el-table-column>
             <el-table-column prop="t_status" label="执行状态" align="center" width="90" show-overflow-tooltip>
-              transStatus
+              <template slot-scope="scope">{{scope.row.t_status | transStatus}}</template>
             </el-table-column>
             <el-table-column prop="p_no" label="所属项目" align="center" width="100" show-overflow-tooltip>
               <template slot-scope="scope">{{scope.row.p_no | renderFilter(projectDataFilter)}}</template>
             </el-table-column>
             <el-table-column prop="t_note" label="备注" align="center" width="80" show-overflow-tooltip></el-table-column>
             <el-table-column prop="t_origin" label="来源" align="center" width="80" show-overflow-tooltip>
-              <!-- <template slot-scope="scope">{{scope.row.t_origin | originTypeFilter}}</template> -->
               <template slot-scope="scope">{{scope.row.t_origin | originTrans}}</template>
             </el-table-column>
             <el-table-column prop="t_period" label="工期" align="center" width="80" show-overflow-tooltip>
             </el-table-column>
             <el-table-column prop="t_early_startdate" label="计划开始时间" align="center" width="110" show-overflow-tooltip>
+              <template slot-scope="scope">{{scope.row.t_early_startdate | renderFilter(datetrans)}}</template>
             </el-table-column>
             <el-table-column prop="t_last_enddate" label="计划结束时间" align="center" width="110" show-overflow-tooltip>
+              <template slot-scope="scope">{{scope.row.t_last_enddate | renderFilter(datetrans)}}</template>
             </el-table-column>
             <el-table-column prop="t_progress" label="进度" align="center" width="80" show-overflow-tooltip>
             </el-table-column>
             <el-table-column label="操作" prop="handle" align="center">
               <template slot-scope="scope">
-                <el-button size="mini" type="primary" style="margin-left:3px;"  circle
-                  @click="confirmOneTask(scope.row,1)">开始</el-button>
-                <el-button size="mini" type="danger" style="margin-left:3px;"  circle
+                <el-button :disabled="!currentRow.t_tatus==1" size="mini" type="primary" style="margin-left:3px;" circle
+                  @click="confirmOneTask(scope.row,2)">开始</el-button>
+                <el-button :disabled="currentRow.t_tatus==3" size="mini" type="danger" style="margin-left:3px;" circle
                   @click="confirmOneTask(scope.row,3)">暂停</el-button>
-                <el-button size="mini" type="primary" style="margin-left:3px;"  circle
+                <el-button :disabled="!currentRow.t_tatus==3" size="mini" type="primary" style="margin-left:3px;" circle
                   @click="confirmOneTask(scope.row,2)">恢复</el-button>
-                <el-button size="mini" type="primary" style="margin-left:3px;"  circle
-                  @click="confirmOneTask(scope.row,5)">完成</el-button>
-                <el-button size="mini" type="danger" style="margin-left:3px;"  circle
-                  @click="confirmOneTask(scope.row)">变更申请</el-button>
-                <el-button size="mini" type="danger" style="margin-left:3px;" circle
+                <el-button :disabled="!currentRow.t_tatus==2" size="mini" type="danger" style="margin-left:3px;" circle @click="confirmOneTask(scope.row)">
+                  变更申请</el-button>
+                <el-button :disabled="!currentRow.t_tatus==2" size="mini" type="danger" style="margin-left:3px;" circle
                   @click="confirmOneTask(scope.row,4)">异常</el-button>
+                <el-button :disabled="!currentRow.t_tatus==2" size="mini" type="primary" style="margin-left:3px;" circle
+                  @click="confirmOneTask(scope.row,5)">完成</el-button>
               </template>
             </el-table-column>
           </zj-table>
@@ -93,12 +94,12 @@
               <taskData v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskData>
             </keep-alive>
           </el-tab-pane>
-          <el-tab-pane label="部件需求" name="dataFile">
+          <el-tab-pane label="部件需求" name="dataFile3">
             <keep-alive>
               <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
           </el-tab-pane>
-          <el-tab-pane label="输入物料" name="dataFile">
+          <el-tab-pane label="输入物料" name="dataFile1">
             <keep-alive>
               <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
@@ -108,23 +109,20 @@
               <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
           </el-tab-pane>
-          <el-tab-pane label="输入表单" name="dataFile">
+          <el-tab-pane label="输入表单" name="dataFile2">
             <keep-alive>
               <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
             </keep-alive>
           </el-tab-pane>
         </el-tabs>
-      <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
-        @click="bottomDivShow=!bottomDivShow"></i>
+        <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
+          @click="bottomDivShow=!bottomDivShow"></i>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import print from "print-js";
-import Axios from "axios";
-import Cookies from "js-cookie";
 import taskExecutor from "@/components/schedule-task/taskTab/taskExecutor";
 import taskMaterial from "@/components/schedule-task/taskTab/taskMaterial";
 import taskData from "@/components/schedule-task/taskTab/taskData";
@@ -132,7 +130,6 @@ import taskDataFile from "@/components/schedule-task/taskTab/taskDataFile";
 
 export default {
   name: "myTask",
-  props: ["currentRow"],
   components: {
     taskExecutor,
     taskMaterial,
@@ -143,56 +140,19 @@ export default {
     return {
       condition: "", //搜索栏关键字
       recovery: false,
+      currentRow: "",
       tableData: [],
       bottomDivShow: false,
-      executorModel: {}, //执行者表单对象
-      emp_options: [], //存储部门员工数据
-      dept_options: [], //存储部门数据
-      addOrNot: false,
       selection: [], //选中行数据
       project_options: [],
       select_project: "", //下拉框绑定的项目号字段
       projectDataFilter: [], //项目渲染数据,
       t_status: 0,
-      activeName:"taskInfo",
-      tr_mainOptions: [
-        //是否为主要执行
-        {
-          value: true,
-          label: "是"
-        },
-        {
-          value: false,
-          label: "否"
-        }
-      ],
-      executor_rules: {
-        dept_id: [
-          { required: true, message: "请选择执行部门", trigger: "change" }
-        ]
-      }
+      activeName: "taskInfo"
     };
   },
-  watch: {
-    currentRow: {
-      deep: true,
-      immediate: true,
-      handler() {
-        this.search();
-      }
-    }
-  },
+
   filters: {
-    // originTypeFilter(value) {
-    //   switch (value) {
-    //     case "temp":
-    //       return "临时";
-    //       break;
-    //     case "plan":
-    //       return "计划";
-    //       break;
-    //   }
-    // },
     transStatus(value) {
       switch (value) {
         case 0:
@@ -253,8 +213,8 @@ export default {
       this.bottomDivShow = false;
       this.z_get("api/task/treeList", {
         condition: this.condition,
-        p_no: this.select_project,
-        t_status: this.t_status
+        p_no: this.select_project
+        // t_status: this.t_status
       })
         .then(res => {
           this.projectDataFilter = res.dict.p_no;
@@ -267,7 +227,7 @@ export default {
     handleSelectionChange(val) {
       this.selection = val;
     },
-    
+
     //全选选中子节点
     handleSelectAll(selection) {
       var val = this.taskData;
@@ -276,11 +236,6 @@ export default {
         if (selection[i].st_id == val[0].st_id) {
           select = true;
           break;
-        }
-      }
-      for (var i = 0; i < val.length; i++) {
-        if (val[i].children && val[i].children.length) {
-          this.selectChildren(val[i].children, select);
         }
       }
     },
@@ -295,39 +250,6 @@ export default {
       }
       this.bottomDivShow = true;
     },
-
-    //展开所有节点
-    expandAll() {
-      var icon = this.$el.getElementsByClassName("el-table__expand-icon");
-      if (icon && icon.length) {
-        for (var i = 0; i < icon.length; i++) {
-          var classList = [];
-          for (var j = 0; j < icon[i].classList.length; j++) {
-            classList.push(icon[i].classList[j]);
-          }
-          if (classList.indexOf("el-table__expand-icon--expanded") == -1) {
-            icon[i].click();
-          }
-        }
-      }
-    },
-    //折叠所有节点
-    collapseAll() {
-      var icon = this.$el.getElementsByClassName("el-table__expand-icon");
-      if (icon && icon.length) {
-        for (var i = 0; i < icon.length; i++) {
-          var classList = [];
-          for (var j = 0; j < icon[i].classList.length; j++) {
-            classList.push(icon[i].classList[j]);
-          }
-          if (classList.indexOf("el-table__expand-icon--expanded") > -1) {
-            icon[i].click();
-          }
-        }
-      }
-    },
-    //确认
-    // async confirmTask (type) {}
     //确认一个
     confirmOneTask(row, mark) {
       var list = [];
@@ -344,41 +266,42 @@ export default {
     onConfirmClick(list, mark) {
       var text = "";
       if (mark == 1) {
-        text = "开始";
+        text = "确认";
         for (var i = 0; i < list.length; i++) {
-          list[i].t_status = "1";
+          list[i].t_status = 1;
         }
       } else if (mark == 0) {
         text = "拒绝";
         for (var i = 0; i < list.length; i++) {
-          list[i].t_status = "0";
+          list[i].t_status = 0;
         }
       } else if (mark == 2) {
-        // if (list.t_status) {
         text = "恢复";
         this.recovery = true;
         for (var i = 0; i < list.length; i++) {
-          list[i].t_status = "2";
+          if (list[i].t_status == 1) {
+            text = "开始";
+          }
+          list[i].t_status = 2;
         }
-        // }
       } else if (mark == 3) {
         text = "暂停";
         for (var i = 0; i < list.length; i++) {
-          list[i].t_status = "3";
+          list[i].t_status = 3;
         }
         this.recovery = true;
       } else if (mark == 4) {
         text = "异常";
         for (var i = 0; i < list.length; i++) {
-          list[i].t_status = "4";
+          list[i].t_status = 4;
         }
       } else if (mark == 5) {
         text = "完成";
         for (var i = 0; i < list.length; i++) {
-          list[i].t_status = "5";
+          list[i].t_status = 5;
         }
       }
-      this.$confirm("是否" + text + "选中项?", "提示", {
+      this.$confirm("确定将任务状态修改为‘" + text + "’吗?", "提示", {
         confirmButtonText: "是",
         cancelButtonText: "否",
         type: "warning"
@@ -418,9 +341,6 @@ export default {
 <style scoped>
 .myTask {
   width: 100%;
-}
-.formItem {
-  width: 200px;
 }
 .bottomLayout {
   position: relative;

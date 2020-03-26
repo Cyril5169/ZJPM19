@@ -223,8 +223,6 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
-
 export default {
   data() {
     return {
@@ -309,7 +307,6 @@ export default {
     }
   },
   methods: {
-    ...mapMutations("navTabs", ["addBreadCrumb"]),
     refreshClassData() {
       this.classData = [];
       this.selectClass = {};
@@ -513,7 +510,6 @@ export default {
           projectNo: row.p_no
         }
       });
-      this.addBreadCrumb("schedule/baseSchedule");
     }
   },
   mounted() {
