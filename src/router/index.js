@@ -29,11 +29,6 @@ const router = new Router({
     }
   ]
 })
-//解决刷新后点击tab报错
-const originalPush = Router.prototype.push
-Router.prototype.push = function push(location) {
-  return originalPush.call(this, location).catch(err => err)
-}
 
 //路由守卫
 router.beforeEach((to, from, next) => {
