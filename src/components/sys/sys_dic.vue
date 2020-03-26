@@ -7,7 +7,8 @@
             clearable style="width:200px;">
             <el-button slot="append" icon="el-icon-search" @click="refreshDicData"></el-button>
           </el-input>
-          <el-button type="primary" size="small" @click="dicModel={sd_status:true,sd_is_sys:false};isAddDic=true;">新增</el-button>
+          <el-button type="primary" size="small" @click="dicModel={sd_status:true,sd_is_sys:false};isAddDic=true;">新增
+          </el-button>
           <el-button type="primary" size="small" :disabled="!currentDic.sys_dic_id"
             @click="dicModel=JSON.parse(JSON.stringify(currentDic));isEditDic=true;">编辑</el-button>
           <el-button size="small" plain type="danger" :disabled="dicSelection.length==0" @click="onDeleteDicListClick">
@@ -25,6 +26,11 @@
             <el-table-column type="index" width="50" align="center"></el-table-column>
             <el-table-column prop="sd_name" label="名称" align="left" width="120"></el-table-column>
             <el-table-column prop="sd_code" label="CODE" align="left" width="100"></el-table-column>
+            <el-table-column label="可着色" width="90" align="center" prop="sd_can_color">
+              <template slot-scope="scope">
+                <span v-if="scope.row.sd_can_color">√</span>
+              </template>
+            </el-table-column>
             <el-table-column label="启用" width="90" align="center" prop="sd_status">
               <template slot-scope="scope">
                 <span v-if="scope.row.sd_status">√</span>
@@ -68,7 +74,12 @@
             </el-table-column>
             <el-table-column prop="sdi_code" label="存储的CODE" align="left" width="120">
             </el-table-column>
-            <el-table-column label="是否可用" width="90" align="center" prop="handle">
+            <el-table-column label="背景色" width="90" align="center" prop="sdi_bgcolor">
+              <template slot-scope="scope">
+                <div :style="'color:#000;background-color:'+scope.row.sdi_bgcolor">{{scope.row.sdi_bgcolor}}</div>
+              </template>
+            </el-table-column>
+            <el-table-column label="是否可用" width="90" align="center" prop="sdi_status">
               <template slot-scope="scope">
                 <span v-if="scope.row.sdi_status">√</span>
               </template>
@@ -91,8 +102,9 @@
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-checkbox v-model="dicModel.sd_status" label="是否启用"></el-checkbox>
-          <el-checkbox v-model="dicModel.sd_is_sys" label="是否系统级"></el-checkbox>
+          <el-checkbox v-model="dicModel.sd_status" label="启用"></el-checkbox>
+          <el-checkbox v-model="dicModel.sd_is_sys" label="系统级"></el-checkbox>
+          <el-checkbox v-model="dicModel.sd_can_color" label="着色"></el-checkbox>
         </el-form-item>
         <el-form-item>
           <el-button size="medium" @click="dicFormVisible=false;">取&nbsp;&nbsp;消</el-button>
@@ -115,6 +127,10 @@
         <el-form-item label="存储的CODE" prop="sdi_code">
           <el-input class="form-item" v-model="dicItemModel.sdi_code" placeholder="请填写存储的CODE">
           </el-input>
+        </el-form-item>
+        <el-form-item label="背景色" prop="sdi_bgcolor">
+          <el-color-picker class="form-item" v-model="dicItemModel.sdi_bgcolor" :predefine="predefineColors">
+          </el-color-picker>
         </el-form-item>
         <el-form-item prop="sdi_status">
           <el-checkbox v-model="dicItemModel.sdi_status" label="是否启用"></el-checkbox>
@@ -207,7 +223,19 @@ export default {
       dicItem_rules: {
         sdi_name: [{ required: true, message: "请填写显示的名称" }],
         sdi_code: [{ required: true, message: "请填写存储的CODE" }]
-      }
+      },
+      predefineColors: [
+        "#67C23A", //success
+        "#E6A23C", //warning
+        "#F56C6C", //danger
+        "#909399", //info
+        "#ff0000", //红色
+        "#ffff00", //黄色
+        "#00ff00", //绿色
+        "#00ffff", //青色
+        "#0000ff", //蓝色
+        "#f0e68c", //黄褐色
+      ]
     };
   },
   computed: {

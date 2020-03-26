@@ -21,7 +21,7 @@
           </div>
           <div class="topContent" style="height:475px;">
             <el-table ref="deptTable" style="width: 100%" height="100%" :data="tableData" tooltip-effect="dark"
-              highlight-current-row row-key="dept_id" default-expand-all @row-dblclick="handleRowDbClick">
+              highlight-current-row row-key="dept_id" default-expand-all @row-click="handleRowDbClick">
               <el-table-column prop="dept_name" label="部门名称" style="width:95%" align="left"></el-table-column>
             </el-table>
           </div>
