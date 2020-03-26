@@ -116,7 +116,7 @@
           <el-input class="form-item" v-model="dicItemModel.sdi_code" placeholder="请填写存储的CODE">
           </el-input>
         </el-form-item>
-        <el-form-item>
+        <el-form-item prop="sdi_status">
           <el-checkbox v-model="dicItemModel.sdi_status" label="是否启用"></el-checkbox>
         </el-form-item>
         <el-form-item>
@@ -436,7 +436,7 @@ export default {
     onSaveDicItemClick() {
       this.$refs.dicItemForm.validate(valid => {
         if (valid) {
-          if (this.isAddDic) {
+          if (this.isAddDicItem) {
             this.z_post("api/sys_dic_item", this.dicItemModel)
               .then(res => {
                 this.$message({
@@ -473,7 +473,7 @@ export default {
                   });
                 });
             } else {
-              tis.isEditDic = false;
+              this.isEditDicItem = false;
             }
           }
         } else {
