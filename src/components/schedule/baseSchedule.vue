@@ -309,7 +309,6 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
 import taskMaterial from "../schedule-task/taskTab/taskMaterial";
 import taskData from "../schedule-task/taskTab/taskData";
 import schedule from "../control/ScheduleControl";
@@ -441,7 +440,6 @@ export default {
     }
   },
   methods: {
-    ...mapMutations("navTabs", ["addBreadCrumb"]),
     refreshProjectData() {
       this.z_get("api/project", {
         pc_no: 0,
@@ -868,7 +866,6 @@ export default {
       this.$router.push({
         name: "project/projectList"
       });
-      this.addBreadCrumb("project/projectList");
     },
     toProjectGroup() {
       this.$router.push({
@@ -877,7 +874,6 @@ export default {
           projectNo: this.selectProjectNo
         }
       });
-      this.addBreadCrumb("schedule/project_group");
     },
     changeTabColor() {
       this.$nextTick(function() {

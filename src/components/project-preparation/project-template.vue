@@ -261,8 +261,6 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
-
 export default {
   data() {
     return {
@@ -312,7 +310,6 @@ export default {
     };
   },
   methods: {
-    ...mapMutations("navTabs", ["addBreadCrumb"]),
     refreshTemplateData() {
       this.loading = true;
       this.refreshBottom();
@@ -689,7 +686,6 @@ export default {
           templateId: row.pt_id
         }
       });
-      this.addBreadCrumb("project-preparation/template-task");
     }
   },
   mounted() {

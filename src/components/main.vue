@@ -16,7 +16,7 @@
           <i class="el-icon-s-home icon-color aside-home" @click="refreshPage"></i>
         </div>
         <div class="menu-contain">
-          <el-menu mode="horizontal" :default-active="activeTabName" @select="addBreadCrumb" text-color="#333"
+          <el-menu mode="horizontal" :default-active="activeTabName" text-color="#333"
             active-text-color="#409EFF" style="height:50px;" router>
             <!-- 单独的测试页面自己单独写，不经过权限加载(请勿上传) -->
 
@@ -172,7 +172,6 @@ export default {
   methods: {
     ...mapMutations("navTabs", [
       "setActiveTabName",
-      "addBreadCrumb",
       "setMenuTreeList",
       "isContainMenu"
     ]),
@@ -216,7 +215,6 @@ export default {
       this.$router.push({
         path: "/" + value
       });
-      this.addBreadCrumb(value);
     },
     openCalendar() {
       this.calen_visible = true;

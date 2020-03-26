@@ -41,17 +41,21 @@ router.beforeEach((to, from, next) => {
   //   next('/login')
   // } else {
   if (from.path == '/') {
+    //刷新进来
     if ((to.name == 'login' && (!to.redirectedFrom || (to.redirectedFrom && to.redirectedFrom == '/')))
        || to.name == 'main') {
-      next()
+      next();
     }
     else {
+      //刷新回到主页
       next('/main');
     }
   }
-  else {//不是刷新
+  else {
+    //不是刷新
     next();
-    history.pushState(null, null, location.href);//禁止后退，搭配APP.VUE里面的mounted
+    store.commit('navTabs/addBreadCrumb',to.name);
+    //history.pushState(null, null, location.href);//禁止后退，搭配APP.VUE里面的mounted
   }
   // }
 })
