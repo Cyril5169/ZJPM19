@@ -1,7 +1,6 @@
 <template>
-  <div class="deptEmpTab">
-    <el-card shadow="hover" class="centerCard">
-      <div>
+  <div class="deptEmpTab">    
+      <div class="topLayout">
         <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
           <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入员工姓名" v-model="condition"
@@ -29,8 +28,8 @@
             </el-dropdown-menu>
           </el-dropdown>
         </div>
-        <div style="width:100%;height:400px;">
-          <el-table ref="deptEmpTable" style="width: 100%" height="100%" :data="deptEmpData" tooltip-effect="dark"
+        <div class="gridTable">
+          <el-table ref="deptEmpTable" style="width: 100%" :data="deptEmpData" tooltip-effect="dark"
             highlight-current-row border @selection-change="handleSelectionChange" :cell-style="cellStyle">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" width="55" align="center" label="序号">
@@ -63,7 +62,6 @@
           </el-table>
         </div>
       </div>
-    </el-card>
 
     <!-- 新增部门人员 -->
     <el-dialog width=" 450px" title="新增部门人员" :close-on-click-modal="false" :visible.sync="addDeptEmpVisiable">

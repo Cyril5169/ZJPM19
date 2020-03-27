@@ -1,5 +1,5 @@
 <template>
-  <div class="taskManage">
+  <div class="taskReleased">
     <div class="containAll">
       <div class="topLayout">
         <div class="tbar">
@@ -13,26 +13,6 @@
             <el-option v-for="item in project_options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
-          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewNode('root')">新增
-          </el-button>
-          <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewNode('children')">
-            新增子任务
-          </el-button>
-          <el-dropdown style="margin-left:7px;margin-right:7px;">
-            <el-button size="small" :disabled="selection.length==0">
-              设置执行者({{selection.length}})<i class="el-icon-arrow-down el-icon--right"></i>
-            </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item @click.native="editExecutorShow()" divided>设置执行者</el-dropdown-item>
-              <el-dropdown-item @click.native="resetExecutor()" divided>取消设置执行者</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-button type="primary" size="small" :disabled="selection.length==0" @click="ReleseTask(1)">
-            发布到排班({{selection.length}})
-          </el-button>
-          <el-button type="primary" size="small" :disabled="selection.length==0" @click="ReleseTask(2)">
-            发布到个人({{selection.length}})
-          </el-button>
           <el-dropdown style="margin-left:10px;">
             <el-button size="small">
               操作<i class="el-icon-arrow-down el-icon--right"></i>
@@ -46,15 +26,15 @@
         <div class="gridTable">
           <zj-table ref="taskTable" style="width: 100%" :height="bottomDivShow?'200px':'350px'" :data="taskData"
             tooltip-effect="dark" highlight-current-row row-key="t_id" default-expand-all
-            @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick" border>
+            @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" width="55" align="center" label="序号">
             </el-table-column>
             <el-table-column prop="t_name" label="任务名称" align="center" width="130"></el-table-column>
-            <!-- <el-table-column prop="t_status" label="执行状态" align="center" width="115">
-              <template slot-scope="scope">{{scope.row.t_status | taskStatusTrans}}</template>
+            <el-table-column prop="t_status" label="执行状态" align="center" width="115">
+              <template slot-scope="scope">{{scope.row.t_status | taskStatusFilter}}</template>
             </el-table-column>
-            <el-table-column prop="t_flow_status" label="流转状态" align="center" width="115"></el-table-column> -->
+            <el-table-column prop="t_flow_status" label="流转状态" align="center" width="115"></el-table-column>
             <el-table-column prop="p_no" label="所属项目" align="center" width="130">
               <template slot-scope="scope">{{scope.row.p_no | renderFilter(projectDataFilter)}}</template>
             </el-table-column>
@@ -88,44 +68,6 @@
       </div>
       <div class="bottomLayout">
         <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
-          <el-tab-pane label="任务详情" name="taskDetail">
-            <div v-if="bottomDivShow">
-              <div class="gridTable">
-                <!-- <zj-table :autoHeight='bottomDivShow' ref="detailTable" style="width:100%;"
-                  :height="source =='plan'? '100%':200" tooltip-effect="dark" highlight-current-row border> -->
-                <!-- <el-table-column prop="t_status" label="执行状态" align="center" width="115">
-                        <template slot-scope="scope">{{scope.row.t_status | taskStatusTrans}}</template>
-                      </el-table-column> -->
-                <!-- <el-table-column prop="t_flow_status" label="流转状态" align="center" width="115"></el-table-column> -->
-                <!-- <el-table-column prop="t_origin" label="来源" align="center" width="100">
-              <template slot-scope="scope">{{scope.row.t_origin |originTrans }}</template>
-            </el-table-column> -->
-                <!-- </zj-table> -->
-                <el-form size="small" :model="currentRow" label-width="80px">
-                  <el-row>
-                    <el-col :span="4">
-                      <span style="font-size:14px;margin-left:10px">执行状态:</span>
-                      <span style="font-size:14px;margin-left:10px">{{currentRow.t_status|taskStatusTrans}}</span>
-                    </el-col>
-                    <el-col class="line" :span="1">&nbsp;</el-col>
-                    <el-col :span="4">
-                      <span style="font-size:14px;margin-left:10px">流转状态:</span>
-                      <span style="font-size:14px;margin-left:10px">{{currentRow.t_flow_status}}</span>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="4">
-                      <span style="font-size:14px;margin-left:10px">来源:</span>
-                      <span style="font-size:14px;margin-left:10px">{{currentRow.t_origin|originTrans}}</span>
-                    </el-col>
-                    <el-col class="line" :span="1">&nbsp;</el-col>
-                    <el-col :span="4">
-                    </el-col>
-                  </el-row>
-                </el-form>
-              </div>
-            </div>
-          </el-tab-pane>
           <el-tab-pane label="任务执行者" name="executor">
             <keep-alive>
               <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
@@ -197,6 +139,7 @@
             </el-form-item>
           </el-col>
         </el-row>
+
         <el-row>
           <el-col :span="11">
             <el-form-item label="计划开始时间" prop="t_early_startdate">
@@ -265,7 +208,7 @@ import taskMaterial from "@/components/schedule-task/taskTab/taskMaterial";
 import taskData from "@/components/schedule-task/taskTab/taskData";
 import taskDataFile from "@/components/schedule-task/taskTab/taskDataFile";
 export default {
-  name: "taskManage",
+  name: "taskReleased",
   components: {
     taskExecutor,
     taskMaterial,
@@ -298,18 +241,18 @@ export default {
       project_options: [],
       dept_options: [],
       emp_options: [],
-      activeName: "taskDetail",
+      activeName: "executor",
       bottomDivShow: false,
-      // origin_options: [
-      //   {
-      //     value: "temp",
-      //     label: "临时"
-      //   },
-      //   {
-      //     value: "plan",
-      //     label: "计划"
-      //   }
-      // ],
+      origin_options: [
+        {
+          value: "temp",
+          label: "临时"
+        },
+        {
+          value: "plan",
+          label: "计划"
+        }
+      ],
       executor_rules: {
         dept_id: [
           { required: true, message: "请选择执行部门", trigger: "change" }
@@ -359,7 +302,7 @@ export default {
           break;
       }
     },
-    taskStatusTrans(value) {
+    taskStatusFilter(value) {
       switch (value) {
         case 0:
           return "未处理";
@@ -912,7 +855,7 @@ export default {
 </script>
 
 <style scoped>
-.taskManage {
+.taskReleased {
   width: 100%;
 }
 .formItem {
