@@ -411,10 +411,10 @@ export default {
     },
     //渲染颜色
     cellStyle(row, column, rowIndex, columnIndex) {
-      if (row.column.label == "是否为负责人" && row.row.is_manager) {
+      if (row.column.property == "is_manager" && row.row.is_manager) {
         return "background:RGB(51,204,0);color:black;";
       }
-      if (row.column.label == "是否为主部门" && row.row.is_main_dept) {
+      if (row.column.property == "is_main_dept" && row.row.is_main_dept) {
         return "background:RGB(51,204,0);color:black;";
       }
     }

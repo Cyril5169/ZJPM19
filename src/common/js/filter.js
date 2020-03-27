@@ -151,7 +151,20 @@ function renderFilter(id, renderData) {
     }
     return name;
 }
-
+function colorRenderFilter(id, renderData) {
+    var name = id;
+    var bgcolor="";
+    var color="";
+    if (renderData) {
+        var displayName = renderData.filter(item => item.value == id);
+        if (displayName.length) {
+            name = displayName[0].display;
+            bgcolor = displayName[0].bgcolor;
+            color=bgcolor?"#000":"";
+        }
+    }
+    return `<div style="color:${color};background:${bgcolor}">${name}<div>`;
+}
 export {
     numberFilter,
     dosageFilter,
@@ -160,5 +173,6 @@ export {
     // dateFormat,统一用dateFilter
     dateFilter,
     yesOrNo,
-    renderFilter
+    renderFilter,
+    colorRenderFilter
 }
