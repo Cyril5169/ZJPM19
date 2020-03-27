@@ -2,13 +2,13 @@
   <div class="task">
     <div class="containAll">
       <el-tabs v-model="activeName">
-        <el-tab-pane label="未发布任务" name="taskManage">
+        <el-tab-pane label="待处理" name="taskManage">
           <keep-alive>
             <taskManage >
             </taskManage>
           </keep-alive>
         </el-tab-pane>
-        <el-tab-pane label="已发布任务" name="myTask">
+        <el-tab-pane label="已排班或发布" name="myTask">
           <keep-alive>
             <taskReleased >
             </taskReleased>
