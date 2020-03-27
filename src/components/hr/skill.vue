@@ -4,13 +4,13 @@
       <div class="topLayout">
         <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
-          <el-input @keyup.enter.native="refreshData" placeholder="请输入技能名称" v-model="condition"
+          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入技能名称" v-model="condition"
             style="width:320px;">
-            <el-button @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
+            <el-button type="primary" size="small" @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
           </el-input>
           <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewskillShow('root')">新增技能信息</el-button>
          <el-button type="primary" size="small">导入</el-button>
-          <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewskillShow('children')">新增子节点</el-button>
+          <!-- <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewskillShow('children')">新增子节点</el-button> -->
           <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">删除选中节点({{selection.length}})
           </el-button>
           <el-dropdown style="margin-left:10px;">
@@ -44,9 +44,9 @@
 
       </div>
     </div>
-    <el-dialog width="500px" :title="addskillText" :close-on-click-modal="false" :visible.sync="skillFormVisiable"
+    <el-dialog width="500px" :title="addskillText" :close-on-click-modal="false" :visible.sync="addskillVisiable"
       top="5vh" @closed="refreshForm">
-   <zj-form :newDataFlag="skillFormVisiable" :model="skillModel" :rules="rules"  label-width="120px" label-position="right" style="width:400px" ref="skillForm" >
+   <zj-form :newDataFlag="addskillVisiable" :model="skillModel" :rules="rules"  label-width="120px" label-position="right" style="width:400px" ref="skillForm" >
 
         <el-form-item label="技能名称" prop="skill_name">
           <el-input class="formItem" v-model="skillModel.skill_name" placeholder="技能名称">
@@ -78,7 +78,7 @@ export default {
       skill: [], //表格数据
       selection: [],
       addskillVisiable: false,
-      addskillFormVisiable:false,
+      addskillFormVisiable:true,
       skillFormVisiable:false,
       skillModel: {},
       addOrNot: true, //是否新增
@@ -129,20 +129,10 @@ export default {
       this.selection = val;      
     },
    
-    addNewskillShow(type) {
-      var titleName = "";
-      var skill_name = null;
-      if (type == "root") {
-        titleName = "";
-        this.addskillText = "新增技能信息";
-      } else if (type == "children") {
-        skill_name = this.selection[0].skill_name;
-        titleName = this.selection[0].skill_name;
-        this.addskillText = "新增[" + titleName + "]的子节点";
-      }
+    addNewskillShow() {
       this.skillModel = {
-        skill_name: 1,
-        skill_name: skill_name,
+        // skill_name: 1,
+        // skill_name: skill_name,
         skill_name: "",
         skill_note: ""
       };
@@ -170,8 +160,11 @@ export default {
                 });
                 console.log(res);
               });
-          } else { this.skillModel.UpdateColumns = this.$refs.skillForm.UpdateColumns;
-            console.log(this.skillModel)
+          } else { 
+               this.skillModel.UpdateColumns = this.$refs.skillForm.UpdateColumns;
+            if (this.skillModel.UpdateColumns) {
+            
+          
             this.z_put("api/skill", this.skillModel) 
               .then(res => {
                 this.$message({
@@ -180,7 +173,7 @@ export default {
                   duration: 1000
                 });
                 this.refreshData();
-                this.skillFormVisiable = false;
+                this.addskillVisiable = false;
               })
               .catch(res => {
                 this.$alert("编辑失败", "提示", {
@@ -191,6 +184,11 @@ export default {
               });
           
           }
+          else{
+            this.refreshData();
+                this.addskillVisiable = false;
+          }
+          }
         } else {
           return false;
         }
@@ -199,9 +197,9 @@ export default {
     //编辑数据
     editskillShow(row) {
       this.skillModel = JSON.parse(JSON.stringify(row));
-      this.addskillText = "编辑节点";
+     
       this.addOrNot = false;
-      this.skillFormVisiable = true;
+      this.addskillVisiable = true;
     },
     //删除一个
     deleteOne(row) {

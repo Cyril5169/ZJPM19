@@ -1331,7 +1331,10 @@ export default {
     //初始化属性
     initAttribute() {
       //初始化各属性
-      if (this.height && typeof this.height == "number" || typeof this.height == "string")
+      if (
+        (this.height && typeof this.height == "number") ||
+        typeof this.height == "string"
+      )
         this.initHeight = this.height;
       if (
         this.width &&
@@ -1534,6 +1537,8 @@ export default {
               //DOM 更新后移动滚动条
               this.$refs.cellAreaContainer.scrollLeft =
                 this.barBlcokList[0].left - 100;
+              this.$refs.cellAreaContainer.scrollTop =
+                (this.initLoadDataRowNum - 1.5) * this.initCellHeight;
             });
           }
         }
@@ -1843,10 +1848,10 @@ export default {
     this.initAxis(); //初始化坐标轴数据
     this.initData(); //初始化集合数据
     this.initFunc(); //初始化方法
-    this.$nextTick(function () {
+    this.$nextTick(function() {
       let h = that.$el.parentNode.offsetHeight;
-          that.initHeight  = h-3;//上下border
-     });
+      that.initHeight = h - 3; //上下border
+    });
   }
   // activated() {
   //   this.initAttribute();

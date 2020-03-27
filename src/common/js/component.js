@@ -88,3 +88,50 @@ Vue.component('zj-table', {
         this.resizeTable();
     }
 })
+
+Vue.component('zj-table-column', {
+    template: '\
+    <el-table-column :prop="prop" :label="label" :align="alignStyle" :width="width">\
+        <template slot-scope="scope">\
+           <div v-html="colorRenderFilter(scope.row[prop], dict[prop])"></div>\
+        </template>\
+    </el-table-column>\
+    ',
+    props: ['prop', 'label', 'align', 'width', "dict"],
+    computed: {
+        //默认居中
+        alignStyle() {
+            return this.align || 'center'
+        }
+    },
+    data() {
+        return {
+            column_dict: this.dict
+        }
+    },
+    watch: {
+        dict: {
+            immediate: true,
+            deep: true,
+            handler() {
+                this.column_dict = this.dict;
+            }
+        }
+    },
+    methods: {
+        colorRenderFilter(id, renderData) {
+            var name = id;
+            var bgcolor = "";
+            var color = "";
+            if (renderData) {
+                var displayName = renderData.filter(item => item.value == id);
+                if (displayName.length) {
+                    name = displayName[0].display;
+                    bgcolor = displayName[0].bgcolor;
+                    color = bgcolor ? "#000" : "";
+                }
+            }
+            return `<div style="color:${color};background:${bgcolor}">${name}<div>`;
+        }
+    }
+})

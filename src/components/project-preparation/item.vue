@@ -24,13 +24,13 @@
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" label="序号" width="55" align="center"></el-table-column>
             <el-table-column prop="item_no" label="物料编码" width="120" sortable  align="center"></el-table-column>
-            <el-table-column prop="item_name" label="物料名称" align="center" width="120" sortable ></el-table-column>
+            <el-table-column prop="item_name" label="物料名称" align="center" show-overflow-tooltip  sortable ></el-table-column>
 
             <el-table-column prop="item_unit" label="单位" align="center"  width="80">
               <template slot-scope="scope">{{scope.row.item_unit | renderFilter(unitFilter)}}</template>
             </el-table-column>
 
-            <el-table-column prop="auxiliary_unit" label="辅助单位" align="center"  width="80">
+            <el-table-column prop="auxiliary_unit" label="辅助单位" align="center"  width="120">
               <template slot-scope="scope">{{scope.row.auxiliary_unit | renderFilter(unitFilter)}}</template>
             </el-table-column>
 
@@ -498,7 +498,7 @@ export default {
 
 <style scoped>
 .item-items {
-  width: 1200px;
+  width: 1250px;
 }
 
 /* .containAll {

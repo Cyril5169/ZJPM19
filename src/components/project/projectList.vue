@@ -450,7 +450,7 @@ export default {
     },
     deleteListProject() {
       if (this.projectSelection.length) {
-        this.onDeleteClick(this.projectSelection);
+        this.onProjectDeleteClick(this.projectSelection);
       }
     },
     onProjectDeleteClick(list) {

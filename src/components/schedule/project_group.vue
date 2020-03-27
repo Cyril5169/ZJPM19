@@ -8,8 +8,6 @@
           :value="item.p_no"></el-option>
       </el-select>
       <el-button icon="el-icon-refresh" title="刷新项目列表" size="mini" circle @click="refreshProjectData()"></el-button>
-      <!-- <el-button icon="el-icon-arrow-left" size="small" style="float:right;" v-if="btnShow" @click="toProject">返回项目模板
-      </el-button> -->
     </div>
     <div class="tbar">
       <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
@@ -95,16 +93,6 @@
             <el-option v-for="item in postDataFilter" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
-          <!-- <el-select v-model="project_groupModel.group_id" ref="select_project_group" placeholder="请选择组织名称">
-            <el-option :label="project_groupModel.group_name" :value="project_groupModel.group_id" style="height:auto;padding:0;">
-              <el-tree :data="project_groupData" node-key="group_id" ref="tree" default-expand-all :expand-on-click-node="false"
-                highlight-current :current-node-key="project_groupModel.group_id">
-                <div slot-scope="{node, data}" style="width:100%;user-select:none;"
-                  @click="handleSelectTreeDblClick(data)">
-                  {{data.group_name}}</div>
-              </el-tree>
-            </el-option>
-          </el-select> -->
         </el-form-item>
         <el-form-item label="类型" prop="group_node_type">
           <el-select v-model="project_groupModel.group_node_type" placeholder="请选择">
@@ -221,7 +209,6 @@ export default {
     }
   },
   methods: {
-    //...mapMutations("navTabs", ["addBreadCrumb"]),
     refreshProjectData() {
       this.projectData = [];
       this.z_get("api/project")
@@ -234,7 +221,6 @@ export default {
     },
     //刷新组织树
     refreshData() {
-      // if (this.selectProjectId) {
       this.tableData = [];
       this.currentRow = {};
       this.bottomDivShow = false;
@@ -242,10 +228,8 @@ export default {
         p_no: this.selectProjectId,
         condition: this.condition
       })
-        // this.z_get("api/project_group/treeList")
         .then(res => {
           this.postDataFilter = res.dict.wp_id;
-          // this.classFilter = res.dict.p_no;
           this.tableData = res.data;
         })
         .catch(res => {});
@@ -353,7 +337,6 @@ export default {
         this.addproject_groupText = "新增根节点";
       } else if (type == "children") {
         group_pid = this.currentRow.group_id;
-        //titleName = this.currentRow._name;
         titleName = this.renderFilter(
           this.currentRow.wp_id,
           this.postDataFilter
@@ -423,11 +406,7 @@ export default {
     },
     //显示编辑组织
     editproject_groupShow(row) {
-      this.project_groupModel = JSON.parse(JSON.stringify(row));
-      //   this.project_groupModel.group_name = this.renderFilter(
-      //     this.project_groupModel.group_id,
-      //     this.postDataFilter
-      //   );
+      this.project_groupModel = JSON.parse(JSON.stringify(row));      
       this.addproject_groupText = "编辑节点";
       this.addOrNot = false;
       this.addproject_groupVisiable = true;
@@ -525,7 +504,6 @@ export default {
       this.TempGroupModelList = [];
       for (var i = 0; i < this.TempGroupSelection.length; i++) {
         var select = this.TempGroupSelection[i];
-
         //var level = "";
         var pid = this.project_groupModel.group_pid; //所有最顶层的节点的父节点
         if (!select.tg_pid) {
@@ -635,13 +613,6 @@ export default {
           }
         }
       }
-    },
-    //跳转路由
-    toProject() {
-      this.$router.push({
-        name: "project-preparation/project-template"
-      });
-      this.addBreadCrumb("project-preparation/project-template");
     }
   },
   mounted() {
@@ -650,8 +621,6 @@ export default {
       this.selectProjectId = this.$route.params.projectNo;
       this.refreshData();
     }
-
-    // this.search();
   }
 };
 </script>

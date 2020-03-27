@@ -50,10 +50,10 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="人员"  prop="emp_id">
+        <el-form-item label="人员" prop="emp_id">
           <el-select v-model="memberModel.emp_id" :disabled="!memberModel.dept_id" placeholder="请选择人员">
             <el-option v-for="item in empDataFilter" :key="item.value" :label="item.display" :value="item.value">
-            <!-- <el-option v-for="item in emp_options" :key="item.value" :label="item.label" :value="item.value"> -->
+              <!-- <el-option v-for="item in emp_options" :key="item.value" :label="item.label" :value="item.value"> -->
             </el-option>
           </el-select>
         </el-form-item>
@@ -256,6 +256,13 @@ export default {
               });
               return;
             }
+            if (this.memberModel.is_enabled == 1) {
+              this.$alert("已指派过负责人！", "提示", {
+                confirmButtonText: "好的",
+                type: "warning"
+              });
+              return;
+            }
             this.z_post("api/project_group_member", this.memberModel)
               .then(res => {
                 this.$message({
@@ -277,6 +284,40 @@ export default {
             this.memberModel.UpdateColumns = this.$refs.memberForm.UpdateColumns;
             console.log(this.memberModel.UpdateColumns);
             if (this.memberModel.UpdateColumns) {
+              // var isContain4 = false;
+              var a = 0;
+              for (var i = 0; i < this.memberData.length; i++) {
+                if (this.memberData[i].emp_id == this.memberModel.emp_id) {
+                  a++;
+                  // isContain4 = true;
+                  // break;
+                }
+              }
+              // if (isContain4) {
+              if (a > 1) {
+                this.$alert("已存在该成员！", "提示", {
+                  confirmButtonText: "好的",
+                  type: "warning"
+                });
+                return;
+              }
+              if (this.memberModel.is_enabled == 1) {
+                var isContain2 = false;
+                for (var i = 0; i < this.memberData.length; i++) {
+                  if (this.memberData[i].is_enabled == 1) {
+                    isContain2 = true;
+                    break;
+                  }
+                }
+              }
+
+              if (isContain2) {
+                this.$alert("已指派过负责人！", "提示", {
+                  confirmButtonText: "好的",
+                  type: "warning"
+                });
+                return;
+              }
               this.z_put("api/project_group_member", this.memberModel)
                 .then(res => {
                   this.$message({
