@@ -9,9 +9,17 @@
           <div class="tbar">
             <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="refreshDate"></el-button>
             <el-input size="small" @keyup.enter.native="refreshProblemData" placeholder="请输入问题描述"
-              v-model="ProblemCondition" clearable style="width:250px;">
-              <el-button size="small" @click="refreshProblemData" slot="append" icon="el-icon-search">搜索</el-button>
+              v-model="ProblemCondition" clearable style="width:160px;">
+              <el-button size="small" @click="refreshProblemData"> </el-button>
             </el-input>
+            <!--  slot="append" icon="el-icon-search">搜索 -->
+
+            <el-select size="small" style="width:200px; float:right;" v-model="select_project"
+              @change="refreshProblemData" ref="select_project" placeholder="请选择项目">
+              <el-option v-for="item in problemProjectFilter" :key="item.value" :label="item.display"
+                :value="item.value">
+              </el-option>
+            </el-select>
           </div>
           <el-table ref="problemTable" style="width: 100%;" :data="ProblemData" tooltip-effect="dark"
             highlight-current-row row-key="p_id" default-expand-all border @row-click="handleSelectproblemClick">
@@ -19,7 +27,8 @@
             <el-table-column type="index" label="序号" width="53" align="center"></el-table-column>
             <el-table-column prop="p_note" label="问题描述" show-overflow-tooltip align="center"></el-table-column>
 
-            <el-table-column prop="p_state" label="状态" align="center" width="100">
+            <el-table-column prop="p_state" label="状态" align="center" :filters="status_options1"
+              :filter-method="filterproblemStata" width="100">
               <template slot-scope="scope">{{scope.row.p_state | statusFilter}}</template>
             </el-table-column>
           </el-table>
@@ -50,7 +59,7 @@
             @selection-change="handleSelectionChange" @row-click="handleRowClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column type="index" width="55" label="序号" align="center"></el-table-column>
-            <el-table-column prop="ps_note" label="方案描述" align="center" show-overflow-tooltip >
+            <el-table-column prop="ps_note" label="方案描述" align="center" show-overflow-tooltip>
             </el-table-column>
             <el-table-column prop="ps_supply_user" label="提供者" align="center" width="120">
               <template slot-scope="scope">{{scope.row.ps_supply_user | renderFilter(employeeFilter)}}</template>
@@ -97,7 +106,7 @@
                   </el-button>
                   <el-button type="primary" size="small" style="margin-left:10px;" disabled="">查看计划
                   </el-button>
-                  <el-button type="primary" size="small" style="margin-left:10px;" disabled="" >查看任务
+                  <el-button type="primary" size="small" style="margin-left:10px;" disabled="">查看任务
                   </el-button>
                   <el-button type="danger" size="small" :disabled="PSDSelection.length==0" @click="deleteListPSD">
                     删除选中方案详情({{PSDSelection.length}})
@@ -238,7 +247,7 @@
           </el-select>
         </el-form-item> -->
 
-        <el-form-item label="负责人"  prop="psd_emp">
+        <el-form-item label="负责人" prop="psd_emp">
           <el-select v-model="PSDModel.psd_emp" ref="p_psd_emp" placeholder="请选择人员" :disabled="!PSDModel.psd_dept">
             <el-option v-for="item in emp_options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
@@ -283,6 +292,8 @@ import { mapMutations } from "vuex";
 export default {
   data() {
     return {
+      select_project: "",
+      problemProjectFilter: [],
       deptData: [],
       limit: 10,
       currentPage: 1,
@@ -300,7 +311,7 @@ export default {
       currentRow: {},
       currentPSRow: {},
 
-      emp_options:[],
+      emp_options: [],
 
       selection: [],
       PSDSelection: [],
@@ -312,6 +323,24 @@ export default {
       selectItemVisible: false,
       problemSolutionModel: {},
       PSDModel: {},
+      status_options1: [
+        {
+          value: "create",
+          text: "未处理"
+        },
+        {
+          value: "execute",
+          text: "正在处理"
+        },
+        {
+          value: "pause",
+          text: "暂停中"
+        },
+        {
+          value: "finish",
+          text: "完结"
+        }
+      ],
       status_options: [
         //problem_solution_Options 方案详情状态选择
         {
@@ -363,7 +392,7 @@ export default {
           { required: true, message: "请填写解决方案", trigger: "blur" }
         ]
       },
-      add_PSDrules:{
+      add_PSDrules: {
         psd_content: [
           { required: true, message: "请填写方案详情", trigger: "change" }
         ],
@@ -418,7 +447,7 @@ export default {
           break;
         case "completed":
           return "已完成";
-          break;        
+          break;
       }
     },
     statusFilterPSD(value) {
@@ -457,6 +486,10 @@ export default {
   },
   methods: {
     ...mapMutations("navTabs", ["addBreadCrumb"]),
+    filterproblemStata(value, row, column) {
+      const property = column["property"];
+      return row[property] === value;
+    },
     //刷新部门数据
     searchDept() {
       this.z_get("api/dept/tree", { condition: "" }, { loading: false })
@@ -469,14 +502,13 @@ export default {
         .catch(res => {});
     },
     //双击选择部门
-    handleSelectTreeClick(data) {      
+    handleSelectTreeClick(data) {
       this.PSDModel.psd_dept = data.dept_id;
       this.PSDModel.dept_name = data.dept_name;
       this.$refs.select_dept.blur();
       this.selectEmployee(data.dept_id);
-      this.PSDModel.psd_emp = ""
+      this.PSDModel.psd_emp = "";
     },
-
 
     //查找部门人员数据
     selectEmployee(deptId) {
@@ -500,8 +532,6 @@ export default {
         })
         .catch(res => {});
     },
-    
-  
 
     refreshProblemSolutionData() {
       this.loading = true;
@@ -524,11 +554,10 @@ export default {
         .catch(res => {});
     },
 
-    
-
     refreshDate() {
       this.currentRow = {};
       this.currentPSRow = {};
+      this.select_project = "";
       this.refreshProblemData();
       this.refreshBottom();
     },
@@ -536,9 +565,13 @@ export default {
     refreshProblemData() {
       this.ProblemData = [];
       this.refreshProblemSolutionData();
-      this.z_get("api/problem/list", { condition: this.ProblemCondition })
+      this.z_get("api/problem/list", {
+        projectno: this.select_project,
+        condition: this.ProblemCondition
+      })
         .then(res => {
           this.ProblemData = res.data;
+          this.problemProjectFilter = res.dict.projectno;
         })
         .catch(res => {});
     },
@@ -589,7 +622,7 @@ export default {
       this.rightDataShow = true;
 
       this.currentPSRow = {};
-      this.refreshPSDData();      
+      this.refreshPSDData();
     },
 
     handleSelectionChange(val) {
