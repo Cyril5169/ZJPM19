@@ -113,9 +113,10 @@ export default {
     //刷新任务执行者数据
     refreshData() {
       this.bottomDivShow = false;
-      this.z_get("api/task/treeList", {
+      this.z_get("api/task", {
         condition: this.condition,
-        t_status: 5
+        t_status: 5,
+        emp_id: 14
       })
         .then(res => {
           console.log(res);
@@ -191,6 +192,7 @@ export default {
       }
     }
   },
+  created() {this.refreshData();},
   mounted() {this.refreshData();}
 };
 </script>
@@ -201,5 +203,8 @@ export default {
 }
 .bottomLayout {
   position: relative;
+}
+.gridTable {
+  flex: 1;
 }
 </style>

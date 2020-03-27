@@ -21,12 +21,15 @@
             <el-table-column prop="t_name" label="任务名称" align="center"></el-table-column>
             <el-table-column prop="p_no" label="项目号" align="center"></el-table-column>
             <el-table-column prop="t_early_startdate" label="计划开始时间" align="center">
-               <template slot-scope="scope">{{scope.row.t_early_startdate | renderFilter(datetrans)}}</template>
+              <template slot-scope="scope">{{scope.row.t_early_startdate | renderFilter(datetrans)}}</template>
             </el-table-column>
             <el-table-column prop="t_last_enddate" label="计划结束时间" align="center">
-               <template slot-scope="scope">{{scope.row.t_last_enddate | renderFilter(datetrans)}}</template>
+              <template slot-scope="scope">{{scope.row.t_last_enddate | renderFilter(datetrans)}}</template>
             </el-table-column>
             <el-table-column prop="t_note" label="任务备注" align="center"></el-table-column>
+            <el-table-column prop="t_status" label="任务状态" align="center">
+               <template slot-scope="scope">{{scope.row.t_status | transStatus}}</template>
+            </el-table-column>
             <!-- <el-table-column prop="dept_name" label="确认时间" align="center"></el-table-column> -->
             <el-table-column label="操作" width="130" prop="handle" align="center">
               <template slot-scope="scope">
@@ -41,8 +44,8 @@
         <el-tabs v-model="activeName" :style="{height:bottomDivShow?'200px':'50px'}">
           <el-tab-pane label="任务信息" name="taskInfo">
             <keep-alive>
-              <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
-              </taskExecutor>
+              <taskInfo v-if="bottomDivShow" :currentRow='currentRow'>
+              </taskInfo>
             </keep-alive>
           </el-tab-pane>
           <el-tab-pane label="班次安排" name="material">
@@ -88,13 +91,11 @@ import taskExecutor from "@/components/schedule-task/taskTab/taskExecutor";
 import taskMaterial from "@/components/schedule-task/taskTab/taskMaterial";
 import taskData from "@/components/schedule-task/taskTab/taskData";
 import taskDataFile from "@/components/schedule-task/taskTab/taskDataFile";
+import taskInfo from "./taskInfo";
 
 export default {
   name: "taskConfirmed",
-  components: {  taskExecutor,
-    taskMaterial,
-    taskData,
-    taskDataFile },
+  components: { taskExecutor, taskMaterial, taskData, taskDataFile, taskInfo },
 
   data() {
     return {
@@ -107,7 +108,7 @@ export default {
       selection: [] //选中行数据
     };
   },
-  
+
   methods: {
     //搜索
     search() {
@@ -122,7 +123,9 @@ export default {
       this.bottomDivShow = false;
       this.z_get("api/task", {
         condition: this.condition,
-        t_status: 0
+        p_no: "",
+        t_status: 0,
+        emp_id: 14
       })
         .then(res => {
           console.log(res);
@@ -154,7 +157,7 @@ export default {
       if (JSON.stringify(this.currentRow) != JSON.stringify(row)) {
         this.currentRow = row;
       }
-      // this.bottomDivShow = true;
+      this.bottomDivShow = true;
     },
     //确认一个
     confirmOneTask(row, mark) {
@@ -206,6 +209,7 @@ export default {
             });
         })
         .catch(() => {});
+      this.refreshData();
     }
   },
   filters: {
@@ -225,9 +229,33 @@ export default {
       let s = date.getSeconds();
       s = s < 10 ? "0" + s : s;
       return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
+    },
+     transStatus(value) {
+      switch (value) {
+        case 0:
+          return "待确认";
+          break;
+        case 1:
+          return "未开始";
+          break;
+        case 2:
+          return "执行中";
+          break;
+        case 3:
+          return "暂停";
+          break;
+        case 4:
+          return "终止";
+          break;
+        case 5:
+          return "完工";
+          break;
+      }
     }
   },
-  created() {},
+  created() {
+    this.refreshData();
+  },
   mounted() {
     this.refreshData();
   }
@@ -238,10 +266,10 @@ export default {
 .taskConfirmed {
   width: 100%;
 }
-.formItem {
-  width: 200px;
-}
 .bottomLayout {
   position: relative;
+}
+.gridTable {
+  flex: 1;
 }
 </style>
