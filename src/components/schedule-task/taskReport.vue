@@ -4,7 +4,7 @@
       <el-tabs v-model="activeName">
         <el-tab-pane label="待确认" name="confirmedTask">
           <keep-alive>
-            <taskConfirmed >
+            <taskConfirmed>
             </taskConfirmed>
           </keep-alive>
         </el-tab-pane>

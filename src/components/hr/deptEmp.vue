@@ -1,8 +1,8 @@
 <template>
   <div class="deptEmp">
-    <div class="containAll">
-        <div class="leftContent">
-          <div>
+    <el-container>
+      <el-aside class="asideContent" width='350px;'>
+        <div class="topLayout">
           <div class="tbar">
             <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
             <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入部门名称" v-model="condition"
@@ -25,22 +25,17 @@
               <el-table-column prop="dept_name" label="部门名称" style="width:95%" align="left"></el-table-column>
             </el-table>
           </div>
-          </div>
         </div>
-        <div class="rightContent">
-          <div>
-            <div>
-              <el-tabs style="display:inline-block;width:100%;" v-model="activeName" >
-                <el-tab-pane label="部门员工" name="deptEmp">
-                  <child1 v-if="isChildUpdate1" :deptName="deptNameSelect" :deptId="deptIdSelect"></child1>
-                </el-tab-pane>
-              </el-tabs>
-            </div>
-          </div>
-        </div>
-    </div>
+      </el-aside>
+      <el-main class="mainContent" >
+          <el-tabs style="display:inline-block;width:100%;" v-model="activeName">
+            <el-tab-pane label="部门员工" name="deptEmp">
+              <child1 v-if="isChildUpdate1" :deptName="deptNameSelect" :deptId="deptIdSelect"></child1>
+            </el-tab-pane>
+          </el-tabs>
+      </el-main>
+    </el-container>
 
-    
     <el-dialog width="500px" :title="addDeptText" :close-on-click-modal="false" :visible.sync="addDeptVisiable"
       top="5vh" @closed="refreshForm">
       <el-form :model="deptModel" label-width="100px" ref="deptForm" :rules="add_rules">
@@ -82,7 +77,7 @@ import depEmpChild from "@/components/hr/depEmpChild";
 export default {
   name: "deptEmp",
   components: {
-    child1: depEmpChild,
+    child1: depEmpChild
   },
   data() {
     return {
@@ -145,7 +140,7 @@ export default {
           return "小组";
           break;
       }
-    },
+    }
   },
   methods: {
     refreshData() {
@@ -264,7 +259,7 @@ export default {
       }
       return name;
     },
-    handleRowDbClick(row, column) {
+    handleRowClick(row, column) {
       this.deptIdSelect = row.dept_id;
       this.deptNameSelect = row.dept_name;
     },
@@ -310,14 +305,11 @@ export default {
 .formItem {
   width: 300px;
 }
-.leftContent {
-  width: 40%;
-  position: absolute;
+.mainContent {
+  border-left: 5px solid #eee;
+  padding: 0 0 0 15px;
+  overflow-y: hidden;
   display: flex;
-  display: -webkit-flex;
-}
-.rightContent {
-  float: right;
-  width: 71%;
+  flex-direction: column;
 }
 </style>
