@@ -9,11 +9,11 @@
             <el-button size="small" @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
           </el-input>
           <span style="font-size:13px;margin-left:10px">项目名称:</span>
-          <el-select size="small" style="width:180px;"  v-model="select_project" @change="refreshData" ref="select_project" placeholder="请选择项目">
-              <el-option v-for="item in problemProjectFilter" :key="item.value" :label="item.display"
-                :value="item.value">
-              </el-option>
-            </el-select>
+          <el-select size="small" style="width:180px;" v-model="select_project" @change="refreshData"
+            ref="select_project" placeholder="请选择项目">
+            <el-option v-for="item in problemProjectFilter" :key="item.value" :label="item.display" :value="item.value">
+            </el-option>
+          </el-select>
           <el-button type="primary" size="small" style="margin-left:20px;" @click="addNewproblemShow">新增问题
           </el-button>
           <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">
@@ -23,7 +23,7 @@
         <div class="gridTable">
           <el-table ref="problemTable" style="width: 100%;" :data="problemData" tooltip-effect="dark"
             highlight-current-row border row-key="problem_no" default-expand-all
-            @selection-change="handleSelectionChange"  >
+            @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="40" align="center"></el-table-column>
             <el-table-column type="index" label="序号" width="55" align="center"></el-table-column>
 
@@ -49,9 +49,20 @@
             </el-table-column>
             <!-- <el-table-column prop="p_state" label="状态" align="center" width="80"></el-table-column> -->
 
-            <el-table-column prop="p_state" label="状态" align="center" width="100">
+            <el-table-column prop="p_state" label="状态" align="center" width="100" :filters= "status_options1" :filter-method="filterproblemStata">
               <template slot-scope="scope">{{scope.row.p_state | statusFilter}}</template>
             </el-table-column>
+
+            
+
+            <!-- <el-table-column prop="tag" label="标签" width="100"
+              :filters="[{ text: '家', value: '家' }, { text: '公司', value: '公司' }]" :filter-method="filterTag"
+              filter-placement="bottom-end">
+              <template slot-scope="scope">
+                <el-tag :type="scope.row.tag === '家' ? 'primary' : 'success'" disable-transitions>{{scope.row.tag}}
+                </el-tag>
+              </template>
+            </el-table-column> -->
 
             <el-table-column label="操作" width="150" prop="handle" align="center">
               <template slot-scope="scope">
@@ -76,7 +87,7 @@
 
       <!-- 新增项目问题 -->
       <el-dialog v-dialogDrag width="450px" :title="addproblemText" :close-on-click-modal="false"
-        :visible.sync="addproblemVisiable" top="5vh" >
+        :visible.sync="addproblemVisiable" top="5vh">
         <zj-form size="small" :newDataFlag='addproblemVisiable' :model="problemModel" label-width="100px"
           ref="problemForm" :rules="add_rules">
 
@@ -143,8 +154,7 @@ export default {
   name: "problem",
   data() {
     return {
-      
-      select_project:"",
+      select_project: "",
       condition: "",
 
       problemCondition: "",
@@ -190,6 +200,24 @@ export default {
           label: "完结"
         }
       ],
+      status_options1: [
+        {
+          value: "create",
+          text: "未处理"
+        },
+        {
+          value: "execute",
+          text: "正在处理"
+        },
+        {
+          value: "pause",
+          text: "暂停中"
+        },
+        {
+          value: "finish",
+          text: "完结"
+        }
+      ],
 
       add_rules: {
         p_note: [
@@ -206,8 +234,6 @@ export default {
       }
     };
   },
-
-
 
   filters: {
     statusFilter(value) {
@@ -228,10 +254,17 @@ export default {
     }
   },
   methods: {
-    //刷新物料信息
+      filterproblemStata(value, row, column) {
+        const property = column['property'];
+        return row[property] === value;
+      },
+    //刷新问题信息
     refreshData() {
       this.problemData = [];
-      this.z_get("api/problem/list", {projectno:this.select_project, condition: this.condition })
+      this.z_get("api/problem/list", {
+        projectno: this.select_project,
+        condition: this.condition
+      })
         .then(res => {
           this.problemData = res.data;
           this.employeeFilter = res.dict.p_emp;
@@ -253,7 +286,6 @@ export default {
     },
 
     //全选选中子节点
-  
 
     //显示任务dialog
     addNewproblemShow() {
@@ -348,6 +380,11 @@ export default {
       this.addproblemVisiable = true;
     },
 
+    toDetail(row){
+      this.problemModel = JSON.parse(JSON.stringify(row));
+      this.addproblemVisiable = true;
+    },
+
     //删除一个任务
     deleteOne(row) {
       var list = [];
@@ -388,7 +425,7 @@ export default {
     }
   },
   mounted() {
-    this.refreshData();    
+    this.refreshData();
   }
 };
 </script>

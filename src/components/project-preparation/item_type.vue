@@ -33,8 +33,8 @@
             <el-table-column type="selection" width="55" align="center"></el-table-column>
             <el-table-column prop="it_code" label="物料编码" align="left" sortable width="200">
             </el-table-column>
-            <el-table-column prop="it_name" label="物料类型名称" align="center" sortable width="200"></el-table-column>
-            <el-table-column prop="it_note" label="说明" align="center" width="450"></el-table-column>
+            <el-table-column prop="it_name" label="物料类型名称" align="center" sortable width="240"></el-table-column>
+            <el-table-column prop="it_note" label="说明" align="center" show-overflow-tooltip></el-table-column>
             <el-table-column label="操作" width="174" prop="handle">
               <template slot-scope="scope">
                 <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
