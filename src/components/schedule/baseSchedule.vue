@@ -117,10 +117,10 @@
         </div>
         <div class="rightLayout">
           <div class="rightTop" style="flex:1">
-            <schedule :height="'100%'" :width="'100%'" v-model="projectPlanData" :isShowToolBar='false'
-              :hightLightNo="hightLightNo" :canControll="false" :cellHeight='75' startTimeField='pp_early_startdate'
-              endTimeField='pp_last_enddate' taskNameField='pp_name' noField='sort' :expandSatrtMonth='1'
-              :expandEndMonth='1' :cellWidth='280'></schedule>
+            <schedule :height="'100%'" :width="'100%'" v-model="projectPlanData" :hightLightNo="hightLightNo"
+              :canControll="false" :cellHeight='75' startTimeField='pp_early_startdate' endTimeField='pp_last_enddate'
+              taskNameField='pp_name' noField='sort' :expandSatrtMonth='1' :expandEndMonth='1' :cellWidth='280'>
+            </schedule>
           </div>
           <div class="rightBottom" style="height:260px;">
             <el-tabs v-model="activeName" style="height:100%;" class="bottomtabs flexDiv-column">

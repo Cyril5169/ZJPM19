@@ -14,7 +14,7 @@
           }" ref="headAreaContainer">
           <!-- 表头宽度需要加上滚动条宽度20px-->
           <div class="table-head-area"
-            :style="{ width: initCellWidth * (tableHeadData2.length ? tableHeadData2.length : 104) + 20 + 'px', height: '100%' }">
+            :style="{ width: (tableHeadData2.length ? tableHeadData2.length * tableHeadData2[0].width : 0) + 20 + 'px', height: '100%' }">
             <!-- 第一行表头 -->
             <div>
               <div v-for="(item, index) in tableHeadData1" :key="'year' + index" class="table-head-cell" :style="{
@@ -45,7 +45,7 @@
               initHeight - initTableHeadCellHeight * initTableHeadRowNum + 'px'
           }" ref="cellAreaContainer">
           <div class="table-cell-area" :style="{
-              width: initCellWidth * tableHeadData2.length + 'px',
+              width: initCellWidth * tableCellData.length + 'px',
               height: initCellHeight * initCellRowNum + 'px'
             }">
             <div class="table-row-div">
@@ -54,7 +54,7 @@
                   top: initCellHeight * (item - 1) + 'px',
                   height: initCellHeight + 'px'
                 }">
-                <div v-for="item2 in tableHeadData2.length" :key="'table-cell' + (item2 - 1)" class="table-cell" :style="{
+                <div v-for="item2 in tableCellData.length" :key="'table-cell' + (item2 - 1)" class="table-cell" :style="{
                     width: initCellWidth + 'px',
                     left: initCellWidth * (item2 - 1) + 'px'
                   }"></div>
@@ -248,6 +248,16 @@
                 }" @click="toogleSplit"></div>
             </div>
           </div>
+          <!-- 右上角小工具 #0010-->
+          <div class="datePick" :style="{
+              top: dateToolTop + 5  + 'px',
+              left: dateToolLeft - 30 - 40 + 'px'
+            }">
+            <div class="dateBtn" :class="[initSelectDateType=='week'?'dateBtnPush':'dateBtnNormal']"
+              style="border-right:1px solid black" @click="initSelectDateType='week'">周</div>
+            <div class="dateBtn" :class="[initSelectDateType=='day'?'dateBtnPush':'dateBtnNormal']"
+              @click="initSelectDateType='day'">日</div>
+          </div>
         </div>
       </div>
       <!-- 图示区域 -->
@@ -313,7 +323,8 @@ export default {
       //是否每次数据改变都是新数据，重新画图
       type: Boolean,
       default: true
-    }
+    },
+    selectDateType: String
   },
   watch: {
     value: {
@@ -469,21 +480,28 @@ export default {
     },
     cellHeight() {
       this.initAttribute();
+      this.initData();
     },
     cellWidth() {
       this.initAttribute();
+      this.initData();
     },
     tableHeadCellHeight() {
       this.initAttribute();
+      this.initAxis();
     },
     cellRowNum() {
       this.initAttribute();
     },
     expandSatrtMonth() {
       this.initAttribute();
+      this.initAxis();
+      this.initData();
     },
     expandEndMonth() {
       this.initAttribute();
+      this.initAxis();
+      this.initData();
     },
     isShowDetailArea() {
       this.initAttribute();
@@ -502,6 +520,7 @@ export default {
     },
     loadDataRowNum() {
       this.initAttribute();
+      this.initData();
     },
     XAisWeltAuto() {
       this.initAttribute();
@@ -527,6 +546,12 @@ export default {
           this.$refs.cellAreaContainer.scrollLeft = startBlock.left - 100;
         }
       }
+    },
+    selectDateType() {
+      this.initAttribute();
+    },
+    initSelectDateType() {
+      this.initAxis();
     }
   },
   data() {
@@ -534,6 +559,7 @@ export default {
       data: this.value,
       initHeight: 100, //整个控件的高度
       initWidth: "100%", //整个控件的宽度（没有地方用到，可以使用百分比）
+      actualWidth: 0,
       initCellHeight: 60, //画图区域单元格高度(再小可能放不下了)
       initCellWidth: 84, //画图区域单元格宽度
       initTableHeadCellHeight: 40, //表头单元格高度
@@ -549,11 +575,15 @@ export default {
       initCanControll: true, //是否可操作
       initExpandStartMonth: 1, //扩展开始时间
       initExpandEndMonth: 12, //扩展结束时间
+      initSelectDateType: "week",
       tableHeadData1: [],
       tableHeadData2: [],
+      tableCellData: [],
       toolBarCollapse: false, //工具栏是否被折叠标志
       toolBarTop: 0, //工具栏距离画图顶部的距离实际
       toolBarLeft: 0, //工具栏左边距离跟随滚动条
+      dateToolTop: 0,
+      dateToolLeft: 0,
       isDown: false, //鼠标是否按下
       moveDiv: [], //当前操作的块
       moveDivIndex: [], //当前块索引
@@ -1241,10 +1271,10 @@ export default {
     initAxis() {
       this.tableHeadData1 = [];
       this.tableHeadData2 = [];
+      this.tableCellData = [];
       var minTime = null;
       var maxTime = null;
       if (this.data && this.data.length > 0) {
-        //获得最小和最大的时间，这里先不绑定字段
         for (var i = 0; i < this.data.length; i++) {
           var dtData = this.data[i];
           if (dtData[this.startTimeField]) {
@@ -1281,9 +1311,26 @@ export default {
       ) {
         var weekEnd = new Date(nowTime.getTime());
         weekEnd = new Date(weekEnd.setDate(weekEnd.getDate() + 6));
-        this.tableHeadData2.push({
-          width: this.initCellWidth,
-          text: nowTime.getDate() + "~" + weekEnd.getDate()
+        if (this.initSelectDateType == "week") {
+          this.tableHeadData2.push({
+            width: this.initCellWidth,
+            text: nowTime.getDate() + "~" + weekEnd.getDate()
+          });
+        } else {
+          //还要继续增加天的格子
+          for (
+            var oneDay = new Date(nowTime.getTime());
+            oneDay <= weekEnd;
+            oneDay = new Date(oneDay.setDate(oneDay.getDate() + 1))
+          ) {
+            this.tableHeadData2.push({
+              width: this.initCellWidth / 7,
+              text: oneDay.getDate()
+            });
+          }
+        }
+        this.tableCellData.push({
+          width: this.initCellWidth
         });
       }
       var nowMonth = new Date(minTime.getTime());
@@ -1395,6 +1442,8 @@ export default {
         this.initXAisWeltAuto = this.XAisWeltAuto;
       if (this.canControll != undefined && typeof this.canControll == "boolean")
         this.initCanControll = this.canControll;
+      if (this.selectDateType) this.initSelectDateType = this.selectDateType;
+
       //初始化工具栏位置
       this.toolBarTop =
         (this.initHeight -
@@ -1559,6 +1608,9 @@ export default {
             2 -
           me.initToolBarHeight / 2 +
           me.$refs.cellAreaContainer.scrollTop;
+        me.dateToolLeft =
+          me.actualWidth + me.$refs.cellAreaContainer.scrollLeft; //工具栏移动
+        me.dateToolTop = me.$refs.cellAreaContainer.scrollTop;
       });
       //监控全局鼠标放开事件
       window.onmouseup = function() {
@@ -1839,8 +1891,9 @@ export default {
     //第一个工具中旗杆的高度 20px 索引#0007
     //线中箭头的高度宽度 索引#0008
     //线条的宽度或高度 20px 索引#0009
-    //控件初始位置，左边10 + 滚动条，第一个距离上面 toolBarTop + 5
+    //工具栏控件初始位置，左边10 + 滚动条，第一个距离上面 toolBarTop + 5
     //第二个距离上面 toolBarTop + 52 + 5
+    //右上角切换工具长度#0010
   },
   mounted() {
     let that = this;
@@ -1851,6 +1904,9 @@ export default {
     this.$nextTick(function() {
       let h = that.$el.parentNode.offsetHeight;
       that.initHeight = h - 3; //上下border
+      that.actualWidth = that.$el.parentNode.offsetWidth;
+      that.dateToolLeft =
+        that.actualWidth + that.$refs.cellAreaContainer.scrollLeft;
     });
   }
   // activated() {
@@ -1925,7 +1981,6 @@ export default {
 }
 .tool-split {
   position: absolute;
-  margin-left: 0;
   border-right: 1px solid #eeeeee;
   border-bottom: 1px solid #eeeeee;
   border-top: 1px solid #eeeeee;
@@ -1972,6 +2027,30 @@ export default {
 }
 .tool-area :hover .tool-item {
   border: 1px solid black;
+}
+/* 右上角切换工具长度#0010 */
+.datePick {
+  position: absolute;
+  border: 1px solid black;
+  width: 40px;
+  height: 15px;
+  font-size: 10px;
+  box-sizing: border-box;
+  display: flex;
+}
+.dateBtn {
+  display: inline-block;
+  flex: 1;
+  text-align: center;
+  box-sizing: border-box;
+  background: #f9f8f6;
+  cursor: pointer;
+}
+.dateBtnNormal {
+  box-shadow: 0 0px 5px 0px #333, 0 5px 10px 0px #cccccc;
+}
+.dateBtnPush {
+  box-shadow: inset 0 0 0 5px #ccc, inset 0 0 0 14px #f9f8f6;
 }
 .bar-area {
   width: 100%;
