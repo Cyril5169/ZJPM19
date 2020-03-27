@@ -208,7 +208,7 @@
         <el-row>
           <el-col :span="11">
             <el-form-item label="计划开始时间" prop="pp_early_startdate">
-              <el-date-picker value-format="yyyy-MM-dd" :disabled="projectPlanModel.pp_node_type == 'work'"
+              <el-date-picker :disabled="projectPlanModel.pp_node_type == 'work'"
                 style="width:200px;" v-model="projectPlanModel.pp_early_startdate" placeholder="请选择开始时间"
                 :picker-options="pickerOptions1">
               </el-date-picker>
@@ -217,7 +217,7 @@
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="计划结束时间" prop="pp_last_enddate">
-              <el-date-picker value-format="yyyy-MM-dd" style="width:200px;" v-model="projectPlanModel.pp_last_enddate"
+              <el-date-picker style="width:200px;" v-model="projectPlanModel.pp_last_enddate"
                 placeholder="请选择结束时间" :picker-options="pickerOptions1">
               </el-date-picker>
             </el-form-item>
@@ -293,7 +293,7 @@
           <span>{{changeTimeModel.beforetime | dateFilter}}</span>
         </el-form-item>
         <el-form-item label="变更后时间" prop="pp_early_startdate">
-          <el-date-picker value-format="yyyy-MM-dd" style="width:200px;" v-model="changeTimeModel.aftertime"
+          <el-date-picker style="width:200px;" v-model="changeTimeModel.aftertime"
             placeholder="请选择时间">
           </el-date-picker>
         </el-form-item>

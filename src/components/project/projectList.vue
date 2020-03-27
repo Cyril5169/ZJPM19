@@ -188,7 +188,7 @@
         <el-row>
           <el-col :span="11">
             <el-form-item label="计划开始时间" prop="p_plan_startdate">
-              <el-date-picker style="width:200px;" value-format="yyyy-MM-dd" v-model="projectModel.p_plan_startdate"
+              <el-date-picker style="width:200px;" v-model="projectModel.p_plan_startdate"
                 placeholder="请选择计划开始时间">
               </el-date-picker>
             </el-form-item>
@@ -196,7 +196,7 @@
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="计划结束时间" prop="p_plan_enddate">
-              <el-date-picker style="width:200px;" value-format="yyyy-MM-dd" v-model="projectModel.p_plan_enddate"
+              <el-date-picker style="width:200px;" v-model="projectModel.p_plan_enddate"
                 placeholder="请选择计划开始时间">
               </el-date-picker>
             </el-form-item>
