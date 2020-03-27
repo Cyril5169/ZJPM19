@@ -214,7 +214,7 @@ export default {
       }
     },
     onDeleteClick(list) {
-      this.$confirm("是否删除？节点下的子节点将一并删除！", "提示", {
+      this.$confirm("是否删除？", "提示", {
         confirmButtonText: "是",
         cancelButtonText: "否",
         type: "warning"
