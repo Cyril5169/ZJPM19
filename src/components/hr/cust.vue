@@ -47,21 +47,21 @@
         <el-table-column
           prop="c_code"
           label="客户代码"
-          width="150"
+          width="200"
           align="center"
         >
         </el-table-column>
         <el-table-column
           prop="c_name"
           label="客户名称"
-          width="140"
+          width="300"
           align="center"
         >
         </el-table-column>
         <el-table-column
           prop="c_address"
           label="客户地址"
-          width="309"
+       
           align="center"
         >
         </el-table-column>
@@ -121,19 +121,19 @@
         ref="custForm"
       >
         <el-form-item label="客户代码" prop="c_code">
-          <el-input v-model="custModel.c_code" autocomplete="off"></el-input>
+          <el-input v-model="custModel.c_code" autocomplete="off" style="width:300px"></el-input>
         </el-form-item>
 
         <el-form-item label="客户名称" prop="c_name">
-          <el-input v-model="custModel.c_name" autocomplete="off"></el-input>
+          <el-input v-model="custModel.c_name" autocomplete="off" style="width:300px"></el-input>
         </el-form-item>
 
         <el-form-item label="客户地址" prop="c_address">
-          <el-input v-model="custModel.c_address" autocomplete="off"></el-input>
+          <el-input v-model="custModel.c_address" autocomplete="off" style="width:300px"></el-input>
         </el-form-item>
 
         <el-form-item label="客户规模">
-          <el-select v-model="custModel.c_scale" placeholder="请选择客户规模">
+          <el-select v-model="custModel.c_scale" placeholder="请选择客户规模"  style="width:300px">
             <el-option label="小型客户" value="小型客户"></el-option>
             <el-option label="大型客户" value="大型客户"></el-option>
           </el-select>
@@ -143,6 +143,7 @@
           <el-select
             v-model="custModel.c_Importance_level"
             placeholder="请选择客户重要程度"
+            style="width:300px"
           >
             <el-option label="一般" value="一般"></el-option>
             <el-option label="重要" value="重要"></el-option>
@@ -185,32 +186,6 @@ export default {
           { required: true, message: "重要程度不能为空", trigger: "change" }
         ]
       }
-
-      /*  tableData: [{
-          c_code: '2020',
-          c_name: '王小虎',
-          c_address: '上海市普陀区金沙江路 1518 弄',
-          c_scale:'大客户',
-          c_Importance_level:'重要'
-        }, {
-          c_code: '2020',
-          c_name: '王小虎',
-          c_address: '上海市普陀区金沙江路 1518 弄',
-          c_scale:'大客户',
-          c_Importance_level:'重要'
-        }, {
-          c_code: '2020',
-          c_name: '王小虎',
-          c_address: '上海市普陀区金沙江路 1518 弄',
-          c_scale:'大客户',
-          c_Importance_level:'重要'
-        }, {
-          c_code: '2020',
-          c_name: '王小虎',
-          c_address: '上海市普陀区金沙江路 1518 弄',
-          c_scale:'大客户',
-          c_Importance_level:'重要'
-        },] */
     };
   },
 
@@ -342,7 +317,7 @@ export default {
   top: 80px;
   left: 230px;
   right: 0px;*/
-  width: 1100px;
+  width: 1400px;
 }
 
 .gridTable {
