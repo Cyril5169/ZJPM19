@@ -4,13 +4,13 @@
       <div class="topLayout">
         <div class="tbar">
           <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
-          <el-input @keyup.enter.native="refreshData" placeholder="请输入技能名称" v-model="condition"
+          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入技能名称" v-model="condition"
             style="width:320px;">
-            <el-button @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
+            <el-button type="primary" size="small" @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
           </el-input>
           <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewskillShow('root')">新增技能信息</el-button>
          <el-button type="primary" size="small">导入</el-button>
-          <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewskillShow('children')">新增子节点</el-button>
+          <!-- <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewskillShow('children')">新增子节点</el-button> -->
           <el-button type="danger" size="small" :disabled="selection.length==0" @click="deleteList">删除选中节点({{selection.length}})
           </el-button>
           <el-dropdown style="margin-left:10px;">
