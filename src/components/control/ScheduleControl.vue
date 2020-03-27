@@ -2,7 +2,7 @@
   <div class="controller-container">
     <!-- 定义控件大小范围 -->
     <div :style="{
-        height: initHeight + 'px',
+        height: initHeight.toString().indexOf('%') == -1 ? initWidth + 'px' : initWidth,
         width:
           initWidth.toString().indexOf('%') == -1 ? initWidth + 'px' : initWidth
       }">
@@ -209,7 +209,7 @@
             </div>
           </div>
           <!-- 工具栏区域 -->
-          <div class="tool-split" :style="{
+          <div v-if="initIsShowToolBar && initCanControll" class="tool-split" :style="{
               width: toolBarCollapse ? '8px' : initToolBarWidth + 'px',
               height: initToolBarHeight + 'px',
               top: toolBarTop + 'px',
@@ -273,13 +273,19 @@ export default {
       type: Array,
       default: () => []
     },
-    height: Number, //整个控件的高度（不要使用百分比，计算不出来）
+    height: [String, Number], //整个控件的高度
     width: [String, Number], //整个控件的宽度（没有地方用到，可以使用百分比）
     cellHeight: Number, //画图区域单元格高度(再小可能放不下了)
-    cellWidth: Number, //画图区域单元格宽度
+    cellWidth: Number, //画图区域单元格宽度,最好是7的倍数
     tableHeadCellHeight: Number, //表头单元格高度
     cellRowNum: Number, //初始显示行数
+    expandSatrtMonth: Number,
+    expandEndMonth: Number,
     isShowDetailArea: {
+      type: Boolean,
+      default: undefined
+    }, //是否显示右边区域
+    isShowToolBar: {
       type: Boolean,
       default: undefined
     }, //是否显示右边区域
@@ -294,127 +300,155 @@ export default {
       type: Boolean,
       default: undefined
     }, //横坐标自动贴边
-    hightLightNo: Number //绑定高亮事件
+    canControll: {
+      type: Boolean,
+      default: undefined
+    },
+    hightLightNo: Number, //绑定高亮事件
+    startTimeField: String,
+    endTimeField: String,
+    taskNameField: String,
+    noField: String,
+    newDataFlag: {
+      //是否每次数据改变都是新数据，重新画图
+      type: Boolean,
+      default: true
+    }
   },
   watch: {
     value: {
       handler() {
         if (!this.dataChange) {
-          for (var i = 0; i < this.data.length; i++) {
-            var connectBlcok = this.barBlcokList.filter(
-              item => item.dataNo == this.data[i].no
-            );
-            if (connectBlcok.length > 0) {
-              //说明改变的是节点数据
-              connectBlcok = connectBlcok[0];
-              if (connectBlcok.text != this.data[i].TaskName) {
-                //文字的改变
-                connectBlcok.text = this.data[i].TaskName;
-              }
-              if (
-                this.formatDate(connectBlcok.dateData) !=
-                this.formatDate(this.data[i].EndTime)
-              ) {
-                //结束时间改变
-                connectBlcok.dateData = new Date(this.data[i].EndTime);
-                //计算时间跨度
-                var left =
-                  ((connectBlcok.dateData.getTime() -
-                    this.startAxisTime.getTime()) /
-                    86400000) *
-                    (this.initCellWidth / this.unitCellDay) -
-                  15;
-                connectBlcok.left = left;
-                //寻找相关联的线
-                var connectLineList = this.dragLineList.filter(
-                  item =>
-                    item.star == connectBlcok.no || item.end == connectBlcok.no
-                );
-                if (connectLineList.length > 0) {
-                  for (var l = 0; l < connectLineList.length; l++) {
-                    var lineConnect = connectLineList[l];
-                    this.changeLine(lineConnect, connectBlcok, true);
-                  }
-                }
-              }
-            } else {
-              //说明改变的是线数据
-              connectBlcok = this.dragLineList.filter(
-                item => item.dataNo == this.data[i].no
+          if (this.newDataFlag) {
+            this.data = this.value;
+            this.initAttribute(); //初始化各属性
+            this.initAxis(); //初始化坐标轴数据
+            this.initData(); //初始化集合数据
+          } else {
+            for (var i = 0; i < this.data.length; i++) {
+              var connectBlcok = this.barBlcokList.filter(
+                item => item.dataNo == this.data[i][this.noField]
               );
               if (connectBlcok.length > 0) {
+                //说明改变的是节点数据
                 connectBlcok = connectBlcok[0];
-                if (connectBlcok.text != this.data[i].TaskName) {
+                if (connectBlcok.text != this.data[i][this.taskNameField]) {
                   //文字的改变
-                  connectBlcok.text = this.data[i].TaskName;
+                  connectBlcok.text = this.data[i][this.taskNameField];
                 }
-                //寻找线两端的端点
-                var connectBlcokList = this.barBlcokList.filter(
-                  item =>
-                    item.no == connectBlcok.star || item.no == connectBlcok.end
-                );
-                if (connectBlcokList.length == 2) {
-                  var barBlock1 = []; //起始节点
-                  var barBlock2 = []; //结束节点
-                  if (connectBlcokList[0].no == connectBlcok.star) {
-                    barBlock1 = connectBlcokList[0];
-                    barBlock2 = connectBlcokList[1];
-                  } else {
-                    barBlock1 = connectBlcokList[1];
-                    barBlock2 = connectBlcokList[0];
-                  }
-                  //只有非基准节点才要改变，基准节点在上面已经改变了
-                  if (
-                    barBlock1.type == "work" &&
-                    this.formatDate(barBlock1.dateData) !=
-                      this.formatDate(this.data[i].StartTime)
-                  ) {
-                    //结束时间改变
-                    barBlock1.dateData = new Date(this.data[i].StartTime);
-                    //计算时间跨度
-                    var left =
-                      ((barBlock1.dateData.getTime() -
-                        this.startAxisTime.getTime()) /
-                        86400000) *
-                        (this.initCellWidth / this.unitCellDay) -
-                      15;
-                    barBlock1.left = left;
-                    //获得与这个节点相关联的线段
-                    var connectLineList = this.dragLineList.filter(
-                      item =>
-                        item.star == barBlock1.no || item.end == barBlock1.no
-                    );
-                    if (connectLineList.length > 0) {
-                      for (var l = 0; l < connectLineList.length; l++) {
-                        var lineConnect = connectLineList[l];
-                        this.changeLine(lineConnect, barBlock1, true);
-                      }
+                if (
+                  this.formatDate(connectBlcok.dateData) !=
+                  this.formatDate(this.data[i][this.endTimeField])
+                ) {
+                  //结束时间改变
+                  connectBlcok.dateData = new Date(
+                    this.data[i][this.endTimeField]
+                  );
+                  //计算时间跨度
+                  var left =
+                    ((connectBlcok.dateData.getTime() -
+                      this.startAxisTime.getTime()) /
+                      86400000) *
+                      (this.initCellWidth / this.unitCellDay) -
+                    15;
+                  connectBlcok.left = left;
+                  //寻找相关联的线
+                  var connectLineList = this.dragLineList.filter(
+                    item =>
+                      item.star == connectBlcok.no ||
+                      item.end == connectBlcok.no
+                  );
+                  if (connectLineList.length > 0) {
+                    for (var l = 0; l < connectLineList.length; l++) {
+                      var lineConnect = connectLineList[l];
+                      this.changeLine(lineConnect, connectBlcok, true);
                     }
                   }
-                  if (
-                    barBlock2.type == "work" &&
-                    this.formatDate(barBlock2.dateData) !=
-                      this.formatDate(this.data[i].EndTime)
-                  ) {
-                    //结束时间改变
-                    barBlock2.dateData = new Date(this.data[i].EndTime);
-                    //计算时间跨度
-                    var left =
-                      ((barBlock2.dateData.getTime() -
-                        this.startAxisTime.getTime()) /
-                        86400000) *
-                        (this.initCellWidth / this.unitCellDay) -
-                      15;
-                    barBlock2.left = left;
-                    //获得与这个节点相关联的线段
-                    var connectLineList = this.dragLineList.filter(
-                      item =>
-                        item.star == barBlock2.no || item.end == barBlock2.no
-                    );
-                    if (connectLineList.length > 0) {
-                      for (var l = 0; l < connectLineList.length; l++) {
-                        var lineConnect = connectLineList[l];
-                        this.changeLine(lineConnect, barBlock2, true);
+                }
+              } else {
+                //说明改变的是线数据
+                connectBlcok = this.dragLineList.filter(
+                  item => item.dataNo == this.data[i][this.noField]
+                );
+                if (connectBlcok.length > 0) {
+                  connectBlcok = connectBlcok[0];
+                  if (connectBlcok.text != this.data[i][this.taskNameField]) {
+                    //文字的改变
+                    connectBlcok.text = this.data[i][this.taskNameField];
+                  }
+                  //寻找线两端的端点
+                  var connectBlcokList = this.barBlcokList.filter(
+                    item =>
+                      item.no == connectBlcok.star ||
+                      item.no == connectBlcok.end
+                  );
+                  if (connectBlcokList.length == 2) {
+                    var barBlock1 = []; //起始节点
+                    var barBlock2 = []; //结束节点
+                    if (connectBlcokList[0].no == connectBlcok.star) {
+                      barBlock1 = connectBlcokList[0];
+                      barBlock2 = connectBlcokList[1];
+                    } else {
+                      barBlock1 = connectBlcokList[1];
+                      barBlock2 = connectBlcokList[0];
+                    }
+                    //只有非基准节点才要改变，基准节点在上面已经改变了
+                    if (
+                      barBlock1.type == "work" &&
+                      this.formatDate(barBlock1.dateData) !=
+                        this.formatDate(this.data[i][this.startTimeField])
+                    ) {
+                      //结束时间改变
+                      barBlock1.dateData = new Date(
+                        this.data[i][this.startTimeField]
+                      );
+                      //计算时间跨度
+                      var left =
+                        ((barBlock1.dateData.getTime() -
+                          this.startAxisTime.getTime()) /
+                          86400000) *
+                          (this.initCellWidth / this.unitCellDay) -
+                        15;
+                      barBlock1.left = left;
+                      //获得与这个节点相关联的线段
+                      var connectLineList = this.dragLineList.filter(
+                        item =>
+                          item.star == barBlock1.no || item.end == barBlock1.no
+                      );
+                      if (connectLineList.length > 0) {
+                        for (var l = 0; l < connectLineList.length; l++) {
+                          var lineConnect = connectLineList[l];
+                          this.changeLine(lineConnect, barBlock1, true);
+                        }
+                      }
+                    }
+                    if (
+                      barBlock2.type == "work" &&
+                      this.formatDate(barBlock2.dateData) !=
+                        this.formatDate(this.data[i][this.endTimeField])
+                    ) {
+                      //结束时间改变
+                      barBlock2.dateData = new Date(
+                        this.data[i][this.endTimeField]
+                      );
+                      //计算时间跨度
+                      var left =
+                        ((barBlock2.dateData.getTime() -
+                          this.startAxisTime.getTime()) /
+                          86400000) *
+                          (this.initCellWidth / this.unitCellDay) -
+                        15;
+                      barBlock2.left = left;
+                      //获得与这个节点相关联的线段
+                      var connectLineList = this.dragLineList.filter(
+                        item =>
+                          item.star == barBlock2.no || item.end == barBlock2.no
+                      );
+                      if (connectLineList.length > 0) {
+                        for (var l = 0; l < connectLineList.length; l++) {
+                          var lineConnect = connectLineList[l];
+                          this.changeLine(lineConnect, barBlock2, true);
+                        }
                       }
                     }
                   }
@@ -445,7 +479,16 @@ export default {
     cellRowNum() {
       this.initAttribute();
     },
+    expandSatrtMonth() {
+      this.initAttribute();
+    },
+    expandEndMonth() {
+      this.initAttribute();
+    },
     isShowDetailArea() {
+      this.initAttribute();
+    },
+    isShowToolBar() {
       this.initAttribute();
     },
     toolBarCollapsed() {
@@ -461,6 +504,9 @@ export default {
       this.initAttribute();
     },
     XAisWeltAuto() {
+      this.initAttribute();
+    },
+    canControll() {
       this.initAttribute();
     },
     hightLightNo() {
@@ -486,7 +532,7 @@ export default {
   data() {
     return {
       data: this.value,
-      initHeight: 650, //整个控件的高度（不要使用百分比，计算不出来）
+      initHeight: 100, //整个控件的高度
       initWidth: "100%", //整个控件的宽度（没有地方用到，可以使用百分比）
       initCellHeight: 60, //画图区域单元格高度(再小可能放不下了)
       initCellWidth: 84, //画图区域单元格宽度
@@ -494,11 +540,15 @@ export default {
       initTableHeadRowNum: 2, //初始表头行数（后面需要计算得出）
       initCellRowNum: 10, //初始显示行数
       initIsShowDetailArea: false, //是否显示右边区域（暂时没想到放什么，估计可以放图示）
+      initIsShowToolBar: true, //是否显示工具栏
       initToolBarCollapsed: false, //左边工具栏是否初始折叠
-      initToolBarHeight: 350, //工具栏高度
+      initToolBarHeight: 150, //工具栏高度
       initToolBarWidth: 60, //工具栏宽度
       initXAisWeltAuto: true, //横坐标是否自动贴边，可以精确到天或者小时
-      initLoadDataRowNum: 3, //初始加载数据所在行数
+      initLoadDataRowNum: 2, //初始加载数据所在行数
+      initCanControll: true, //是否可操作
+      initExpandStartMonth: 1, //扩展开始时间
+      initExpandEndMonth: 12, //扩展结束时间
       tableHeadData1: [],
       tableHeadData2: [],
       toolBarCollapse: false, //工具栏是否被折叠标志
@@ -608,6 +658,7 @@ export default {
     },
     //双击事件
     onDBClick(e, item, index, type) {
+      if (!this.initCanControll) return;
       if (type == "barBlcokListText" || type == "lineText") {
         this.isEdit = true;
         this.editText = item.text;
@@ -625,11 +676,11 @@ export default {
         })
           .then(() => {
             var connectData = this.data.filter(
-              item => item.no == this.dragLineList[index].dataNo
+              item => item[this.noField] == this.dragLineList[index].dataNo
             );
             if (connectData.length > 0) {
               this.data = this.data.filter(
-                item => item.no != this.dragLineList[index].dataNo
+                item => item[this.noField] != this.dragLineList[index].dataNo
               );
               this.$emit("input", this.data);
               this.dataChange = true;
@@ -695,11 +746,11 @@ export default {
                   ).length > 0
                 ) {
                   var connectData = this.data.filter(
-                    item => item.no == this.dragLineList[i].dataNo
+                    item => item[this.noField] == this.dragLineList[i].dataNo
                   );
                   if (connectData.length > 0) {
                     this.data = this.data.filter(
-                      item => item.no != this.dragLineList[i].dataNo
+                      item => item[this.noField] != this.dragLineList[i].dataNo
                     );
                     this.$emit("input", this.data);
                     this.dataChange = true;
@@ -748,9 +799,13 @@ export default {
                 }
               }
             }
-            var connectData = this.data.filter(item => item.no == dataNo);
+            var connectData = this.data.filter(
+              item => item[this.noField] == dataNo
+            );
             if (connectData.length > 0) {
-              this.data = this.data.filter(item => item.no != dataNo);
+              this.data = this.data.filter(
+                item => item[this.noField] != dataNo
+              );
               this.$emit("input", this.data);
               this.dataChange = true;
             }
@@ -769,11 +824,12 @@ export default {
         this.barBlcokList[this.moveDivIndex].text = this.editText;
         if (this.barBlcokList[this.moveDivIndex].dataNo) {
           var connectData = this.data.filter(
-            item => item.no == this.barBlcokList[this.moveDivIndex].dataNo
+            item =>
+              item[this.noField] == this.barBlcokList[this.moveDivIndex].dataNo
           );
           if (connectData.length > 0) {
             connectData = connectData[0];
-            connectData.TaskName = this.editText;
+            connectData[this.taskNameField] = this.editText;
             this.$emit("input", this.data);
             this.dataChange = true;
           }
@@ -782,11 +838,12 @@ export default {
         this.dragLineList[this.moveDivIndex].text = this.editText;
         if (this.dragLineList[this.moveDivIndex].dataNo) {
           var connectData = this.data.filter(
-            item => item.no == this.dragLineList[this.moveDivIndex].dataNo
+            item =>
+              item[this.noField] == this.dragLineList[this.moveDivIndex].dataNo
           );
           if (connectData.length > 0) {
             connectData = connectData[0];
-            connectData.TaskName = this.editText;
+            connectData[this.taskNameField] = this.editText;
             this.$emit("input", this.data);
             this.dataChange = true;
           }
@@ -795,6 +852,7 @@ export default {
       this.isEdit = false;
     },
     onMouseOver(e, index, type) {
+      if (!this.initCanControll) return;
       if (this.operationType == "control-barBlcok") return;
       if (type == "controlOver") {
         e.currentTarget.style.backgroundColor = "rgba(224, 224, 224, 224)"; //显示控制块
@@ -850,23 +908,25 @@ export default {
           ? Math.max.apply(
               Math,
               this.data.map(item => {
-                return item.no;
+                return item[this.noField];
               })
             ) + 10
           : 10;
         realNo = maxNo;
         if (barBlock2.type == "base") {
           //如果也是基准节点，往后移动一位
-          var noData = this.data.filter(item => item.no == barBlock2.dataNo)[0];
-          realNo = noData.no;
-          noData.no = maxNo;
+          var noData = this.data.filter(
+            item => item[this.noField] == barBlock2.dataNo
+          )[0];
+          realNo = noData[this.noField];
+          noData[this.noField] = maxNo;
           barBlock2.dataNo = maxNo;
         }
         var lineData = {
-          no: realNo,
-          TaskName: taskName,
-          StartTime: this.formatDate(barBlock1.dateData),
-          EndTime: this.formatDate(barBlock2.dateData)
+          [this.noField]: realNo,
+          [this.taskNameField]: taskName,
+          [this.startTimeField]: this.formatDate(barBlock1.dateData),
+          [this.endTimeField]: this.formatDate(barBlock2.dateData)
         };
         this.data.push(lineData);
         this.addLine(barBlock1, barBlock2, "solid", lineData);
@@ -886,7 +946,7 @@ export default {
         star: barBlock1.no,
         end: barBlock2.no,
         textDir: "",
-        text: lineData.TaskName,
+        text: lineData[this.taskNameField],
         lineList: [],
         show: true,
         dataNo: lineData.no
@@ -1157,8 +1217,12 @@ export default {
     expandTime(t1, t2) {
       var minTime = new Date(t1);
       var maxTime = new Date(t2);
-      minTime = new Date(minTime.setMonth(minTime.getMonth() - 1));
-      maxTime = new Date(maxTime.setYear(maxTime.getFullYear() + 1));
+      minTime = new Date(
+        minTime.setMonth(minTime.getMonth() - this.initExpandStartMonth)
+      );
+      maxTime = new Date(
+        maxTime.setMonth(maxTime.getMonth() + this.initExpandEndMonth)
+      );
       //如果开始时间不是星期天，往前减去
       if (minTime.getDay() != 0) {
         minTime = new Date(
@@ -1183,20 +1247,22 @@ export default {
         //获得最小和最大的时间，这里先不绑定字段
         for (var i = 0; i < this.data.length; i++) {
           var dtData = this.data[i];
-          if (dtData.StartTime) {
+          if (dtData[this.startTimeField]) {
             if (
               !minTime ||
-              (minTime && new Date(minTime) > new Date(dtData.StartTime))
+              (minTime &&
+                new Date(minTime) > new Date(dtData[this.startTimeField]))
             ) {
-              minTime = dtData.StartTime;
+              minTime = dtData[this.startTimeField];
             }
           }
-          if (dtData.EndTime) {
+          if (dtData[this.endTimeField]) {
             if (
               !maxTime ||
-              (maxTime && new Date(maxTime) < new Date(dtData.EndTime))
+              (maxTime &&
+                new Date(maxTime) < new Date(dtData[this.endTimeField]))
             ) {
-              maxTime = dtData.EndTime;
+              maxTime = dtData[this.endTimeField];
             }
           }
         }
@@ -1265,7 +1331,7 @@ export default {
     //初始化属性
     initAttribute() {
       //初始化各属性
-      if (this.height && typeof this.height == "number")
+      if (this.height && typeof this.height == "number" || typeof this.height == "string")
         this.initHeight = this.height;
       if (
         this.width &&
@@ -1287,16 +1353,27 @@ export default {
         this.initTableHeadCellHeight = this.tableHeadCellHeight;
       if (this.cellRowNum && typeof this.cellRowNum == "number")
         this.initCellRowNum = this.cellRowNum;
+      if (this.expandStartMonth && typeof this.expandStartMonth == "number")
+        this.initExpandStartMonth = this.expandStartMonth;
+      if (this.expandEndMonth && typeof this.expandEndMonth == "number")
+        this.initExpandEndMonth = this.expandEndMonth;
       if (
         this.isShowDetailArea != undefined &&
         typeof this.isShowDetailArea == "boolean"
       )
         this.initIsShowDetailArea = this.isShowDetailArea;
       if (
+        this.isShowToolBar != undefined &&
+        typeof this.isShowToolBar == "boolean"
+      )
+        this.initIsShowToolBar = this.isShowToolBar;
+      if (
         this.toolBarCollapsed != undefined &&
         typeof this.toolBarCollapsed == "boolean"
-      )
+      ) {
         this.initToolBarCollapsed = this.toolBarCollapsed;
+        this.toolBarCollapse = this.initToolBarCollapsed;
+      }
       if (this.toolBarHeight && typeof this.toolBarHeight == "number")
         this.initToolBarHeight = this.toolBarHeight;
       if (
@@ -1313,6 +1390,8 @@ export default {
         typeof this.XAisWeltAuto == "boolean"
       )
         this.initXAisWeltAuto = this.XAisWeltAuto;
+      if (this.canControll != undefined && typeof this.canControll == "boolean")
+        this.initCanControll = this.canControll;
       //初始化工具栏位置
       this.toolBarTop =
         (this.initHeight -
@@ -1327,11 +1406,13 @@ export default {
       this.dragLineDashList = [];
       if (this.data && this.data.length > 0) {
         //第一步，寻找线段，并添加两端虚拟节点
-        var lineData = this.data.filter(item => item.StartTime && item.EndTime);
+        var lineData = this.data.filter(
+          item => item[this.startTimeField] && item[this.endTimeField]
+        );
         for (var i = 0; i < lineData.length; i++) {
           //循环每个线段，添加两边端点，并连线
-          var startDate = new Date(lineData[i].StartTime);
-          var endDate = new Date(lineData[i].EndTime);
+          var startDate = new Date(lineData[i][this.startTimeField]);
+          var endDate = new Date(lineData[i][this.endTimeField]);
           //添加开始节点
           var startBlock = this.barBlcokList.filter(
             item => item.dateData.getTime() == startDate.getTime()
@@ -1400,12 +1481,13 @@ export default {
         }
         //第二步，获取节点，把已有的虚拟节点转为基准节点
         var baseBlock = this.data.filter(
-          item => item.StartTime == "" || item.EndTime == ""
+          item =>
+            item[this.startTimeField] == "" || item[this.startTimeField] == null
         );
         for (var i = 0; i < baseBlock.length; i++) {
-          var blockDate = baseBlock[i].StartTime
-            ? new Date(baseBlock[i].StartTime)
-            : new Date(baseBlock[i].EndTime);
+          var blockDate = baseBlock[i][this.startTimeField]
+            ? new Date(baseBlock[i][this.startTimeField])
+            : new Date(baseBlock[i][this.endTimeField]);
           var liveBlock = this.barBlcokList.filter(
             item => item.dateData.getTime() == blockDate.getTime()
           );
@@ -1413,7 +1495,7 @@ export default {
             //有这个节点
             liveBlock = liveBlock[0];
             //修改
-            liveBlock.text = baseBlock[i].TaskName;
+            liveBlock.text = baseBlock[i][this.taskNameField];
             liveBlock.type = "base";
             liveBlock.dataNo = baseBlock[i].no;
           } else {
@@ -1434,11 +1516,11 @@ export default {
                 this.initCellHeight * (this.initLoadDataRowNum - 1) +
                 (this.initCellHeight - 50) / 2, // #0005 默认从第三行开始，好看点,
               left: left,
-              text: baseBlock[i].TaskName,
+              text: baseBlock[i][this.taskNameField],
               type: "base",
               status: "undo", //状态，改变颜色
               dateData: blockDate, //绑定的数据
-              dataNo: baseBlock[i].no
+              dataNo: baseBlock[i][this.noField]
             };
             var lastBlock = this.barBlcokList[this.barBlcokList.length - 1];
             this.barBlcokList.push(liveBlock);
@@ -1532,7 +1614,7 @@ export default {
               ? Math.max.apply(
                   Math,
                   me.data.map(item => {
-                    return item.no;
+                    return item[me.noField];
                   })
                 ) + 10
               : 10;
@@ -1579,6 +1661,7 @@ export default {
             while (unitWidth * cellIndex + criticalLeft <= left + 15) {
               cellIndex++;
             }
+            console.log(unitWidth * cellIndex - 15);
             me.barBlcokList[me.moveDivIndex].left = unitWidth * cellIndex - 15;
           }
           //改变节点数据的结束时间
@@ -1591,9 +1674,10 @@ export default {
           me.barBlcokList[me.moveDivIndex].dateData = changeTime;
           if (me.barBlcokList[me.moveDivIndex].dataNo) {
             var connectData = me.data.filter(
-              item => item.no == me.barBlcokList[me.moveDivIndex].dataNo
+              item =>
+                item[me.noField] == me.barBlcokList[me.moveDivIndex].dataNo
             )[0];
-            connectData.EndTime = me.formatDate(changeTime);
+            connectData[me.endTimeField] = me.formatDate(changeTime);
             me.$emit("input", me.data);
             me.dataChange = true;
           }
@@ -1626,6 +1710,7 @@ export default {
       window.onmousemove = function(e) {
         if (!me.isDown) return;
         if (me.isEdit) return;
+        if (!me.initCanControll) return; //是否可以操作
         //获取x,y坐标
         var nx = e.clientX;
         var ny = e.clientY;
@@ -1753,10 +1838,15 @@ export default {
     //第二个距离上面 toolBarTop + 52 + 5
   },
   mounted() {
-    this.initAxis(); //初始化坐标轴数据
+    let that = this;
     this.initAttribute(); //初始化各属性
+    this.initAxis(); //初始化坐标轴数据
     this.initData(); //初始化集合数据
     this.initFunc(); //初始化方法
+    this.$nextTick(function () {
+      let h = that.$el.parentNode.offsetHeight;
+          that.initHeight  = h-3;//上下border
+     });
   }
   // activated() {
   //   this.initAttribute();
@@ -1769,10 +1859,12 @@ export default {
 <style scoped>
 .controller-container {
   background-color: white;
+  box-sizing: border-box;
 }
 .area-paint {
   height: 100%;
   float: left;
+  box-sizing: border-box;
   border: 1px solid black;
 }
 .area-graphic-expression {
@@ -1836,7 +1928,7 @@ export default {
   user-select: none;
   transition: width 0.4s;
   box-sizing: border-box;
-  z-index: 999;
+  z-index: 1000;
 }
 .tool-area {
   height: 100%;
@@ -1856,6 +1948,7 @@ export default {
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
+  z-index: 1000;
 }
 .split-toogle-left {
   background: url("../../assets/img/mini-left.png") no-repeat;
@@ -2082,17 +2175,5 @@ export default {
   border-left-color: transparent;
   border-right-color: transparent;
   border-top-color: #ffa011;
-}
-.backgroundComplete {
-  background-color: #7ed321;
-}
-.backgroundDoing {
-  background-color: #f5a623;
-}
-.backgroundStop {
-  background-color: #d0021b;
-}
-.backgroundPause {
-  background-color: #979797;
 }
 </style>

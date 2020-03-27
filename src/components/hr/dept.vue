@@ -1,83 +1,93 @@
 <template>
   <div class="dept">
     <div class="containAll">
-      <div class="tbar">
-        <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
-        <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入部门名称" v-model="condition"
-          style="width:300px;">
-          <el-button @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
-        </el-input>
-        <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewNode('root')">新增根节点</el-button>
-        <el-button size="small" type="primary" :disabled="selection.length!=1" @click="addNewNode('children')">新增子节点
-        </el-button>
-        <el-button size="small" type="danger" :disabled="selection.length==0" @click="deleteList">
-          删除选中节点({{selection.length}})
-        </el-button>
-        <el-dropdown style="margin-left:10px;">
-          <el-button size="small">
-            操作<i class="el-icon-arrow-down el-icon--right"></i>
+      <div class="topLayout">
+        <div class="tbar">
+          <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
+          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入部门名称" v-model="condition"
+            style="width:300px;">
+            <el-button @click="refreshData" slot="append" icon="el-icon-search">搜索</el-button>
+          </el-input>
+          <el-button style="margin-left:10px;" size="small" type="primary" :disabled="selection.length!=1"
+            @click="addNewNode('children')">新增子部门
           </el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="expandAll">展开所有节点</el-dropdown-item>
-            <el-dropdown-item @click.native="collapseAll" divided>折叠所有节点</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+          <el-button size="small" type="danger" :disabled="selection.length==0" @click="deleteList">
+            删除选中部门({{selection.length}})
+          </el-button>
+          <el-button size="small" @click="UpRecord" v-show="showMoveBtn" :disabled="!currentRow.dept_id">上移</el-button>
+          <el-button size="small" @click="DownRecord" v-show="showMoveBtn" :disabled="!currentRow.dept_id">下移
+          </el-button>
+          <el-dropdown style="margin-left:10px;">
+            <el-button size="small">
+              操作<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item @click.native="expandAll">展开所有</el-dropdown-item>
+              <el-dropdown-item @click.native="collapseAll" divided>收起所有</el-dropdown-item>
+              <el-dropdown-item @click.native="showMoveBtn=!showMoveBtn;" divided>{{showMoveBtn?'隐藏调整排序':'调整排序'}}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <div class="gridTable">
+          <el-table ref="deptTable" style="width: 100%" :data="tableData" tooltip-effect="dark" highlight-current-row
+            row-key="dept_id" default-expand-all @selection-change="handleSelectionChange" @select-all="handleSelectAll"
+            @row-click="handleRowClick" @current-change="handleCurrentChange">
+            <el-table-column type="selection" width="55" align="center"></el-table-column>
+            <el-table-column prop="dept_name" label="部门名称" align="left" width="220"></el-table-column>
+            <el-table-column prop="dept_type_id" label="类型" align="center" width="150">
+              <!-- 是否写死，还是动态查数据  -->
+              <template slot-scope="scope">{{scope.row.dept_type_id | deptTypeTrans}}</template>
+            </el-table-column>
+            <el-table-column label="说明" prop="dept_note" align="center"></el-table-column>
+            <el-table-column label="操作" width="150" prop="handle">
+              <template slot-scope="scope">
+                <el-button v-if="scope.row.dept_pid" type="primary" icon="el-icon-edit" size="mini" circle
+                  @click="editDeptShow(scope.row)">
+                </el-button>
+                <el-button v-if="scope.row.dept_pid" type="danger" icon="el-icon-delete" size="mini" circle
+                  @click="deleteOne(scope.row)">
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
       </div>
-      <div class="topContent" style="height:480px;">
-        <el-table ref="deptTable" style="width: 100%" height="100%" :data="tableData" tooltip-effect="dark"
-          highlight-current-row row-key="dept_id" default-expand-all @selection-change="handleSelectionChange"
-          @select-all="handleSelectAll" @row-click="handleRowClick">
-          <el-table-column type="selection" width="55" align="center"></el-table-column>
-          <el-table-column prop="dept_name" label="部门名称" align="center" width="220"></el-table-column>
-          <el-table-column prop="dept_type_id" label="类型" align="center" width="150">
-            <!-- 是否写死，还是动态查数据  -->
-            <template slot-scope="scope">{{scope.row.dept_type_id | deptTypeTrans}}</template>
-          </el-table-column>
-          <el-table-column label="说明" prop="dept_note" align="center"></el-table-column>
-          <el-table-column label="操作" width="150" prop="handle">
-            <template slot-scope="scope">
-              <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editDeptShow(scope.row)">
-              </el-button>
-              <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+      
+      <el-dialog width="500px" :title="addDeptText" :close-on-click-modal="false" :visible.sync="addDeptVisiable"
+        top="5vh" @closed="refreshForm">
+        <el-form :model="deptModel" label-width="100px" ref="deptForm" :rules="add_rules">
+          <el-form-item label="部门编号">
+            <el-input class="formItem" v-model="deptModel.dept_id" placeholder="系统自动生成" disabled>
+            </el-input>
+          </el-form-item>
+          <el-form-item label="部门名称" prop="dept_name">
+            <el-input class="formItem" v-model="deptModel.dept_name" placeholder="无">
+            </el-input>
+          </el-form-item>
+          <el-form-item label="上级部门" prop="dept_pid">
+            <el-select v-model="deptModel.dept_pid" ref="select_dept" placeholder="请选择上级部门" disabled>
+              <el-option :label="deptModel.dept_pname" :value="deptModel.dept_pid" style="height:auto;padding:0;">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="类型" prop="dept_type_id">
+            <el-select v-model="deptModel.dept_type_id" placeholder="请选择类型">
+              <el-option v-for="item in deptType_options" :key="item.value" :label="item.label" :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="说明">
+            <el-input class="formItem" type="textarea" :rows="2" v-model="deptModel.dept_note" placeholder="">
+            </el-input>
+          </el-form-item>
+          <el-form-item style="text-align:center;margin-right:100px;">
+            <el-button type="primary" @click="onSaveTDempClick" style="margin-left:30px;">保&nbsp;&nbsp;存</el-button>
+            <el-button @click="addDeptVisiable = false">取&nbsp;&nbsp;消</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
     </div>
-    <el-dialog width="500px" :title="addDeptText" :close-on-click-modal="false" :visible.sync="addDeptVisiable"
-      top="5vh" @closed="refreshForm">
-      <el-form :model="deptModel" label-width="100px" ref="deptForm" :rules="add_rules">
-        <el-form-item label="部门编号">
-          <el-input class="formItem" v-model="deptModel.dept_id" placeholder="系统自动生成" disabled>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="部门名称" prop="dept_name">
-          <el-input class="formItem" v-model="deptModel.dept_name" placeholder="无">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="上级部门" prop="dept_pid">
-          <el-select v-model="deptModel.dept_pid" ref="select_dept" placeholder="请选择上级部门" disabled>
-            <el-option :label="deptModel.dept_pname" :value="deptModel.dept_pid" style="height:auto;padding:0;">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="类型" prop="dept_type_id">
-          <el-select v-model="deptModel.dept_type_id" placeholder="请选择类型">
-            <el-option v-for="item in deptType_options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="说明">
-          <el-input class="formItem" type="textarea" :rows="2" v-model="deptModel.dept_note" placeholder="">
-          </el-input>
-        </el-form-item>
-        <el-form-item style="text-align:center;margin-right:100px;">
-          <el-button type="primary" @click="onSaveTDempClick" style="margin-left:30px;">保&nbsp;&nbsp;存</el-button>
-          <el-button @click="addDeptVisiable = false">取&nbsp;&nbsp;消</el-button>
-        </el-form-item>
-      </el-form>
-    </el-dialog>
   </div>
 </template>
 
@@ -86,14 +96,18 @@ export default {
   name: "dept",
   data() {
     return {
+      deptTableHeight: 300,
       condition: "",
       tableData: [], //表格数据
+      dict: {},
+      currentRow: {},
       deptDataFilter: [],
       selection: [],
       addDeptVisiable: false,
       deptModel: {},
       addOrNot: true, //是否新增
       addDeptText: "",
+      showMoveBtn: false,
       deptType_options: [
         {
           value: 1,
@@ -110,6 +124,9 @@ export default {
         ],
         dept_type_id: [
           { required: true, message: "请输入部门类型", trigger: "change" }
+        ],
+        dept_level: [
+          { required: true, message: "请输入部门层级", trigger: "change" }
         ]
       }
     };
@@ -141,13 +158,14 @@ export default {
           return "小组";
           break;
       }
-    },
+    }
   },
   methods: {
     refreshData() {
       this.z_get("api/dept/tree", { condition: this.condition })
         .then(res => {
           this.deptDataFilter = res.dict.dept_id;
+          this.dict=res.dict;
           this.tableData = res.data;
         })
         .catch(res => {});
@@ -169,7 +187,7 @@ export default {
       var val = this.tableData;
       var select = false;
       for (var i = 0; i < selection.length; i++) {
-        if (selection[i].st_id == val[0].st_id) {
+        if (selection[i].dept_id == val[0].dept_id) {
           select = true;
           break;
         }
@@ -209,7 +227,7 @@ export default {
         dept_note: "",
         dept_pid: dept_pid
       };
-      this.deptModel.dept_pname = this.filterDeptName(this.deptModel.dept_pid);
+      this.deptModel.dept_pname = this.renderFilter(this.deptModel.dept_pid);
       this.addOrNot = true;
       this.addDeptVisiable = true;
     },
@@ -261,7 +279,7 @@ export default {
     //编辑数据
     editDeptShow(row) {
       this.deptModel = JSON.parse(JSON.stringify(row));
-      this.deptModel.dept_pname = this.filterDeptName(this.deptModel.dept_pid);
+      this.deptModel.dept_pname = this.renderFilter(this.deptModel.dept_pid);
       this.addDeptText = "编辑节点";
       this.addOrNot = false;
       this.addDeptVisiable = true;
@@ -295,7 +313,7 @@ export default {
               this.refreshData();
             })
             .catch(res => {
-              this.$alert("删除失败" , "提示", {
+              this.$alert("删除失败", "提示", {
                 confirmButtonText: "确定",
                 type: "warning"
               });
@@ -307,13 +325,13 @@ export default {
     //筛选部门名称
     filterDeptName(id) {
       var name = id;
-      var dept = this.deptDataFilter.filter(item => item.value == id);
+      var dept = this.dict.dept_id.filter(item => item.value == id);
       if (dept.length) {
         name = dept[0].display;
       }
       return name;
     },
-    //点击行可以切换选中状态   
+    //点击行可以切换选中状态
     handleRowClick(row, column) {
       if (column.property != "handle")
         this.$refs.deptTable.toggleRowSelection(row);
@@ -345,9 +363,92 @@ export default {
           }
         }
       }
+    },
+    handleCurrentChange(row) {
+      this.currentRow = row == null ? {} : row;
+    },
+    UpRecord() {
+      var siblings = this.getTreeSiblings(
+        this.currentRow,
+        this.tableData,
+        "dept_pid",
+        "dept_id"
+      );
+      var index = siblings.indexOf(this.currentRow);
+      if (index == 0) {
+        this.$message({
+          message: "同级中的第一行不能上移",
+          type: "warning",
+          duration: 1000
+        });
+        return;
+      }
+      siblings.splice(index, 1)[0];
+      siblings.splice(index - 1, 0, this.currentRow);
+      for (let i = 0; i < siblings.length; i++) {
+        const item = siblings[i];
+        item.dept_sort = i;
+        item.UpdateColumns = ["dept_sort"];
+      }
+      this.z_put("api/dept/list", siblings)
+        .then(res => {
+          this.$message({
+            message: "上移成功",
+            type: "success",
+            duration: 1000
+          });
+        })
+        .catch(res => {
+          this.$alert("上移失败" + res.msg, "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
+    },
+    DownRecord() {
+      var siblings = this.getTreeSiblings(
+        this.currentRow,
+        this.tableData,
+        "dept_pid",
+        "dept_id"
+      );
+      var index = siblings.indexOf(this.currentRow);
+      if (index == siblings.length - 1) {
+        this.$message({
+          message: "同级中的最后一行不能下移",
+          type: "warning",
+          duration: 1000
+        });
+        return;
+      }
+      siblings.splice(index, 1)[0];
+      siblings.splice(index + 1, 0, this.currentRow);
+      for (let i = 0; i < siblings.length; i++) {
+        const item = siblings[i];
+        item.dept_sort = i;
+        item.UpdateColumns = ["dept_sort"];
+      }
+      this.z_put("api/dept/list", siblings)
+        .then(res => {
+          this.$message({
+            message: "下移成功",
+            type: "success",
+            duration: 1000
+          });
+        })
+        .catch(res => {
+          this.$alert("下移失败" + res.msg, "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
     }
   },
   mounted() {
+    this.$nextTick(() => {
+      let h = this.$refs.deptTable.$el.parentNode.offsetHeight;
+      this.deptTableHeight = h;
+    });
     this.refreshData();
   }
 };
@@ -356,6 +457,10 @@ export default {
 <style scoped>
 .dept {
   width: 1100px;
+  flex: 1;
+}
+.table-ct{
+  flex:1;
 }
 .formItem {
   width: 300px;

@@ -33,7 +33,8 @@ function funcThen(response, resolve, reject) {
     }
 }
 function funcCatch(err, reject) {
-    console.log(err.msg ? err.msg : err);
+    if (!err.msg) err.msg = err.message;
+    console.log(err);
     reject(err)
 }
 /**

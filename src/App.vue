@@ -13,8 +13,7 @@ export default {
   components: {},
   mounted() {
     window.onpopstate = () => {
-      history.go(1);//阻止页面后退
-      console.log('禁止后退')
+      //history.go(1);//阻止页面后退
     };
   }
 };

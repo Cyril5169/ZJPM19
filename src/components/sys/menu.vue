@@ -1,108 +1,120 @@
 <template>
-  <div class="main">
-    <div class="left">
-      <div style="padding:20px 10px 10px 10px;display:flex;align-items:center;">
-        <el-input size="small" @input="filterModuleData" placeholder="系统模块过滤" v-model="module_condition" clearable
-          prefix-icon='el-icon-search'>
-        </el-input>
+  <div class="main_ct">
+    <div class="main">
+      <div class="left">
+        <div style="padding:20px 10px 10px 10px;display:flex;align-items:center;">
+          <el-input size="small" @input="filterModuleData" placeholder="系统模块过滤" v-model="module_condition" clearable
+            prefix-icon='el-icon-search'>
+          </el-input>
+        </div>
+        <div class="left-tbar">
+          <el-button size="mini" round @click="isAddModule=true">新增模块</el-button>
+          <el-button size="mini" round @click="CreateModuleSortable" v-show="moduleSortable==null">调整排序</el-button>
+        </div>
+        <div class="sortable-tool" v-show="moduleSortable!=null">
+          <span>上下拖动调整位置</span>
+          <a @click="SaveModuleSortable">保存</a>
+          <a @click="CancelModuleSortable">取消</a>
+        </div>
+        <div class="table_ct module_table">
+          <el-table ref="moduleTable" style="width:100%;" :height="moduleTableHeight" :data="moduleData" tooltip-effect="dark"
+            highlight-current-row :show-header="false" fit row-key="module_id"
+            :current-row-key="currentModule.module_id" @current-change="handleModuleRowClick">
+            <el-table-column prop="module_name" align="left">
+              <template slot-scope="scope">
+                <i class="el-icon-s-operation" v-show="moduleSortable!=null"></i>
+                <span
+                  :style="moduleSortable!=null?'margin-left:10px':'margin-left:30px'">{{ scope.row.module_name }}</span>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+
       </div>
-      <div class="left-tbar">
-        <el-button size="mini" round @click="isAddModule=true">新增模块</el-button>
-        <el-button size="mini" round @click="CreateModuleSortable" v-show="moduleSortable==null">调整排序</el-button>
-      </div>
-      <div class="sortable-tool" v-show="moduleSortable!=null">
-        <span>上下拖动调整位置</span>
-        <a @click="SaveModuleSortable">保存</a>
-        <a @click="CancelModuleSortable">取消</a>
-      </div>
-      <el-table class="module_table" ref="moduleTable" style="width:100%;" :data="moduleData" tooltip-effect="dark"
-        highlight-current-row :show-header="false" fit row-key="module_id" :current-row-key="currentModule.module_id"
-        @current-change="handleModuleRowClick">
-        <el-table-column prop="module_name" align="left">
-          <template slot-scope="scope">
-            <i class="el-icon-s-operation" v-show="moduleSortable!=null"></i>
-            <span :style="moduleSortable!=null?'margin-left:10px':'margin-left:30px'">{{ scope.row.module_name }}</span>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-    <div class="center">
-      <div class="center-title">
-        <span>{{currentModule.module_name}}</span>
-        <el-button style="margin:auto 5px; width:60px" size="mini" round
-          @click="moduleModel=JSON.parse(JSON.stringify(currentModule));isEditModule=true">编辑</el-button>
-      </div>
-      <div class="tbar">
-        <el-input size="small" @keyup.enter.native="refreshMenuData" placeholder="菜单名/链接" v-model="menu_condition"
-          clearable style="width:200px;">
-          <el-button slot="append" icon="el-icon-search" @click="refreshMenuData"></el-button>
-        </el-input>
-        <el-button type="primary" size="small" style="margin-left:10px;"
-          @click="isAddMenu=true;menuModel.module_id=currentModule.module_id;">新增菜单
-        </el-button>
-        <el-button type="primary" size="small"
-          @click="isAddMenu=true;menuModel.module_id=currentModule.module_id;menuModel.menu_pid=currentMenu.menu_id;"
-          :disabled="!currentMenu.menu_id">
-          新增子菜单
-        </el-button>
-        <el-button size="small" @click="UpMenu" v-show="showDragMenu" :disabled="!currentMenu.menu_id">上移</el-button>
-        <el-button size="small" @click="DownMenu" v-show="showDragMenu" :disabled="!currentMenu.menu_id">下移</el-button>
-        <el-dropdown style="margin-left:10px;">
-          <el-button size="small">
-            操作<i class="el-icon-arrow-down el-icon--right"></i>
+      <div class="center">
+        <div class="center-title">
+          <span>{{currentModule.module_name}}</span>
+          <el-button style="margin:auto 5px; width:60px" size="mini" round
+            @click="moduleModel=JSON.parse(JSON.stringify(currentModule));isEditModule=true">编辑</el-button>
+        </div>
+        <div class="tbar">
+          <el-input size="small" @keyup.enter.native="refreshMenuData" placeholder="菜单名/链接" v-model="menu_condition"
+            clearable style="width:200px;">
+            <el-button slot="append" icon="el-icon-search" @click="refreshMenuData"></el-button>
+          </el-input>
+          <el-button type="primary" size="small" style="margin-left:10px;"
+            @click="isAddMenu=true;menuModel.module_id=currentModule.module_id;">新增菜单
           </el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="expandAll">展开所有</el-dropdown-item>
-            <el-dropdown-item @click.native="collapseAll" divided>收起所有</el-dropdown-item>
-            <el-dropdown-item @click.native="showDragMenu=!showDragMenu;" divided>{{showDragMenu?'隐藏调整排序':'调整排序'}}
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+          <el-button type="primary" size="small"
+            @click="isAddMenu=true;menuModel.module_id=currentModule.module_id;menuModel.menu_pid=currentMenu.menu_id;"
+            :disabled="!currentMenu.menu_id">
+            新增子菜单
+          </el-button>
+          <el-button size="small" @click="UpMenu" v-show="showDragMenu" :disabled="!currentMenu.menu_id">上移</el-button>
+          <el-button size="small" @click="DownMenu" v-show="showDragMenu" :disabled="!currentMenu.menu_id">下移
+          </el-button>
+          <el-dropdown style="margin-left:10px;">
+            <el-button size="small">
+              操作<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item @click.native="expandAll">展开所有</el-dropdown-item>
+              <el-dropdown-item @click.native="collapseAll" divided>收起所有</el-dropdown-item>
+              <el-dropdown-item @click.native="showDragMenu=!showDragMenu;" divided>{{showDragMenu?'隐藏调整排序':'调整排序'}}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <div class="table_ct">
+          <el-table ref="menuTable" style="width:100%;" :height="menuTableHeight" :data="menuData" tooltip-effect="dark"
+            highlight-current-row row-key="menu_id" :expand-row-keys="menuExpandRowKeys"
+            @current-change="handleMenuRowClick" @selection-change="handleMenuSelectionChange"
+            @expand-change="handleMenuExpandChange">
+            <el-table-column type="selection" width="50" align="center"></el-table-column>
+            <el-table-column prop="menu_name" label="菜单名称" align="left" width="200" show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column prop="menu_link" label="菜单链接" align="left" width="200" show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column prop="menu_icon" label="菜单图标" align="center" width="150" show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column label="操作" width="150" align="center" prop="handle">
+              <template slot-scope="scope">
+                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editMenuClick(scope.row)">
+                </el-button>
+                <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteMenuClick(scope.row)">
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+
       </div>
-      <div>
-        <el-table class="menu_table" ref="menuTable" style="width: 100%;" height="500px" :data="menuData"
-          tooltip-effect="dark" highlight-current-row row-key="menu_id" :expand-row-keys="menuExpandRowKeys"
-          @current-change="handleMenuRowClick" @selection-change="handleMenuSelectionChange"
-          @expand-change="handleMenuExpandChange">
-          <el-table-column type="selection" width="55" align="center"></el-table-column>
-          <el-table-column prop="menu_name" label="菜单名称" align="left" width="200" show-overflow-tooltip>
-          </el-table-column>
-          <el-table-column prop="menu_link" label="菜单链接" align="left" width="200" show-overflow-tooltip>
-          </el-table-column>
-          <el-table-column prop="menu_icon" label="菜单图标" align="center" width="100"></el-table-column>
-          <el-table-column label="操作" width="150" align="center" prop="handle">
-            <template slot-scope="scope">
-              <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editMenu(scope.row)">
-              </el-button>
-              <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteMenu(scope.row)">
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+      <div class="right">
+        <div class="right-title">
+          <span>{{currentMenu.menu_name}}</span>
+        </div>
+        <div class="tbar">
+          <el-button size="mini" round :disabled="!currentMenu.menu_id"
+            @click="isAddElement=true;elementModel.menu_id=currentMenu.menu_id;">新增</el-button>
+          <el-button size="mini" round
+            @click="isEditElement=true;elementModel=JSON.parse(JSON.stringify(currentElement));"
+            :disabled="!currentElement.element_id">编辑</el-button>
+          <el-button size="mini" round plain type="danger" :disabled="elementSelection.length==0"
+            @click="onDeleteElementListClick">
+            删除选中({{elementSelection.length}})
+          </el-button>
+        </div>
+        <div class="table_ct">
+          <el-table ref="elementTable" style="width:100%;" :height=elementTableHeight :data="elementData" tooltip-effect="dark"
+            highlight-current-row fit row-key="element_id" @current-change="handleElementRowClick"
+            @selection-change="handleElementSelectionChange">
+            <el-table-column type="selection" width="55" align="center"></el-table-column>
+            <el-table-column prop="element_name" label="页面元素名称" align="left" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="element_code" label="页面元素代码" align="left" show-overflow-tooltip></el-table-column>
+          </el-table>
+        </div>
+
       </div>
-    </div>
-    <div class="right">
-      <div class="right-title">
-        <span>{{currentMenu.menu_name}}</span>
-      </div>
-      <div class="tbar">
-        <el-button size="mini" round :disabled="!currentMenu.menu_id"
-          @click="isAddElement=true;elementModel.menu_id=currentMenu.menu_id;">新增</el-button>
-        <el-button size="mini" round
-          @click="isEditElement=true;elementModel=JSON.parse(JSON.stringify(currentElement));"
-          :disabled="!currentElement.element_id">编辑</el-button>
-        <el-button size="mini" round plain type="danger" :disabled="elementSelection.length==0"
-          @click="onDeleteElementListClick">
-          删除选中({{elementSelection.length}})
-        </el-button>
-      </div>
-      <el-table ref="elementTable" style="width:100%;" :data="elementData" tooltip-effect="dark" highlight-current-row
-        fit row-key="element_id" @current-change="handleElementRowClick"
-        @selection-change="handleElementSelectionChange">
-        <el-table-column type="selection" width="55" align="center"></el-table-column>
-        <el-table-column prop="element_name" label="页面元素名称" align="left" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="element_code" label="页面元素代码" align="left" show-overflow-tooltip></el-table-column>
-      </el-table>
     </div>
 
     <!-- 新增模块 -->
@@ -131,8 +143,18 @@
         <el-form-item label="所属模块">
           <span class="display-form-item">{{currentModule.module_name}}</span>
         </el-form-item>
-        <el-form-item label="上级菜单" v-show="menuModel.menu_pid">
-          <span class="display-form-item">{{currentMenu.menu_name}}</span>
+        <el-form-item label="上级菜单" prop="menu_pid">
+          <el-select v-if="isEditMenu" v-model="menuModel.menu_pid" ref="pmenu_select" class="form-item" clearable
+            @clear="handlePMenuSelectClear">
+            <el-option :value="menuModel.menu_pid" :label="menuModel.menu_pname" style="height: auto">
+              <el-tree :data="menuData" node-key="menu_id" ref="tree" highlight-current default-expand-all
+                :expand-on-click-node="false" :current-node-key="menuModel.menu_pid">
+                <div slot-scope="{node, data}" style="width:100%" @click="handlePMenuClick(data)">
+                  {{data.menu_name}}</div>
+              </el-tree>
+            </el-option>
+          </el-select>
+          <span v-else v-show="menuModel.menu_pid" class="display-form-item">{{currentMenu.menu_name}}</span>
         </el-form-item>
         <el-form-item label="菜单名称" prop="menu_name">
           <el-input class="form-item" v-model="menuModel.menu_name" placeholder="请填写菜单名称">
@@ -228,16 +250,13 @@ export default {
       moduleSortable: null,
       menuSortable: null,
       showDragMenu: false,
-      menuExpandRowKeys:[],
+      menuExpandRowKeys: [],
+      menuTableHeight: 300,
+      moduleTableHeight: 300,
+      elementTableHeight: 300,
     };
   },
   computed: {
-    menuExpandAll: function() {
-      if (this.showDragMenu == true) {
-        return false;
-      }
-      return true;
-    },
     moduleFormVisible: {
       get: function() {
         return this.isAddModule || this.isEditModule;
@@ -321,18 +340,26 @@ export default {
     handleMenuSelectionChange(val) {
       this.selection = val;
     },
+    handlePMenuClick(data) {
+      this.menuModel.menu_pid = data.menu_id;
+      this.menuModel.menu_pname = data.menu_name;
+      this.$refs.pmenu_select.blur();
+    },
+    handlePMenuSelectClear() {
+      this.menuModel.menu_pid = null;
+      this.menuModel.menu_pname = null;
+    },
     handleMenuRowClick(row) {
       this.currentMenu = row == null ? {} : row;
       this.refreshElementData();
     },
     //记录树节点的展开状态
-    handleMenuExpandChange(row, expanded){
-      if(expanded){
+    handleMenuExpandChange(row, expanded) {
+      if (expanded) {
         this.menuExpandRowKeys.push(row.menu_id.toString());
-      }else{
+      } else {
         let index = this.menuExpandRowKeys.indexOf(row.menu_id.toString());
-        if(index!=-1)
-          this.menuExpandRowKeys.splice(index,1);
+        if (index != -1) this.menuExpandRowKeys.splice(index, 1);
       }
     },
     handleElementSelectionChange(val) {
@@ -391,6 +418,8 @@ export default {
                     type: "error"
                   });
                 });
+            } else {
+              tis.isEditModule = false;
             }
           }
         } else {
@@ -493,6 +522,8 @@ export default {
                     type: "error"
                   });
                 });
+            } else {
+              tis.isEditMenu = false;
             }
           }
         } else {
@@ -500,11 +531,18 @@ export default {
         }
       });
     },
-    editMenu(row) {
+    editMenuClick(row) {
       this.menuModel = JSON.parse(JSON.stringify(row));
+      var parent = this.getTreeParent(
+        row,
+        this.menuData,
+        "menu_pid",
+        "menu_id"
+      );
+      if (parent) this.menuModel.menu_pname = parent.menu_name;
       this.isEditMenu = true;
     },
-    deleteMenu(row) {
+    deleteMenuClick(row) {
       this.$confirm("确定删除吗？", "提示", {
         confirmButtonText: "是",
         cancelButtonText: "否",
@@ -569,6 +607,8 @@ export default {
                     type: "error"
                   });
                 });
+            } else {
+              tis.isEditElement = false;
             }
           }
         } else {
@@ -666,7 +706,6 @@ export default {
     },
     //创建模块排序
     CreateModuleSortable() {
-      console.log(this.$refs.menuTable);
       const table = document
         .querySelector(".module_table")
         .querySelector(".el-table__body-wrapper tbody");
@@ -681,13 +720,13 @@ export default {
     //取消模块排序
     CancelModuleSortable() {
       this.moduleSortable.destroy();
-      this.moduleSortable=null;
+      this.moduleSortable = null;
       this.filterModuleData();
     },
     //保存模块排序
     SaveModuleSortable() {
       this.moduleSortable.destroy();
-      this.moduleSortable=null;
+      this.moduleSortable = null;
       for (let i = 0; i < this.moduleData.length; i++) {
         const item = this.moduleData[i];
         item.module_sort = i;
@@ -786,26 +825,49 @@ export default {
         });
     }
   },
+
   mounted() {
+    let that = this;
+    this.$nextTick(function() {
+      let h = that.$refs.menuTable.$el.parentNode.offsetHeight;
+      that.menuTableHeight = h;
+      h = that.$refs.moduleTable.$el.parentNode.offsetHeight;
+      that.moduleTableHeight = h;
+      h = that.$refs.elementTable.$el.parentNode.offsetHeight;
+      that.elementTableHeight = h;
+    });
     this.refreshModuleData();
-  }
+  },
+  created() {}
 };
 </script>
 
 <style scoped>
-.main {
-  width: 1350px;
+.main_ct {
   padding: 0;
+}
+.main {
+  width: 100%;
+  flex: 1;
   display: flex;
   flex-direction: row;
 }
 .left {
+  box-sizing: border-box;
   width: 250px;
-  border-right: 1px solid #dedede;
+  border-left: 1px solid #dedede;
+  border-right: 5px solid #dedede;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
 }
 .center {
+  box-sizing: border-box;
   width: 800px;
   padding: 15px 25px;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
 }
 .center-title {
   width: 100%;
@@ -813,11 +875,20 @@ export default {
   font-size: 20px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+}
+.table_ct {
+  flex: 1;
+  box-sizing: border-box;
 }
 .right {
-  width: 300px;
+  box-sizing: border-box;
+  width: 350px;
   padding: 15px 25px;
-  border-left: 1px solid #dedede;
+  border-left: 5px solid #dedede;
+  display: flex;
+  display: -webkit-flex;
+  flex-direction: column;
 }
 .right-title {
   width: 100%;

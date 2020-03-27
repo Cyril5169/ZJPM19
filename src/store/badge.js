@@ -1,7 +1,7 @@
 import Vuex from 'vuex'
 
 const state = {
-    painting: 0//角标名字，在menutree中使用
+    //动态生成
 }
 
 const mutations = {

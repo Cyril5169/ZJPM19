@@ -71,25 +71,29 @@ let toLocale = function (time) {
     let date = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second
     return date
 };
-let dateFormat = function (time, format) {
-    if (!isNaN(time)) return "";
-    let _time = new Date(time);
-    let year = _time.getFullYear();
-    let month = addZeroIfNeed(_time.getMonth() + 1);
-    let day = addZeroIfNeed(_time.getDate());
-    let hour = addZeroIfNeed(_time.getHours());
-    let minute = addZeroIfNeed(_time.getMinutes());
-    let second = addZeroIfNeed(_time.getSeconds());
-    let date =
-        year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
-    if (format == "yyyy-MM-dd") {
-        date = year + "-" + month + "-" + day;
-    }
-    if(format=="HH:mm"){
-        date = hour + ":" + minute;
-    }
-    return date;
-}
+// let dateFormat = function(time,format){
+//     let _time = new Date(time);
+//     let year = _time.getFullYear();
+//     let month = addZeroIfNeed(_time.getMonth() + 1);
+//     let day = addZeroIfNeed(_time.getDate());
+//     let hour = addZeroIfNeed(_time.getHours());
+//     let minute = addZeroIfNeed(_time.getMinutes());
+//     let second = addZeroIfNeed(_time.getSeconds());
+//     let date = year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+//     if (format == "yyyy-MM-dd") {
+//         date = year + "-" + month + "-" + day;
+//     }
+//     else if (format == "MM-dd") {
+//         date =  month + "-" + day;
+//     }
+//     else if(format=="HH:mm"){
+//         date = hour + ":" + minute;
+//     }
+//     return date;
+// }
+   
+
+
 let yesOrNo=function(value,format){
     if (format=="是否"){
     if(value==1){
@@ -99,9 +103,8 @@ let yesOrNo=function(value,format){
    }
 }
 
-function dateFilter(value) {
+function dateFilter(value, format) {
     if (!value || value == "9999-12-31") return "";
-    //时间戳转化大法
     let date = new Date(value);
     let y = date.getFullYear();
     let MM = date.getMonth() + 1;
@@ -114,7 +117,27 @@ function dateFilter(value) {
     m = m < 10 ? "0" + m : m;
     let s = date.getSeconds();
     s = s < 10 ? "0" + s : s;
-    return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
+
+    const opt = {
+        "y+": y,         // 年
+        "M+": MM,        // 月
+        "d+": d,         // 日
+        "H+": h,         // 时
+        "m+": m,         // 分
+        "s+": s          // 秒
+    };
+    if (format) {
+        let fmt = format;
+        let ret;
+        for (let k in opt) {
+            ret = new RegExp("(" + k + ")").exec(fmt);
+            if (ret) {
+                fmt = fmt.replace(ret[1], opt[k])
+            };
+        };
+        return fmt
+    }
+    return y + "-" + MM + "-" + d + " ";//默认返回这个，需要格式请加格式
 }
 
 /**全局渲染方法*/
@@ -128,13 +151,12 @@ function renderFilter(id, renderData) {
     }
     return name;
 }
-
 export {
     numberFilter,
     dosageFilter,
     digitUppercase,
     toLocale,
-    dateFormat,
+    // dateFormat,统一用dateFilter
     dateFilter,
     yesOrNo,
     renderFilter

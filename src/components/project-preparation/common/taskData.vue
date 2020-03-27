@@ -2,7 +2,7 @@
   <div>
     <div class="tbar">
       <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchData"></el-button>
-      <el-input size="small" @keyup.enter.native="refreshDataData" placeholder="请输入物料名称" v-model="dataCondition"
+      <el-input size="small" @keyup.enter.native="refreshDataData" placeholder="请输入资料名称" v-model="dataCondition"
         clearable style="width:250px;">
         <el-button size="small" @click="refreshDataData" slot="append" icon="el-icon-search">搜索</el-button>
       </el-input>
@@ -13,12 +13,13 @@
       </el-button>
     </div>
     <div class="gridTable">
-      <el-table ref="taskItemTable" v-loading="loading" style="width:100%;" height="250" :data="taskDataData"
+      <el-table ref="taskItemTable" v-loading="loading" style="width:100%;" height="200" :data="taskDataData"
         tooltip-effect="dark" highlight-current-row border @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column type="index" width="40" align="center">
         </el-table-column>
-        <el-table-column prop="std_name" label="资料名称" align="center" width="200"></el-table-column>
+        <el-table-column prop="std_name" label="资料名称" align="center" width="200" show-overflow-tooltip>
+        </el-table-column>
         <el-table-column prop="ddt_id" label="资料类型" align="center" width="130">
           <template slot-scope="scope">{{scope.row.ddt_id | renderFilter(dataTypeFilter)}}</template>
         </el-table-column>
@@ -149,7 +150,7 @@ export default {
       this.z_get(
         "api/standard_task_data",
         {
-          st_id: this.currentRow.st_id,
+          st_id: this.source == "standard" ? this.currentRow.st_id : null,
           tt_no: this.currentRow.tt_no,
           condition: this.dataCondition,
           source: this.source

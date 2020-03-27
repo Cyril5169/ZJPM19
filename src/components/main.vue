@@ -16,7 +16,7 @@
           <i class="el-icon-s-home icon-color aside-home" @click="refreshPage"></i>
         </div>
         <div class="menu-contain">
-          <el-menu mode="horizontal" :default-active="activeTabName" @select="addBreadCrumb" text-color="#333"
+          <el-menu mode="horizontal" :default-active="activeTabName" text-color="#333"
             active-text-color="#409EFF" style="height:50px;" router>
             <!-- 单独的测试页面自己单独写，不经过权限加载(请勿上传) -->
 
@@ -86,25 +86,21 @@
         </div>
       </el-header>
       <el-main class="backTop">
-        <el-card class="mainContentCard" shadow="never">
-          <div class="mainContent">
-            <keep-alive>
-              <router-view class="commonStyle" v-if="$route.meta.keepAlive === true" />
-            </keep-alive>
-            <router-view class="commonStyle" v-if="$route.meta.keepAlive !== true" />
+        <keep-alive>
+          <router-view class="commonStyle" v-if="$route.meta.keepAlive === true" />
+        </keep-alive>
+        <router-view class="commonStyle" v-if="$route.meta.keepAlive !== true" />
+        <div v-if="activeTabName == 'main'" style="width:100%;" class="commonStyle">
+          <div>
+            主页内容
+            主页内容
+            主页内容
+            主页内容
+            主页内容
+            主页内容
+            主页内容
           </div>
-          <div v-if="activeTabName == 'main'">
-            <div style="height:1500px;background-color:white;">
-              主页内容
-              主页内容
-              主页内容
-              主页内容
-              主页内容
-              主页内容
-              主页内容
-            </div>
-          </div>
-        </el-card>
+        </div>
       </el-main>
     </el-container>
     <el-backtop target=".backTop" :right="30" :visibility-height="20">
@@ -176,7 +172,6 @@ export default {
   methods: {
     ...mapMutations("navTabs", [
       "setActiveTabName",
-      "addBreadCrumb",
       "setMenuTreeList",
       "isContainMenu"
     ]),
@@ -220,7 +215,6 @@ export default {
       this.$router.push({
         path: "/" + value
       });
-      this.addBreadCrumb(value);
     },
     openCalendar() {
       this.calen_visible = true;
@@ -453,24 +447,27 @@ export default {
   background-clip: padding-box;
   border-radius: 50%;
 }
-.mainContentCard {
-  min-height: 100%;
-  background-color: #eee;
-  box-sizing: border-box;
-}
-.mainContent {
-  display: flex;
-}
 .commonStyle {
   margin: 0 auto;
-  padding: 10px 20px;
-  box-sizing: border-box;
+  padding: 10px;
   background-color: white;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  -ms-flex-preferred-size: auto;
+  flex-basis: auto;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 .backTop {
   margin: 0;
-  padding: 0;
-  background-color: #ecf5ef;
+  padding: 10px 20px;
+  background-color: #eee;
+  display: flex;
+  flex-direction: column;
 }
 </style>
 
@@ -493,8 +490,35 @@ export default {
   color: #20a0ff;
   cursor: pointer;
   font-size: 20px;
-  line-height: 35px;
+  line-height: 35px !important;
 }
+/* flex大包围 */
+.flexDiv-column{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.flexDiv-row{
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+}
+/* 颜色 */
+.backgroundComplete {
+  background-color: #7ed321;
+}
+.backgroundDoing {
+  background-color: #f5a623;
+}
+.backgroundStop {
+  background-color: #d0021b;
+}
+.backgroundPause {
+  background-color: #979797;
+}
+
+
+/* 以下为element组件全局样式 */
 /* 水平菜单样式 */
 .el-menu--horizontal > .el-menu-item,
 .el-menu--horizontal > .el-submenu .el-submenu__title {
@@ -559,9 +583,8 @@ export default {
 }
 .el-card__body {
   padding: 10px !important;
-}
-.mainContentCard .el-card__body {
-  padding: 10px 15px !important;
+  width: 100%;
+  box-sizing: border-box;
 }
 .el-dialog__body {
   padding: 20px !important;
@@ -569,9 +592,6 @@ export default {
 .el-table td,
 .el-table th {
   padding: 5px 0 !important;
-}
-.el-badge__content {
-  border: none !important;
 }
 .el-table th.gutter {
   display: table-cell !important;

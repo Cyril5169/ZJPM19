@@ -1,8 +1,8 @@
 <template>
   <div class="deptEmp">
-    <div class="containAll">
-        <div class="leftContent">
-          <div>
+    <el-container>
+      <el-aside class="asideContent" width='350px;'>
+        <div class="topLayout">
           <div class="tbar">
             <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
             <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入部门名称" v-model="condition"
@@ -19,26 +19,23 @@
               </el-dropdown-menu>
             </el-dropdown>
           </div>
-          <div class="topContent" style="height:432px">
+          <div class="topContent" style="height:475px;">
             <el-table ref="deptTable" style="width: 100%" height="100%" :data="tableData" tooltip-effect="dark"
-              highlight-current-row row-key="dept_id" default-expand-all @row-dblclick="handleRowDbClick">
+              highlight-current-row row-key="dept_id" default-expand-all @row-click="handleRowDbClick">
               <el-table-column prop="dept_name" label="部门名称" style="width:95%" align="left"></el-table-column>
             </el-table>
           </div>
-          </div>
         </div>
-        <div class="rightContent">
-          <div>
-            <div>
-              <el-tabs style="display:inline-block;width:100%;" v-model="activeName" @tab-click="handleClick">
-                <el-tab-pane label="部门员工" name="deptEmp">
-                  <child1 v-if="isChildUpdate1" :deptName="deptNameSelect" :deptId="deptIdSelect"></child1>
-                </el-tab-pane>
-              </el-tabs>
-            </div>
-          </div>
-        </div>
-    </div>
+      </el-aside>
+      <el-main class="mainContent" >
+          <el-tabs style="display:inline-block;width:100%;" v-model="activeName">
+            <el-tab-pane label="部门员工" name="deptEmp">
+              <child1 v-if="isChildUpdate1" :deptName="deptNameSelect" :deptId="deptIdSelect"></child1>
+            </el-tab-pane>
+          </el-tabs>
+      </el-main>
+    </el-container>
+
     <el-dialog width="500px" :title="addDeptText" :close-on-click-modal="false" :visible.sync="addDeptVisiable"
       top="5vh" @closed="refreshForm">
       <el-form :model="deptModel" label-width="100px" ref="deptForm" :rules="add_rules">
@@ -80,7 +77,7 @@ import depEmpChild from "@/components/hr/depEmpChild";
 export default {
   name: "deptEmp",
   components: {
-    child1: depEmpChild,
+    child1: depEmpChild
   },
   data() {
     return {
@@ -143,7 +140,7 @@ export default {
           return "小组";
           break;
       }
-    },
+    }
   },
   methods: {
     refreshData() {
@@ -161,17 +158,6 @@ export default {
     search() {
       this.condition = "";
       this.refreshData();
-    },
-    //标签页切换
-    handleClick(tab) {
-      var tabName = tab.name;
-      switch (tabName) {
-        case "emp_dept":
-          (this.isChildUpdate1 = true),
-            (this.isChildUpdate2 = this.isChildUpdate3 = this.isChildUpdate4 = false); //这样写可以？
-          break;
-      }
-      // this.refresh();
     },
     onSaveTDempClick() {
       this.$refs.deptForm.validate(valid => {
@@ -273,7 +259,7 @@ export default {
       }
       return name;
     },
-    handleRowDbClick(row, column) {
+    handleRowClick(row, column) {
       this.deptIdSelect = row.dept_id;
       this.deptNameSelect = row.dept_name;
     },
@@ -314,19 +300,16 @@ export default {
 
 <style scoped>
 .deptEmp {
-  width: 1325px;
+  width: 1250px;
 }
 .formItem {
   width: 300px;
 }
-.leftContent {
-  width: 40%;
-  position: absolute;
+.mainContent {
+  border-left: 5px solid #eee;
+  padding: 0 0 0 15px;
+  overflow-y: hidden;
   display: flex;
-  display: -webkit-flex;
-}
-.rightContent {
-  float: right;
-  width: 73%;
+  flex-direction: column;
 }
 </style>
