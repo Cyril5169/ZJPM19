@@ -112,8 +112,8 @@
     </div>
 
     <!-- 新增/修改人员信息 -->
-    <el-dialog v-if="addEmpVisiable" v-dialogDrag width="450px" :title="addOrNot?'新增人员':'编辑人员'" :close-on-click-modal="false"
-      :visible.sync="addEmpVisiable">
+    <el-dialog v-if="addEmpVisiable" v-dialogDrag width="450px" :title="addOrNot?'新增人员':'编辑人员'"
+      :close-on-click-modal="false" :visible.sync="addEmpVisiable">
 
       <zj-form size="small" :newDataFlag='addEmpVisiable' :model="empModel" label-width="100px" ref="empForm"
         :rules="add_rules">
@@ -164,20 +164,16 @@
         :rules="addSkill_rules">
 
         <el-form-item label="技能名称" prop="skill_id">
-          <el-select v-model="skillModel.skill_id" ref="select_skill" placeholder="请选择技能名称">
-            <el-option :label="skillModel.skill_name" :value="skillModel.skill_id" style="height:auto;padding:0;">
-              <el-tree :data="skillData" node-key="skill_id" ref="tree" default-expand-all :expand-on-click-node="false"
-                highlight-current :current-node-key="skillModel.skill_id">
-                <div slot-scope="{node, data}" style="width:100%;user-select:none;"
-                  @click="handleSelectTreeDblClick(data)">
-                  {{data.skill_name}}</div>
-              </el-tree>
+          <el-select v-model="skillModel.skill_id" placeholder="请选择技能名称">
+            <el-option v-for="item in skillOption" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="技能等级" prop="sl_name">
-          <el-input v-model="skillModel.sl_name" autocomplete="off" placeholder="请填写技能等级">
-          </el-input>
+        <el-form-item label="技能等级" prop="cc_id">
+          <el-select v-model="skillModel.cc_id" placeholder="请选择技能等级">
+            <el-option v-for="item in levelOption" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="评定人" prop="se_giveperson">
           <el-input v-model="skillModel.se_giveperson" autocomplete="off" placeholder="请填写评定人">
@@ -286,7 +282,7 @@ export default {
             message: "请填写联系电话",
             trigger: "blur"
           }
-        ],
+        ]
 
         /*
         序号：
@@ -324,7 +320,7 @@ export default {
 
   filters: {
     empStateTrans(value) {
-      return value?"在职":"离职";
+      return value ? "在职" : "离职";
     }
   },
 
@@ -336,7 +332,32 @@ export default {
     }
   },
   methods: {
-    
+    //查询技能名称
+    selectSkill() {
+      this.skillOption = [];
+      this.z_get("api/skill/list", (condition = this.itemCondition))
+        .then(res => {
+          this.skillOption = res.data;
+          for (var i = 0; i < this.skillOption.length; i++) {
+            this.skillOption[i].label = this.skillOption[i].skill_name;
+            this.skillOption[i].value = this.skillOption[i].skill_id;
+          }
+        })
+        .catch(res => {});
+    },
+    //查询技能等级
+    selectLevel() {
+      this.levelOption = [];
+      this.z_get("api/common_code", { ct_id: 6 })
+        .then(res => {
+          this.levelOption = res.data;
+          for (var i = 0; i < this.levelOption.length; i++) {
+            this.levelOption[i].label = this.levelOption[i].cc_name;
+            this.levelOption[i].value = this.levelOption[i].cc_id;
+          }
+        })
+        .catch(res => {});
+    },
     //刷新人员
     refreshData() {
       this.taskData = [];
@@ -344,7 +365,7 @@ export default {
       this.z_get("api/employee", { condition: this.condition })
         .then(res => {
           this.taskData = res.data;
-          this.dict=res.dict;
+          this.dict = res.dict;
         })
         .catch(res => {});
     },
@@ -601,11 +622,6 @@ export default {
     searchData() {
       this.dataCondition = "";
     },
-    mounted() {
-      this.refreshData();
-      this.selectDept();
-    },
-
     //删除一个人员
     deleteOne(row) {
       this.z_delete("api/employee", { data: row })
@@ -720,6 +736,8 @@ export default {
   mounted() {
     this.refreshData();
     this.selectEmp();
+    this.selectSkill();
+    this.selectLevel();
   }
 };
 </script>
