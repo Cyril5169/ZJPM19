@@ -25,12 +25,16 @@
       <div class="tabPanel flexDiv-row" style="margin-top:5px;">
         <div class="leftLayout">
           <div class="tbar">
-            <el-button icon="el-icon-back" v-if="selectNodeLevel == 'detail'" title="返回基准计划" size="mini" circle
-              @click="returnBasePlan"></el-button>
+            <el-button icon="el-icon-back" v-if="selectNodeLevel == 'detail'" type="info" title="返回基准计划" size="mini"
+              circle @click="returnBasePlan"></el-button>
             <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchProjectPlanData">
             </el-button>
-            <el-button v-if="selectNodeLevel == 'base'" type="primary" size="small" style="margin-left:10px;"
-              @click="addNewProjectPlanShow">新增
+            <el-button type="primary" size="small" @click="addNewProjectPlanShow('root')">
+              {{selectNodeLevel == 'base'?'新增':'新增根节点'}}
+            </el-button>
+            <el-button v-if="selectNodeLevel == 'detail'" type="primary" size="small" :disabled="!currentRow.pp_id"
+              @click="addNewProjectPlanShow('children')">
+              新增子节点
             </el-button>
             <!-- <el-button type="primary" size="small">进度计算</el-button> -->
             <el-button v-if="selectNodeLevel == 'base'" type="primary" size="small"
@@ -50,7 +54,7 @@
             <el-button type="primary" size="small"
               :disabled="!currentRow.pp_id || currentRow.pp_release_status !='released'" @click="changeTimeShow">时间变更
             </el-button>
-            <el-dropdown style="margin-left:10px;">
+            <el-dropdown style="margin-left:5px;">
               <el-button size="small">
                 操作<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
@@ -69,7 +73,7 @@
               :data="projectPlanData" tooltip-effect="dark" row-key="pp_id" default-expand-all highlight-current-row
               @selection-change="handleSelectionChange" @row-click="handleRowClick" @row-dblclick="handleRowDBClick"
               :cell-class-name="cellClass">
-              <el-table-column type="selection" width="55" align="center" :selectable='canSelect'></el-table-column>
+              <el-table-column type="selection" width="55" align="center"></el-table-column>
               <el-table-column prop="pp_release_status" label="发布状态" width="100">
                 <template slot-scope="scope">{{scope.row.pp_release_status | releaseStatusFilter}}</template>
               </el-table-column>
@@ -179,7 +183,7 @@
     </div>
 
     <!-- 添加/编辑项目 -->
-    <el-dialog v-if="addProjectPlanVisible" v-dialogDrag width="700px" :title="addOrNot?'新建项目计划':'编辑项目计划'"
+    <el-dialog v-if="addProjectPlanVisible" v-dialogDrag width="700px" :title="addOrNot? titleText :'编辑项目计划'"
       :close-on-click-modal="false" :visible.sync="addProjectPlanVisible">
       <zj-form size="small" :newDataFlag='addProjectPlanVisible' :model="projectPlanModel" label-width="110px"
         ref="projectPlanForm" :rules="add_rules">
@@ -205,7 +209,8 @@
           <el-col :span="11">
             <el-form-item label="计划开始时间" prop="pp_early_startdate">
               <el-date-picker value-format="yyyy-MM-dd" :disabled="projectPlanModel.pp_node_type == 'work'"
-                style="width:200px;" v-model="projectPlanModel.pp_early_startdate" placeholder="请选择开始时间">
+                style="width:200px;" v-model="projectPlanModel.pp_early_startdate" placeholder="请选择开始时间"
+                :picker-options="pickerOptions1">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -213,7 +218,7 @@
           <el-col :span="11">
             <el-form-item label="计划结束时间" prop="pp_last_enddate">
               <el-date-picker value-format="yyyy-MM-dd" style="width:200px;" v-model="projectPlanModel.pp_last_enddate"
-                placeholder="请选择结束时间">
+                placeholder="请选择结束时间" :picker-options="pickerOptions1">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -325,13 +330,15 @@ export default {
       selectBasePlan: [],
       projectPlanModel: {},
       projectPlanSelection: [],
-      currentRow: [],
+      currentRow: {},
       changeTimeData: [],
       changeTimeModel: {},
+      timeConstraintRow: {},
       btnShow: false,
       bottomDivShow: false,
       projectPlanCondition: "",
       activeName: "first",
+      titleText: "",
       selectNodeLevel: "base",
       addProjectPlanVisible: false,
       changeTimeVisible: false,
@@ -372,6 +379,20 @@ export default {
       },
       changeTime_rules: {
         aftertime: [{ required: true, message: "请选择时间", trigger: "blur" }]
+      },
+      addType: "",
+      pickerOptions1: {
+        //时间限制
+        disabledDate: time => {
+          if (this.selectNodeLevel == "detail") {
+            return (
+              time.getTime() <
+                new Date(this.timeConstraintRow.pp_early_startdate).getTime() ||
+              time.getTime() >
+                new Date(this.timeConstraintRow.pp_last_enddate).getTime()
+            );
+          }
+        }
       }
     };
   },
@@ -469,7 +490,6 @@ export default {
           pp_id: this.selectBasePlan.pp_id
         })
           .then(res => {
-            console.log(res.data);
             this.projectPlanData = res.data;
           })
           .catch(res => {});
@@ -520,22 +540,40 @@ export default {
       this.selectNodeLevel = "base";
       this.refreshProjectPlanData();
     },
-    addNewProjectPlanShow() {
+    addNewProjectPlanShow(type) {
+      this.addType = type;
       if (this.selectProjectNo) {
+        var pp_pid = null;
+        var pp_last_enddate = "";
+        if (type == "root") {
+          if (this.selectNodeLevel == "detail") {
+            pp_pid = this.selectBasePlan.pp_id;
+            this.titleText =
+              "新增[" + this.selectBasePlan.pp_name + "]的根计划";
+            pp_last_enddate = this.selectBasePlan.pp_last_enddate;
+            this.timeConstraintRow = this.selectBasePlan;
+          } else {
+            this.titleText = "新增基准计划";
+          }
+        } else if (type == "children") {
+          pp_pid = this.currentRow.pp_id;
+          this.titleText = "新增[" + this.currentRow.pp_name + "]的子计划";
+          pp_last_enddate = this.currentRow.pp_last_enddate;
+          this.timeConstraintRow = this.currentRow;
+        }
         this.projectPlanModel = {
           p_no: this.selectProjectNo,
           pp_name: "",
           pp_node_type: "work",
           pp_early_startdate: "",
-          pp_last_enddate: "",
+          pp_last_enddate: pp_last_enddate,
           pp_period: "0",
           group_id: "",
           wp_name: "",
           pp_note: "",
           pp_progress: "0",
           pp_node_level: this.selectNodeLevel,
-          pp_pid:
-            this.selectNodeLevel == "base" ? null : this.selectBasePlan.pp_id,
+          pp_pid: pp_pid,
           pp_release_status: "unrelease"
         };
         this.addOrNot = true;
@@ -551,25 +589,43 @@ export default {
     editProjectPlanShow(row) {
       this.projectPlanModel = JSON.parse(JSON.stringify(row));
       this.addOrNot = false;
+      if (row.level == 1) {
+        this.timeConstraintRow = this.selectBasePlan;
+      } else {
+        this.timeConstraintRow = this.projectPlanData.filter(
+          item => item.pp_id == row.pp_pid
+        )[0];
+      }
       this.addProjectPlanVisible = true;
     },
     nodeTypeSel() {
       if (this.projectPlanModel.pp_node_type == "work") {
         this.projectPlanModel.pp_early_startdate = "";
+      } else {
+        this.projectPlanModel.pp_early_startdate = this.timeConstraintRow.pp_early_startdate;
       }
     },
     onSaveProjectPlanClick() {
       this.$refs.projectPlanForm.validate(valid => {
         if (valid) {
-          if (
-            this.projectPlanModel.pp_node_type == "task" &&
-            this.projectPlanModel.pp_early_startdate == ""
-          ) {
-            this.$alert("请选择计划开始时间!", "提示", {
-              confirmButtonText: "确定",
-              type: "error"
-            });
-            return;
+          if (this.projectPlanModel.pp_node_type == "task") {
+            if (this.projectPlanModel.pp_early_startdate == "") {
+              this.$alert("请选择计划开始时间!", "提示", {
+                confirmButtonText: "确定",
+                type: "error"
+              });
+              return;
+            }
+            if (
+              new Date(this.projectPlanModel.pp_early_startdate) >=
+              new Date(this.projectPlanModel.pp_last_enddate)
+            ) {
+              this.$alert("结束时间不能小于开始时间!", "提示", {
+                confirmButtonText: "确定",
+                type: "error"
+              });
+              return;
+            }
           }
           if (this.addOrNot) {
             this.z_post("api/project_plan", this.projectPlanModel)
@@ -859,6 +915,7 @@ export default {
     //返回基准计划
     returnBasePlan() {
       this.selectNodeLevel = "base";
+      this.selectBasePlan = [];
       this.refreshProjectPlanData();
     },
     //跳转路由
@@ -879,13 +936,13 @@ export default {
       this.$nextTick(function() {
         var firstTab = document.getElementById("tab-base");
         var secondTab = document.getElementById("tab-detail");
-        if (this.selectNodeLevel == "base"){
+        if (this.selectNodeLevel == "base") {
           firstTab.style.color = "#409EFF";
           secondTab.style.color = "#C0C4CC";
-        }else if (this.selectNodeLevel == "detail"){
+        } else if (this.selectNodeLevel == "detail") {
           firstTab.style.color = "#C0C4CC";
           secondTab.style.color = "#409EFF";
-        }else{
+        } else {
           firstTab.style.color = "#C0C4CC";
           secondTab.style.color = "#C0C4CC";
         }
@@ -903,15 +960,6 @@ export default {
         }
       }
       return false;
-    },
-    canSelect(row, index) {
-      if (
-        this.selectNodeLevel == "detail" &&
-        row.pp_id == this.selectBasePlan.pp_id
-      ) {
-        return false;
-      }
-      return true;
     },
     cellClass({ row, column, rowIndex, columnIndex }) {
       if (columnIndex == 1) {
@@ -995,7 +1043,10 @@ export default {
   display: flex;
   flex-direction: column;
 }
+.leftLayout .el-button + .el-button {
+  margin-left: 5px;
+}
 .projectPlanTable .el-button + .el-button {
-  margin-left: 3px;
+  margin-left: 3px !important;
 }
 </style>
