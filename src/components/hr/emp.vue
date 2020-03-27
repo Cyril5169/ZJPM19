@@ -28,11 +28,7 @@
 
         <el-table-column prop="emp_name" label="姓名" align="center" width="130"></el-table-column>
 
-        <el-table-column prop="emp_sex" label="性别" align="center" width="100">
-          <template slot-scope="scope">
-            <div v-html="colorRenderFilter(scope.row.emp_sex, dict.emp_sex)"></div>
-          </template>
-        </el-table-column>
+        <zj-table-column prop="emp_sex" label="性别"  width="100" :dict="dict"></zj-table-column>
 
         <el-table-column prop="emp_phone" label="联系电话" align="center" width="150"></el-table-column>
 
@@ -232,7 +228,9 @@ export default {
       addEmpDataVisible: false,
       selectItemVisible: false,
       bottomDataShow: false,
-
+      dict:[],
+      skillOption:[],
+      levelOption:[],
       empItemModel: {},
       empItemModelList: [],
       empTechModel: {},
@@ -335,7 +333,7 @@ export default {
     //查询技能名称
     selectSkill() {
       this.skillOption = [];
-      this.z_get("api/skill/list", (condition = this.itemCondition))
+      this.z_get("api/skill/list", {condition:this.itemCondition})
         .then(res => {
           this.skillOption = res.data;
           for (var i = 0; i < this.skillOption.length; i++) {
@@ -385,18 +383,6 @@ export default {
         })
         .catch(res => {});
     },
-    //刷新人员数据
-    selectskill() {
-      this.z_get("api/skill", { condition: "" }, { loading: false })
-        .then(res => {
-          //如果不一样才赋值
-          if (JSON.stringify(this.deptData) != JSON.stringify(res.data)) {
-            this.deptData = res.data;
-          }
-        })
-        .catch(res => {});
-    },
-
     refreshBottom() {
       this.itemCondition = "";
       this.empSkillData = [];
@@ -718,21 +704,6 @@ export default {
       this.empItemModelList.splice(index, 1);
     }
   },
-  //折叠所有节点
-  collapseAll() {
-    var icon = this.$el.getElementsByClassName("el-table__expand-icon");
-    if (icon && icon.length) {
-      for (var i = 0; i < icon.length; i++) {
-        var classList = [];
-        for (var j = 0; j < icon[i].classList.length; j++) {
-          classList.push(icon[i].classList[j]);
-        }
-        if (classList.indexOf("el-table__expand-icon--expanded") > -1) {
-          icon[i].click();
-        }
-      }
-    }
-  },
   mounted() {
     this.refreshData();
     this.selectEmp();
@@ -743,7 +714,7 @@ export default {
 </script>
 
 <style scoped>
-.standard-task {
+.employee {
   width: 1100px;
 }
 .formItem2 {

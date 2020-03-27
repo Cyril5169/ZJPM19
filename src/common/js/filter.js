@@ -137,7 +137,7 @@ function dateFilter(value, format) {
         };
         return fmt
     }
-    return y + "-" + MM + "-" + d + " ";
+    return y + "-" + MM + "-" + d + " ";//默认返回这个，需要格式请加格式
 }
 
 /**全局渲染方法*/
@@ -151,20 +151,6 @@ function renderFilter(id, renderData) {
     }
     return name;
 }
-function colorRenderFilter(id, renderData) {
-    var name = id;
-    var bgcolor="";
-    var color="";
-    if (renderData) {
-        var displayName = renderData.filter(item => item.value == id);
-        if (displayName.length) {
-            name = displayName[0].display;
-            bgcolor = displayName[0].bgcolor;
-            color=bgcolor?"#000":"";
-        }
-    }
-    return `<div style="color:${color};background:${bgcolor}">${name}<div>`;
-}
 export {
     numberFilter,
     dosageFilter,
@@ -173,6 +159,5 @@ export {
     // dateFormat,统一用dateFilter
     dateFilter,
     yesOrNo,
-    renderFilter,
-    colorRenderFilter
+    renderFilter
 }
