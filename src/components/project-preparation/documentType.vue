@@ -34,7 +34,7 @@
         </div>
       </div>
     </div>
-    <el-dialog width="500px" title="新增资料类别" :close-on-click-modal="false" :visible.sync="addDataTypeVisiable" top="25vh"
+    <el-dialog width="420px" title="新增资料类别" :close-on-click-modal="false" :visible.sync="addDataTypeVisiable" top="25vh"
       @closed="refreshForm">
       <zj-form :newDataFlag='addDataTypeVisiable' :model="dataTypeModel" label-width="130px" ref="dataTypeForm"
         :rules="add_rules">
@@ -43,7 +43,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="资料类别分类" prop="ddt_type">
-          <el-select v-model="dataTypeModel.ddt_type" placeholder="请选择资料类别分类">
+          <el-select class="formItem" v-model="dataTypeModel.ddt_type" placeholder="请选择资料类别分类">
             <el-option v-for="item in dataType_options" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -249,7 +249,7 @@ export default {
   width: 1000px;
 }
 .formItem {
-  width: 300px;
+  width: 220px;
 }
 .gridTable {
   flex: 1;
