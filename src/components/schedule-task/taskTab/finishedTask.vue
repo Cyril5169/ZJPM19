@@ -20,10 +20,10 @@
             <el-table-column prop="t_name" label="任务名称" width="120" align="center"></el-table-column>
             <el-table-column prop="p_no" label="项目号" width="120" align="center"></el-table-column>
             <el-table-column prop="t_early_startdate" label="计划开始时间" width="200" show-overflow-tooltip align="center">
-              <template slot-scope="scope">{{scope.row.t_early_startdate | renderFilter(datetrans)}}</template>
+              <!-- <template slot-scope="scope">{{scope.row.t_early_startdate | renderFilter(datetrans)}}</template> -->
             </el-table-column>
             <el-table-column prop="t_last_enddate" label="计划结束时间" width="200" show-overflow-tooltip align="center">
-              <template slot-scope="scope">{{scope.row.t_last_enddate | renderFilter(datetrans)}}</template>
+              <!-- <template slot-scope="scope">{{scope.row.t_last_enddate | renderFilter(datetrans)}}</template> -->
             </el-table-column>
             <el-table-column prop="t_note" label="任务备注" align="center"></el-table-column>
             <el-table-column prop="t_status" label="任务状态" width="120" align="center">
@@ -152,23 +152,23 @@ export default {
     }
   },
   filters: {
-    datetrans(value) {
-      if (!value || value == "9999-12-31") return "";
-      //时间戳转化大法
-      let date = new Date(value);
-      let y = date.getFullYear();
-      let MM = date.getMonth() + 1;
-      MM = MM < 10 ? "0" + MM : MM;
-      let d = date.getDate();
-      d = d < 10 ? "0" + d : d;
-      let h = date.getHours();
-      h = h < 10 ? "0" + h : h;
-      let m = date.getMinutes();
-      m = m < 10 ? "0" + m : m;
-      let s = date.getSeconds();
-      s = s < 10 ? "0" + s : s;
-      return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
-    },
+    // datetrans(value) {
+    //   if (!value || value == "9999-12-31") return "";
+    //   //时间戳转化大法
+    //   let date = new Date(value);
+    //   let y = date.getFullYear();
+    //   let MM = date.getMonth() + 1;
+    //   MM = MM < 10 ? "0" + MM : MM;
+    //   let d = date.getDate();
+    //   d = d < 10 ? "0" + d : d;
+    //   let h = date.getHours();
+    //   h = h < 10 ? "0" + h : h;
+    //   let m = date.getMinutes();
+    //   m = m < 10 ? "0" + m : m;
+    //   let s = date.getSeconds();
+    //   s = s < 10 ? "0" + s : s;
+    //   return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
+    // },
     transStatus(value) {
       switch (value) {
         case 0:

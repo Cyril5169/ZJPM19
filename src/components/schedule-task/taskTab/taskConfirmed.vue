@@ -21,10 +21,10 @@
             <el-table-column prop="t_name" label="任务名称" align="center"></el-table-column>
             <el-table-column prop="p_no" label="项目号" align="center"></el-table-column>
             <el-table-column prop="t_early_startdate" label="计划开始时间" align="center">
-              <template slot-scope="scope">{{scope.row.t_early_startdate | renderFilter(datetrans)}}</template>
+              <!-- <template slot-scope="scope">{{scope.row.t_early_startdate | renderFilter(datetrans)}}</template> -->
             </el-table-column>
             <el-table-column prop="t_last_enddate" label="计划结束时间" align="center">
-              <template slot-scope="scope">{{scope.row.t_last_enddate | renderFilter(datetrans)}}</template>
+              <!-- <template slot-scope="scope">{{scope.row.t_last_enddate | renderFilter(datetrans)}}</template> -->
             </el-table-column>
             <el-table-column prop="t_note" label="任务备注" align="center"></el-table-column>
             <el-table-column prop="t_status" label="任务状态" align="center">
@@ -104,6 +104,7 @@ export default {
       tableData: [],
       activeName: "taskInfo",
       bottomDivShow: false,
+      report_operation:"confirm",
       currentRow: {},
       selection: [] //选中行数据
     };
@@ -175,6 +176,7 @@ export default {
     onConfirmClick(list, mark) {
       var text = "";
       if (mark == 1) {
+                this.report_operation = "confirm";
         text = "确认";
         for (var i = 0; i < list.length; i++) {
           list[i].t_status = 1;
@@ -193,6 +195,9 @@ export default {
         .then(() => {
           this.z_put("api/task/list", list)
             .then(res => {
+              for (var i = 0; i < list.length; i++) {
+                this.taskRecord(list[i]);
+              }
               this.$message({
                 message: "修改成功",
                 type: "success",
@@ -210,13 +215,9 @@ export default {
         })
         .catch(() => {});
       this.refreshData();
-    }
-  },
-  filters: {
-    datetrans(value) {
-      if (!value || value == "9999-12-31") return "";
-      //时间戳转化大法
-      let date = new Date(value);
+    },
+    taskRecord(list) {
+      let date = new Date();
       let y = date.getFullYear();
       let MM = date.getMonth() + 1;
       MM = MM < 10 ? "0" + MM : MM;
@@ -228,8 +229,76 @@ export default {
       m = m < 10 ? "0" + m : m;
       let s = date.getSeconds();
       s = s < 10 ? "0" + s : s;
-      return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
-    },
+      var nowTime = y + "-" + MM + "-" + d + " ";
+      this.taskRecordModel = {
+        tr_id: 0,
+        //  seq_no:this.seq_no + 1,//报工内部序号
+        seq_no: 0, //报工内部序号
+        t_id: list.t_id, //作业任务明细编号
+        // t_id: 16, //作业任务明细编号
+        is_audit: 1, //是否需要审核
+        audit_emp: 0, //检查人
+        audit_status: 0, //审核通过
+        // audit_date: nowTime, //
+        execute_emp: list.emp_id, //执行人
+
+        report_operation: this.report_operation, //报工操作
+        //  report_progress:this.percent_1,//报工进度
+
+        report_progress: 100, //报工进度!!!
+
+        //  report_emp:this.report_emp,//报工人
+        report_emp: list.emp_id, //报工人
+        report_date: nowTime, //报工日期
+
+        accpte_emp: list.emp_id, //接收人
+
+        accpte_date: nowTime, //就收日期
+        actual_starttime: nowTime, //实际开始时间
+        actual_endtime: nowTime//实际结束时间
+      };
+      // this.z_post("api/task_record", this.taskRecordModel).then(res => {
+      //   console.log(res);
+      //   // this.refreshData();
+      // }).catch(res => {});;
+      this.z_post("api/task_record", this.taskRecordModel)
+        .then(res => {
+          // this.$message({
+          //   message: "新增成功",
+          //   type: "success",
+          //   duration: 1000
+          // });
+          // this.refreshData();
+          // this.addEmpVisiable = false;
+          console.log(res);
+        })
+        .catch(res => {
+          // this.$alert("新增失败", "提示", {
+          //   confirmButtonText: "确定",
+          //   type: "error"
+          // });
+          console.log(res);
+        });
+    }
+  },
+  filters: {
+    // datetrans(value) {
+    //   if (!value || value == "9999-12-31") return "";
+    //   //时间戳转化大法
+    //   let date = new Date(value);
+    //   let y = date.getFullYear();
+    //   let MM = date.getMonth() + 1;
+    //   MM = MM < 10 ? "0" + MM : MM;
+    //   let d = date.getDate();
+    //   d = d < 10 ? "0" + d : d;
+    //   let h = date.getHours();
+    //   h = h < 10 ? "0" + h : h;
+    //   let m = date.getMinutes();
+    //   m = m < 10 ? "0" + m : m;
+    //   let s = date.getSeconds();
+    //   s = s < 10 ? "0" + s : s;
+    //   return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
+    // },
      transStatus(value) {
       switch (value) {
         case 0:
