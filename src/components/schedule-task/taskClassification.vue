@@ -350,8 +350,7 @@ export default {
 
     refreshTabData() {
       this.loading = true;
-      this.typeTabData = [];
-      this.currentRow = {};
+      this.typeTabData = [],
       this.z_get(
         "api/task_type_tab/list",
         { type_code: this.currentRow.type_code, condition: this.tabCondition },
@@ -555,7 +554,7 @@ export default {
                   type: "success",
                   duration: 1000
                 });
-                T;
+                ;
                 this.refreshTabData();
                 this.tabFormVisible = false;
               })
