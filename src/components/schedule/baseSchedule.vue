@@ -72,7 +72,7 @@
             <zj-table height='100%' ref="projectPlanTable" class="projectPlanTable" style="width: 100%;"
               :data="projectPlanData" tooltip-effect="dark" row-key="pp_id" default-expand-all highlight-current-row
               @selection-change="handleSelectionChange" @row-click="handleRowClick" @row-dblclick="handleRowDBClick"
-              :cell-class-name="cellClass">
+              :cell-class-name="cellClass" @select-all="handleSelectAll">
               <el-table-column type="selection" width="55" align="center"></el-table-column>
               <el-table-column prop="pp_release_status" label="发布状态" width="100">
                 <template slot-scope="scope">{{scope.row.pp_release_status | releaseStatusFilter}}</template>
@@ -965,6 +965,36 @@ export default {
       if (columnIndex == 1) {
         if (row.pp_release_status == "released") {
           return "backgroundComplete";
+        }
+      }
+    },
+    //全选选中子节点
+    handleSelectAll(selection) {
+      if (this.pp_node_level == "base") return;
+      var val = this.projectPlanData;
+      var select = false; //全选还是反选
+      for (var i = 0; i < selection.length; i++) {
+        if (selection[i].pp_id == val[0].pp_id) {
+          select = true;
+          break;
+        }
+      }
+      for (var i = 0; i < val.length; i++) {
+        if (val[i].children && val[i].children.length) {
+          this.selectChildren(val[i].children, select);
+        }
+      }
+    },
+    //选中子节点
+    selectChildren(val, select) {
+      for (var i = 0; i < val.length; i++) {
+        if (select && this.projectPlanSelection.indexOf(val[i]) == -1) {
+          this.$refs.projectPlanTable.toggleRowSelection(val[i]);
+        } else if (!select && this.projectPlanSelection.indexOf(val[i] > -1)) {
+          this.$refs.projectPlanTable.toggleRowSelection(val[i]);
+        }
+        if (val[i].children && val[i].children.length) {
+          this.selectChildren(val[i].children, select);
         }
       }
     },
