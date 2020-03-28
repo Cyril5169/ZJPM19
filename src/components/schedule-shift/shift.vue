@@ -116,7 +116,7 @@
         </el-form-item>
 
         <el-form-item label="开始时间" prop="ds_starttime">
-          <el-time-select class="shiftformItem" placeholder="起始时间" v-model="starttime" format="HH:mm" value-format="HH:mm" 
+          <el-time-select class="shiftformItem" placeholder="起始时间" v-model="starttime" format="HH:mm"  
           :picker-options="{
             start: '06:00',
              step: '00:15',

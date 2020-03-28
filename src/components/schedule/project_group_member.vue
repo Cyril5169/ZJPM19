@@ -58,12 +58,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="进入时间" prop="pgm_starttime">
-          <el-date-picker value-format="yyyy-MM-dd" v-model="memberModel.pgm_starttime" placeholder="请选择进入时间">
+          <el-date-picker  v-model="memberModel.pgm_starttime" placeholder="请选择进入时间">
             <template slot-scope="scope">{{ scope.row.pgm_starttime | datatrans}}
             </template>
           </el-date-picker>
         </el-form-item>
-        <el-form-item value-format="yyyy-MM-dd" label="退出时间" prop="pgm_endtime">
+        <el-form-item  label="退出时间" prop="pgm_endtime">
           <el-date-picker v-model="memberModel.pgm_endtime" placeholder="请选择退出时间">
             <template slot-scope="scope">{{ scope.row.pgm_endtime | datatrans}}
             </template>
