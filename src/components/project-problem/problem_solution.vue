@@ -184,7 +184,7 @@
         </el-form-item>
         <el-form-item label="提供时间" prop="ps_supply_date">
           <el-date-picker v-model="problemSolutionModel.ps_supply_date" type="date" format="yyyy-MM-dd"
-            value-format="yyyy-MM-dd" placeholder="选择时间" style="width:50%"></el-date-picker>
+             placeholder="选择时间" style="width:50%"></el-date-picker>
         </el-form-item>
         <el-form-item label="状态" prop="ps_state">
           <el-select style="width:50%;" v-model="problemSolutionModel.ps_state" placeholder="请选择问题状态">
@@ -255,7 +255,7 @@
         </el-form-item>
 
         <el-form-item label="完成时间" prop="psd_deadline">
-          <el-date-picker v-model="PSDModel.psd_deadline" type="date" format="yyyy-MM-dd" value-format="yyyy-MM-dd"
+          <el-date-picker v-model="PSDModel.psd_deadline" type="date" format="yyyy-MM-dd" 
             placeholder="选择时间" style="width:50%"></el-date-picker>
         </el-form-item>
 
