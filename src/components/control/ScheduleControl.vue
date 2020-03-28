@@ -2037,6 +2037,7 @@ export default {
   font-size: 10px;
   box-sizing: border-box;
   display: flex;
+  user-select: none;
 }
 .dateBtn {
   display: inline-block;

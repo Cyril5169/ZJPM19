@@ -51,8 +51,8 @@
             <el-button v-if="selectNodeLevel == 'detail'" type="primary" size="small"
               :disabled="projectPlanSelection.length == 0" @click="publishPlanList('0')">
               撤销发布选中({{projectPlanSelection.length}})</el-button>
-            <el-button type="primary" size="small"
-              :disabled="!currentRow.pp_id || currentRow.pp_release_status !='2'" @click="changeTimeShow">时间变更
+            <el-button type="primary" size="small" :disabled="!currentRow.pp_id || currentRow.pp_release_status !='2'"
+              @click="changeTimeShow">时间变更
             </el-button>
             <el-dropdown style="margin-left:5px;">
               <el-button size="small">
@@ -72,12 +72,12 @@
             <zj-table height='100%' ref="projectPlanTable" class="projectPlanTable" style="width: 100%;"
               :data="projectPlanData" tooltip-effect="dark" row-key="pp_id" default-expand-all highlight-current-row
               @selection-change="handleSelectionChange" @row-click="handleRowClick" @row-dblclick="handleRowDBClick"
-              :cell-class-name="cellClass" @select-all="handleSelectAll">
+              @select-all="handleSelectAll">
               <el-table-column type="selection" width="55" align="center"></el-table-column>
-              <zj-table-column prop="pp_release_status" label="发布状态" width="100" align='left' :dict="dict">
-              </zj-table-column>
-              <el-table-column prop="pp_name" label="任务名称" align="center" width="120" show-overflow-tooltip>
+              <el-table-column prop="pp_name" label="任务名称" width="150" show-overflow-tooltip>
               </el-table-column>
+              <zj-table-column prop="pp_release_status" label="发布状态" width="100" :dict="dict">
+              </zj-table-column>
               <el-table-column prop="pp_node_type" label="任务类型" align="center" width="80">
                 <template slot-scope="scope">{{scope.row.pp_node_type | renderFilter(dict.pp_node_type)}}</template>
               </el-table-column>
@@ -116,9 +116,9 @@
         </div>
         <div class="rightLayout">
           <div class="rightTop" style="flex:1">
-            <schedule :height="'100%'" :width="'100%'" v-model="projectPlanData" :hightLightNo="hightLightNo"
+            <schedule :height="'100%'" :width="'100%'" v-model="findBottomTask" :hightLightNo="hightLightNo"
               :canControll="false" :cellHeight='75' startTimeField='pp_early_startdate' endTimeField='pp_last_enddate'
-              taskNameField='pp_name' noField='sort' :expandSatrtMonth='1' :expandEndMonth='1' :cellWidth='280'>
+              taskNameField='pp_name' noField='pp_id' :expandSatrtMonth='1' :expandEndMonth='1' :cellWidth='280'>
             </schedule>
           </div>
           <div class="rightBottom" style="height:260px;">
@@ -153,12 +153,12 @@
               </el-tab-pane>
               <el-tab-pane label="变更记录" name="fifth" class="flexDiv-column">
                 <div v-if="bottomDivShow" class="gridTable">
-                  <zj-table :autoHeight='activeName =="fifth"' style="width:100%;" height="100" :data="changeTimeData"
-                    tooltip-effect="dark" highlight-current-row border>
+                  <zj-table :autoHeight='activeName =="fifth"' v-loading='loading' style="width:100%;" height="100"
+                    :data="changeTimeData" tooltip-effect="dark" highlight-current-row border>
                     <el-table-column type="index" width="40" align="center">
                     </el-table-column>
                     <el-table-column prop="change_type" label="变更类型" align="center" width="100">
-                      <template slot-scope="scope">{{scope.row.change_type | changeTypeFilter}}</template>
+                      <template slot-scope="scope">{{scope.row.change_type | renderFilter(changeTypeFilter)}}</template>
                     </el-table-column>
                     <el-table-column prop="beforetime" label="变更前时间" align="center" width="100">
                       <template slot-scope="scope">{{scope.row.beforetime | dateFilter}}</template>
@@ -198,7 +198,8 @@
             <el-form-item label="任务类型">
               <el-select :disabled="projectPlanData.length == 0" v-model="projectPlanModel.pp_node_type"
                 placeholder="请选择任务类型" @change="nodeTypeSel">
-                <el-option v-for="item in dict.pp_node_type" :key="item.value" :label="item.display" :value="item.value">
+                <el-option v-for="item in dict.pp_node_type" :key="item.value" :label="item.display"
+                  :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -207,17 +208,16 @@
         <el-row>
           <el-col :span="11">
             <el-form-item label="计划开始时间" prop="pp_early_startdate">
-              <el-date-picker :disabled="projectPlanModel.pp_node_type == 'work'"
-                style="width:200px;" v-model="projectPlanModel.pp_early_startdate" placeholder="请选择开始时间"
-                :picker-options="pickerOptions1">
+              <el-date-picker :disabled="projectPlanModel.pp_node_type == 'work'" style="width:200px;"
+                v-model="projectPlanModel.pp_early_startdate" placeholder="请选择开始时间" :picker-options="pickerOptions1">
               </el-date-picker>
             </el-form-item>
           </el-col>
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="计划结束时间" prop="pp_last_enddate">
-              <el-date-picker style="width:200px;" v-model="projectPlanModel.pp_last_enddate"
-                placeholder="请选择结束时间" :picker-options="pickerOptions1">
+              <el-date-picker style="width:200px;" v-model="projectPlanModel.pp_last_enddate" placeholder="请选择结束时间"
+                :picker-options="pickerOptions1">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -292,8 +292,7 @@
           <span>{{changeTimeModel.beforetime | dateFilter}}</span>
         </el-form-item>
         <el-form-item label="变更后时间" prop="pp_early_startdate">
-          <el-date-picker style="width:200px;" v-model="changeTimeModel.aftertime"
-            placeholder="请选择时间">
+          <el-date-picker style="width:200px;" v-model="changeTimeModel.aftertime" placeholder="请选择时间">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="修改原因">
@@ -333,7 +332,8 @@ export default {
       changeTimeData: [],
       changeTimeModel: {},
       timeConstraintRow: {},
-      dict:[],
+      dict: [],
+      changeTypeFilter: [],
       btnShow: false,
       bottomDivShow: false,
       projectPlanCondition: "",
@@ -392,18 +392,6 @@ export default {
     schedule,
     constraintTable
   },
-  filters: {
-    changeTypeFilter(value) {
-      switch (value) {
-        case "start":
-          return "变更开始";
-          break;
-        case "end":
-          return "变更结束";
-          break;
-      }
-    }
-  },
   watch: {
     selectNodeLevel: {
       immediate: true,
@@ -427,6 +415,11 @@ export default {
           item.level == this.currentRow.level &&
           item.pp_id != this.currentRow.pp_id
       );
+      return allData;
+    },
+    findBottomTask() {
+      var allData = this.arrayChildrenFlatten(this.projectPlanData, []);
+      allData = allData.filter(item => !item.children || !item.children.length);
       return allData;
     }
   },
@@ -479,6 +472,7 @@ export default {
       )
         .then(res => {
           this.loading = false;
+          this.changeTypeFilter = res.dict.change_type;
           this.changeTimeData = res.data;
         })
         .catch(res => {});
@@ -538,7 +532,7 @@ export default {
           pp_name: "",
           pp_node_type: "work",
           pp_early_startdate: "",
-          pp_last_enddate: pp_last_enddate,
+          pp_last_enddate: new Date(pp_last_enddate),
           pp_period: "0",
           group_id: "",
           wp_name: "",
@@ -574,7 +568,9 @@ export default {
       if (this.projectPlanModel.pp_node_type == "work") {
         this.projectPlanModel.pp_early_startdate = "";
       } else {
-        this.projectPlanModel.pp_early_startdate = this.timeConstraintRow.pp_early_startdate;
+        this.projectPlanModel.pp_early_startdate = new Date(
+          this.timeConstraintRow.pp_early_startdate
+        );
       }
     },
     onSaveProjectPlanClick() {
@@ -782,7 +778,13 @@ export default {
       return "无";
     },
     moveUp() {
-      var index = this.projectPlanData.indexOf(this.currentRow);
+      var siblings = this.getTreeSiblings(
+        this.currentRow,
+        this.projectPlanData,
+        "pp_pid",
+        "pp_id"
+      );
+      var index = siblings.indexOf(this.currentRow);
       if (index == 0) {
         this.$message({
           message: "第一行不能上移",
@@ -791,14 +793,14 @@ export default {
         });
         return;
       }
-      this.projectPlanData.splice(index, 1)[0];
-      this.projectPlanData.splice(index - 1, 0, this.currentRow);
-      for (let i = 0; i < this.projectPlanData.length; i++) {
-        const item = this.projectPlanData[i];
+      siblings.splice(index, 1)[0];
+      siblings.splice(index - 1, 0, this.currentRow);
+      for (let i = 0; i < siblings.length; i++) {
+        const item = siblings[i];
         item.sort = i;
         item.UpdateColumns = ["sort"];
       }
-      this.z_put("api/project_plan/list", this.projectPlanData)
+      this.z_put("api/project_plan/list", siblings)
         .then(res => {
           this.$message({
             message: "上移成功",
@@ -814,8 +816,14 @@ export default {
         });
     },
     moveDown() {
-      var index = this.projectPlanData.indexOf(this.currentRow);
-      if (index == this.projectPlanData.length - 1) {
+      var siblings = this.getTreeSiblings(
+        this.currentRow,
+        this.projectPlanData,
+        "pp_pid",
+        "pp_id"
+      );
+      var index = siblings.indexOf(this.currentRow);
+      if (index == siblings.length - 1) {
         this.$message({
           message: "最后一行不能下移",
           type: "warning",
@@ -823,14 +831,14 @@ export default {
         });
         return;
       }
-      this.projectPlanData.splice(index, 1)[0];
-      this.projectPlanData.splice(index + 1, 0, this.currentRow);
-      for (let i = 0; i < this.projectPlanData.length; i++) {
-        const item = this.projectPlanData[i];
+      siblings.splice(index, 1)[0];
+      siblings.splice(index + 1, 0, this.currentRow);
+      for (let i = 0; i < siblings.length; i++) {
+        const item = siblings[i];
         item.sort = i;
         item.UpdateColumns = ["sort"];
       }
-      this.z_put("api/project_plan/list", this.projectPlanData)
+      this.z_put("api/project_plan/list", siblings)
         .then(res => {
           this.$message({
             message: "下移成功",
@@ -932,13 +940,6 @@ export default {
         }
       }
       return false;
-    },
-    cellClass({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex == 1) {
-        if (row.pp_release_status == "2") {
-          return "backgroundComplete";
-        }
-      }
     },
     //全选选中子节点
     handleSelectAll(selection) {
