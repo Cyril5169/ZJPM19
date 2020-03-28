@@ -28,17 +28,17 @@
             <el-table-column prop="sd_code" label="CODE" align="left" width="100"></el-table-column>
             <el-table-column label="可着色" width="90" align="center" prop="sd_can_color">
               <template slot-scope="scope">
-                <span v-if="scope.row.sd_can_color">√</span>
+                <i class="el-icon-success" v-show="scope.row.sd_can_color" style="color:#67c23A;font-size: 16px;"></i>
               </template>
             </el-table-column>
             <el-table-column label="启用" width="90" align="center" prop="sd_status">
               <template slot-scope="scope">
-                <span v-if="scope.row.sd_status">√</span>
+                <i class="el-icon-success" v-show="scope.row.sd_status" style="color:#67c23A;font-size: 16px;"></i>
               </template>
             </el-table-column>
             <el-table-column label="系统级" width="90" align="center" prop="sd_is_sys">
               <template slot-scope="scope">
-                <span v-if="scope.row.sd_is_sys">√</span>
+                <i class="el-icon-success" v-show="scope.row.sd_is_sys" style="color:#67c23A;font-size: 16px;"></i>
               </template>
             </el-table-column>
           </el-table>
@@ -81,7 +81,7 @@
             </el-table-column>
             <el-table-column label="是否可用" width="90" align="center" prop="sdi_status">
               <template slot-scope="scope">
-                <span v-if="scope.row.sdi_status">√</span>
+                <i class="el-icon-success" v-show="scope.row.sdi_status" style="color:#67c23A;font-size: 16px;"></i>
               </template>
             </el-table-column>
           </el-table>
