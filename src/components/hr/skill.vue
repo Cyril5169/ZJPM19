@@ -26,12 +26,13 @@
         </div>
         <div class="gridTable">
           <el-table ref="skillTable"  style="width: 100%" :data="skill" tooltip-effect="dark"
+            border
             highlight-current-row row-key="pc_no" default-expand-all @selection-change="handleSelectionChange"
             @select-all="handleSelectAll" @row-click="handleRowClick">
             <el-table-column type="selection" width="55" align="center"></el-table-column>  
-            <el-table-column prop="skill_name" label="技能名称" align="center" width="150"></el-table-column>
-            <el-table-column prop="skill_note" label="技能说明" align="center" width="480"></el-table-column>
-            <el-table-column label="操作" width="375" prop="handle">
+            <el-table-column prop="skill_name" label="技能名称" align="center" width="200"></el-table-column>
+            <el-table-column prop="skill_note" label="技能说明" align="center" ></el-table-column>
+            <el-table-column label="操作"  prop="handle"  width="150"  align="center">
               <template slot-scope="scope">
                 <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editskillShow(scope.row)">
                 </el-button>
@@ -136,6 +137,7 @@ export default {
         skill_name: "",
         skill_note: ""
       };
+      this.addskillText='新增技能信息'
       this.addOrNot = true;
       this.addskillVisiable = true;
     },
@@ -197,7 +199,7 @@ export default {
     //编辑数据
     editskillShow(row) {
       this.skillModel = JSON.parse(JSON.stringify(row));
-     
+      this.addskillText='编辑技能信息'
       this.addOrNot = false;
       this.addskillVisiable = true;
     },
@@ -325,13 +327,12 @@ export default {
 
 <style scoped>
 .skill {
-  width: 1100px;
+  width: 900px;
 }
 .formItem {
   width: 300px;
   /* margin-left: 55px; */
 }
-
 
 </style>-->
 
@@ -342,105 +343,3 @@ export default {
 
 
 
-
-
-    <!-- <el-input 
-          size="small" 
-          @keyup.enter.native="refreshData" 
-          placeholder="请输入技能名称" 
-          v-model="condition" clearable
-            style="width:250px;">
-            <el-button 
-            size="small" 
-            @click="refreshData" 
-            slot="append" 
-            icon="el-icon-search"
-            >搜索</el-button>
-       </el-input>
-
-     <el-button 
-          type="primary" 
-          size="small" 
-          style="margin-left:10px;" 
-          @click="addEmpShow('root')"
-          >新增
-          </el-button>
-
-      <el-button 
-          type="danger" 
-          size="small" :disabled="selection.length==0" >
-            导入
-          </el-button>
-        </div>
-      <div class="gridTable">
-
-          <el-table 
-          ref="taskTable" 
-          style="width: 100%;" 
-          height="250px" 
-          :data="taskData" tooltip-effect="dark"
-          highlight-current-row row-key="emp_no" 
-          default-expand-all 
-          @selection-change="handleSelectionChange"
-          @select-all="handleSelectAll" 
-          @row-click="handleRowClick">
-           </el-table>
-
-      <el-table-column 
-            prop="skill_name" 
-            label="技能名称" 
-            align="center" 
-            width="100"
-            ></el-table-column>
-      
-       <el-table-column 
-            prop="skill_note" 
-            label="技能说明" 
-            align="center" 
-            width="100"
-            ></el-table-column>
-          </el-tabs>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    
-
-<!--<style scoped>
-.employee {
-  width: 1100px;
-}
-.formItem {
-  width: 300px;
-}
-.formItem2 {
-  width: 200px;
-}
-.transferDiv {
-  display: inline;
-}
-.leftTransferItem {
-  display: inline-block;
-  vertical-align: middle;
-  width: 500px;
-  height: 400px;
-}
-.rightTransferItem {
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 20px;
-  width: 350px;
-  height: 400px;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-.oneItem {
-  border: 1px solid #eee;
-  margin-bottom: 10px;
-}
-.bottomButton {
-  text-align: center;
-  margin: 10px 0;
-}
-</style>
