@@ -125,7 +125,7 @@
 
           <el-form-item label="记录时间" prop="p_recorddate">
             <el-date-picker v-model="problemModel.p_recorddate" type="date" format="yyyy-MM-dd"
-              value-format="yyyy-MM-dd" placeholder="选择时间" style="width:50%"></el-date-picker>
+               placeholder="选择时间" style="width:50%"></el-date-picker>
           </el-form-item>
 
           <el-form-item label="状态" prop="p_state">
