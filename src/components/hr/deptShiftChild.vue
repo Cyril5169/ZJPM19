@@ -1,45 +1,46 @@
 <template>
   <div class="deptShiftTab">
     <el-card shadow="hover" class="centerCard">
-      
-        <div class="tbar">
-          <!-- <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
+
+      <div class="tbar">
+        <!-- <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
           <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入班次名称" v-model="condition"
             style="width:300px;">
             <el-button @click="refreshData" slot="append" icon="el-icon-search">搜 索</el-button>
           </el-input> -->
-          <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewDeptShiftShow()">设置部门班次</el-button>
-          <!-- <el-button size="small" type="danger" :disabled="selection.length==0" @click="deleteList">
+        <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewDeptShiftShow()">设置部门班次
+        </el-button>
+        <!-- <el-button size="small" type="danger" :disabled="selection.length==0" @click="deleteList">
             批量删除({{selection.length}})
           </el-button> -->
-        </div>
-        <div style="width:100%;height:370px;">
-          <el-table ref="deptShiftTable" style="width: 100%" height="100%" :data="deptShiftData" tooltip-effect="dark"
-            highlight-current-row border @selection-change="handleSelectionChange">
-            <el-table-column type="selection" width="55" align="center"></el-table-column>
-            <el-table-column type="index" width="70" align="center" label="序号">
-            </el-table-column>
-            <el-table-column prop="sg_name" label="班次名称" align="center" width="140"></el-table-column>
-            <el-table-column prop="sg_note" label="班次说明" align="center"></el-table-column>
-            <el-table-column prop="dsg_startdate" label="开始使用时间" align="center" width="130">
-              <template slot-scope="scope">{{ scope.row.dsg_startdate| datetrans}}
-              </template>
-            </el-table-column>
-            <el-table-column prop="dsg_enddate" label="结束使用时间" align="center" width="130">
-              <template slot-scope="scope">{{ scope.row.dsg_enddate | datetrans}}
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="110" prop="handle">
-              <template slot-scope="scope">
-                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editShow(scope.row)">
-                </el-button>
-                <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-      
+      </div>
+      <div style="width:100%;height:370px;">
+        <el-table ref="deptShiftTable" style="width: 100%" height="100%" :data="deptShiftData" tooltip-effect="dark"
+          highlight-current-row border @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="55" align="center"></el-table-column>
+          <el-table-column type="index" width="70" align="center" label="序号">
+          </el-table-column>
+          <el-table-column prop="sg_name" label="班次名称" align="center" width="140"></el-table-column>
+          <el-table-column prop="sg_note" label="班次说明" align="center"></el-table-column>
+          <el-table-column prop="dsg_startdate" label="开始使用时间" align="center" width="130">
+            <template slot-scope="scope">{{ scope.row.dsg_startdate| datetrans}}
+            </template>
+          </el-table-column>
+          <el-table-column prop="dsg_enddate" label="结束使用时间" align="center" width="130">
+            <template slot-scope="scope">{{ scope.row.dsg_enddate | datetrans}}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="110" prop="handle">
+            <template slot-scope="scope">
+              <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editShow(scope.row)">
+              </el-button>
+              <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
     </el-card>
 
     <!-- 新增部门班次 -->
@@ -49,8 +50,8 @@
         <div class="leftTransferItem">
           <div class="tbar">
             <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="searchShift"></el-button>
-            <el-input size="small" @keyup.enter.native="refreshShiftList" placeholder="请输入班次组名称" v-model="shiftCondition"
-              clearable style="width:250px;">
+            <el-input size="small" @keyup.enter.native="refreshShiftList" placeholder="请输入班次组名称"
+              v-model="shiftCondition" clearable style="width:250px;">
               <el-button size="small" @click="refreshShiftList" slot="append" icon="el-icon-search">搜索</el-button>
             </el-input>
           </div>
@@ -75,18 +76,17 @@
             <el-form size="small" :model="item" label-width="110px" :rules="add_rules">
               <el-form-item label="班次组" prop="sg_id">
                 <el-select v-model="item.sg_id" placeholder="请选择班次组" disabled>
-                  <el-option v-for="item in shiftDataFilter" :key="item.value" :label="item.display" :value="item.value">
+                  <el-option v-for="item in shiftDataFilter" :key="item.value" :label="item.display"
+                    :value="item.value">
                   </el-option>
                 </el-select>
               </el-form-item>
               <el-form-item label="开始使用日期" prop="dsg_startdate">
-                <el-date-picker v-model="item.dsg_startdate" type="date" format="yyyy 年 MM 月 dd 日"
-                  value-format="yyyy-MM-dd" placeholder="请选择日期">
+                <el-date-picker v-model="item.dsg_startdate" type="date" format="yyyy 年 MM 月 dd 日" placeholder="请选择日期">
                 </el-date-picker>
               </el-form-item>
               <el-form-item label="结束使用日期" prop="dsg_enddate">
-                <el-date-picker v-model="item.dsg_enddate" type="date" format="yyyy 年 MM 月 dd 日"
-                  value-format="yyyy-MM-dd" placeholder="请选择日期">
+                <el-date-picker v-model="item.dsg_enddate" type="date" format="yyyy 年 MM 月 dd 日" placeholder="请选择日期">
                 </el-date-picker>
               </el-form-item>
             </el-form>
@@ -114,12 +114,12 @@
         </el-form-item>
         <el-form-item label="开始使用日期" prop="dsg_startdate">
           <el-date-picker v-model="deptShiftModel.dsg_startdate" type="date" format="yyyy 年 MM 月 dd 日"
-            value-format="yyyy-MM-dd" placeholder="请选择日期">
+            placeholder="请选择日期">
           </el-date-picker>
         </el-form-item>
         <el-form-item label="结束使用日期" prop="dsg_enddate">
           <el-date-picker v-model="deptShiftModel.dsg_enddate" type="date" format="yyyy 年 MM 月 dd 日"
-            value-format="yyyy-MM-dd" placeholder="请选择日期">
+            placeholder="请选择日期">
           </el-date-picker>
         </el-form-item>
         <el-form-item style="text-align:center;margin-right:20px;">
@@ -151,7 +151,7 @@ export default {
       selectDeptShiftVisiable: false, //显示保存部门班次实例至待提交部门班次集合或编辑部门班次记录
       addDeptShiftVisiable: false, //显示新增部门班次界面
       shiftListData: [], //所有班次组数据
-      shiftDataFilter:[],//班次数据的渲染
+      shiftDataFilter: [], //班次数据的渲染
       currentPage: 1, //当前页（所有班次组）
       limit: 10, //每页最多展示的记录数
       total: 0, //查询到的总记录数
@@ -165,7 +165,7 @@ export default {
       if (val) {
         this.refreshData();
       }
-    },
+    }
     // selectDeptShiftVisiable(val) {
     //   if (val) {
     //     this.selectShift();
@@ -321,7 +321,7 @@ export default {
     //双击选中班次
     handleRowDbClcik(row) {
       this.deptShiftModel = {
-        dsg_id:0,
+        dsg_id: 0,
         c_id: 1, //现在先写死，到时候通过缓存给该变量赋值
         dept_id: this.deptId,
         sg_id: row.sg_id,
@@ -359,7 +359,10 @@ export default {
         type: "warning"
       })
         .then(() => {
-          this.z_post("api/dept_shift_group/dept_shift_list", this.deptShiftModelList)
+          this.z_post(
+            "api/dept_shift_group/dept_shift_list",
+            this.deptShiftModelList
+          )
             .then(res => {
               this.$message({
                 message: "新增成功!",

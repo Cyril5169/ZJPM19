@@ -8,7 +8,7 @@
             </taskManage>
           </keep-alive>
         </el-tab-pane>
-        <el-tab-pane label="已排班或发布" name="myTask">
+        <el-tab-pane label="已排班或发布" name="taskReleased">
           <keep-alive>
             <taskReleased >
             </taskReleased>
