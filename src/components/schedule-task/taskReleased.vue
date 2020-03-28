@@ -10,7 +10,7 @@
         </div>
       </div>
       <div class="bottomLayout">
-        <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
+        <!-- <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
           <el-tab-pane label="任务执行者" name="executor">
             <keep-alive>
               <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
@@ -35,7 +35,7 @@
         </el-tabs>
         <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
           @click="bottomDivShow=!bottomDivShow"></i>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
