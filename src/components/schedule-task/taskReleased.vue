@@ -2,15 +2,39 @@
   <div class="taskReleased">
     <div class="containAll">
       <div class="topLayout">
-        <div class="tbar">
-
-        </div>
+        <!-- <div class="tbar">
+          <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
+          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入任务名称" v-model="condition" clearable
+            style="width:200px;">
+          </el-input>
+          <span style="font-size:15px;margin-left:10px">项目号:</span>
+          <el-select size="small" v-model="select_project" @change="refreshData" ref="select_project"
+            placeholder="请选择项目">
+            <el-option v-for="item in project_options" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+          <el-button type="primary" size="small" :disabled="selection.length==0" @click="ReleseTask(1)">
+            撤销排班({{selection.length}})
+          </el-button>
+          <el-button type="primary" size="small" :disabled="selection.length==0" @click="ReleseTask(2)">
+            撤销发布({{selection.length}})
+          </el-button>
+          <el-dropdown style="margin-left:10px;">
+            <el-button size="small">
+              报工操作<i class="el-icon-arrow-down el-icon--right"></i>
+            </el-button>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item @click.native="expandAll">展开所有节点</el-dropdown-item>
+              <el-dropdown-item @click.native="collapseAll" divided>折叠所有节点</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div> -->
         <div class="gridTable">
 
         </div>
       </div>
       <div class="bottomLayout">
-        
+
       </div>
     </div>
   </div>
@@ -31,9 +55,7 @@ export default {
     taskDataFile
   },
   data() {
-    return {
-
-    };
+    return {};
   },
   filters: {
     datetrans(value) {
@@ -52,14 +74,10 @@ export default {
       let s = date.getSeconds();
       s = s < 10 ? "0" + s : s;
       return y + "-" + MM + "-" + d + " "; /* + h + ':' + m + ':' + s; */
-    },
+    }
   },
-  methods: {
-
-  },
-  mounted() {
-
-  }
+  methods: {},
+  mounted() {}
 };
 </script>
 
