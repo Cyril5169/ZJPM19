@@ -149,11 +149,11 @@ create_user	create_user	int			FALSE	FALSE	FALSE -->
         </el-form-item>
         <el-form-item label="最早开始" prop="t_name">
           <el-date-picker v-model="taskModel.t_early_startdate" type="date" format="yyyy-MM-dd"
-            value-format="yyyy-MM-dd" placeholder="选择时间" style="width:50%"></el-date-picker>
+             placeholder="选择时间" style="width:50%"></el-date-picker>
 
         </el-form-item>
         <el-form-item label="最晚结束" prop="t_name">
-          <el-date-picker v-model="taskModel.t_last_enddate" type="date" format="yyyy-MM-dd" value-format="yyyy-MM-dd"
+          <el-date-picker v-model="taskModel.t_last_enddate" type="date" format="yyyy-MM-dd" 
             placeholder="选择时间" style="width:50%"></el-date-picker>
 
         </el-form-item>
