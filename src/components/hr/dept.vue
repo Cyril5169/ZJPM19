@@ -57,28 +57,28 @@
       <el-dialog width="500px" :title="addDeptText" :close-on-click-modal="false" :visible.sync="addDeptVisiable"
         top="5vh" @closed="refreshForm">
         <el-form :model="deptModel" label-width="100px" ref="deptForm" :rules="add_rules">
-          <el-form-item label="部门编号">
+          <!-- <el-form-item label="部门编号">
             <el-input class="formItem" v-model="deptModel.dept_id" placeholder="系统自动生成" disabled>
             </el-input>
-          </el-form-item>
-          <el-form-item label="部门名称" prop="dept_name">
-            <el-input class="formItem" v-model="deptModel.dept_name" placeholder="无">
+          </el-form-item> -->
+          <el-form-item label="部门名称" prop="dept_name" >
+            <el-input class="formItem" v-model="deptModel.dept_name" placeholder="无" style="width:300px">
             </el-input>
           </el-form-item>
-          <el-form-item label="上级部门" prop="dept_pid">
+          <!-- <el-form-item label="上级部门" prop="dept_pid">
             <el-select v-model="deptModel.dept_pid" ref="select_dept" placeholder="请选择上级部门" disabled>
               <el-option :label="deptModel.dept_pname" :value="deptModel.dept_pid" style="height:auto;padding:0;">
               </el-option>
             </el-select>
-          </el-form-item>
-          <el-form-item label="类型" prop="dept_type_id">
-            <el-select v-model="deptModel.dept_type_id" placeholder="请选择类型">
+          </el-form-item> -->
+          <el-form-item label="类型" prop="dept_type_id"  style="width:300px">
+            <el-select v-model="deptModel.dept_type_id" placeholder="请选择类型" style="width:300px">
               <el-option v-for="item in deptType_options" :key="item.value" :label="item.label" :value="item.value">
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="说明">
-            <el-input class="formItem" type="textarea" :rows="2" v-model="deptModel.dept_note" placeholder="">
+          <el-form-item label="说明"  style="width:300px">
+            <el-input class="formItem" type="textarea" :rows="2" v-model="deptModel.dept_note" placeholder="" style="width:300px">
             </el-input>
           </el-form-item>
           <el-form-item style="text-align:center;margin-right:100px;">
