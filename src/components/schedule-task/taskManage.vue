@@ -202,7 +202,7 @@
           <el-col :span="11">
             <el-form-item label="计划开始时间" prop="t_early_startdate">
               <el-date-picker class="formItem" v-model="taskModel.t_early_startdate" type="date"
-                format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd" placeholder="请选择日期" :picker-options="pickerOptions">
+                format="yyyy 年 MM 月 dd 日" placeholder="请选择日期" :picker-options="pickerOptions">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -210,7 +210,7 @@
           <el-col :span="11">
             <el-form-item label="计划结束时间" prop="t_last_enddate">
               <el-date-picker class="formItem" v-model="taskModel.t_last_enddate" type="date" format="yyyy 年 MM 月 dd 日"
-                value-format="yyyy-MM-dd" placeholder="请选择日期" :picker-options="pickerOptions">
+                placeholder="请选择日期" :picker-options="pickerOptions">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -299,7 +299,6 @@ export default {
       project_options: [], //项目下拉框渲染数据
       dept_options: [], //部门下拉框渲染数据
       emp_options: [], //人员下拉框渲染数据
-      executorData: [], //执行者数据
       leafNode: [], //叶子节点任务
       activeName: "executor",
       bottomDivShow: false,
@@ -527,17 +526,6 @@ export default {
         })
         .catch(res => {});
     },
-    //查询任务执行者
-    refreshExecutorData(t_id) {
-      this.z_get("api/task_release/executor", {
-        condition: null,
-        taskId: t_id
-      })
-        .then(res => {
-          this.executorData = res.data.dic;
-        })
-        .catch(res => {});
-    },
     //刷新新增及编辑任务弹出框中的负责人员信息
     refreshManager(deptId) {
       this.selectManager(deptId);
@@ -574,12 +562,11 @@ export default {
       this.$refs.executorForm.resetFields();
     },
     //查出位于叶子节点的任务，即可排班或发布的任务
-    selectLeafNode(list) {
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].children && list[i].children.length>0) {
-          this.selectLeafNode(list[i].children); //判断是否有子节点
-        } else {
-          this.leafNode.push(list[i]);
+    selectLeafNode(inputList, outputList) {
+      for (var i = 0; i < inputList.length; i++) {
+        if (inputList[i].children.length == 0) {
+          //只要没有子节点，就添加到输出的叶子节点集合中
+          outputList.push(inputList[i]);
         }
       }
     },
@@ -704,55 +691,58 @@ export default {
     //发布/排班
     async ReleseTask(mark) {
       if (this.selection.length) {
-        //是否选中记录
-        // var flag = false; //判断是否能够发布或排班
-        // //判断是否有执行部门或执行人
-        // if (mark == 1) {
-        //   this.executorData = [];
-        //   let res1 = await this.refreshExecutorData(this.selection[0].t_id); //查询任务执行者信息
-        //   if (this.executorData.length != 0) {
-        //     for (var i = 0; i < this.executorData.length; i++) {
-        //       if (
-        //         this.executorData[i].dept_id &&
-        //         this.executorData[i].tr_ismain
-        //       ) {
-        //         flag = true; //有主要执行部门
-        //       }
-        //     }
-        //   }
-        //   if (!flag) {
-        //     this.$alert("任务无执行部门或主要执行部门，不可发布", "提示", {
-        //       confirmButtonText: "好的",
-        //       type: "warning"
-        //     });
-        //     return;
-        //   }
-        // }
-        // if (mark == 2) {
-        //   this.executorData = [];
-        //   let res2 = await this.refreshExecutorData(this.selection[0].t_id); //查询任务执行者信息
-        //   if (this.executorData.length != 0) {
-        //     for (var i = 0; i < this.executorData.length; i++) {
-        //       if (
-        //         this.executorData[i].emp_id &&
-        //         this.executorData[i].tr_ismain
-        //       ) {
-        //         flag = true; //有主要执行人
-        //       }
-        //     }
-        //   }
-        //   if (!flag) {
-        //     this.$alert("任务无执行人或主要执行人，不可发布", "提示", {
-        //       confirmButtonText: "好的",
-        //       type: "warning"
-        //     });
-        //     return;
-        //   }
-        // }
         //从所选任务中选中叶子节点任务
         this.leafNode = [];
-        let res3 = await this.selectLeafNode(this.selection);
-        console.log(this.leafNode);
+        this.selectLeafNode(this.selection, this.leafNode);
+        //是否选中记录
+        for (var i = 0; i < this.leafNode.length; i++) {
+          //遍历选中项
+          //查询执行者数据
+          var flag = false; //判断当前查询到的任务是否能够发布或排班
+          var res1 = await this.z_get("api/task_release/executor", {
+            condition: null,
+            taskId: this.leafNode[i].t_id
+          });
+          if (res1.data.dic.length != 0) {
+            for (var i = 0; i < res1.data.dic.length; i++) {
+              if (
+                mark == 1 &&
+                res1.data.dic[i].dept_id &&
+                res1.data.dic[i].tr_ismain
+              ) {
+                flag = true; //有主要执行部门
+              }
+              if (
+                mark == 2 &&
+                res1.data.dic[i].emp_id &&
+                res1.data.dic[i].tr_ismain
+              ) {
+                flag = true; //有主要执行人
+              }
+            }
+          } else {
+            flag = false; //任务集中有记录没有设置任务执行者
+          }
+          if (!flag) {
+            //判断当前任务是否满足排班或发布所需的执行者条件
+            if (mark == 1) {
+              this.$alert(
+                "存在任务无执行部门或主要执行部门，不可排班",
+                "提示",
+                {
+                  confirmButtonText: "好的",
+                  type: "warning"
+                }
+              );
+            } else if (mark == 2) {
+              this.$alert("存在任务无执行人或主要执行人，不可发布", "提示", {
+                confirmButtonText: "好的",
+                type: "warning"
+              });
+            }
+            return;
+          }
+        }
         this.onReleaseClick(this.selection, mark);
       }
     },
