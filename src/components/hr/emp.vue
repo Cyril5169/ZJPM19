@@ -50,7 +50,7 @@
 
       </zj-table>
     </div>
-    <div class="bottomLayout">
+   <div class="bottomLayout">
       <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
         <el-tab-pane label="人员技能" name="first">
           <div v-if="bottomDivShow">
@@ -73,29 +73,33 @@
 
                 <el-table-column type="index" label="序号" width="80" align="center"></el-table-column>
 
-                <el-table-column prop="skill_id" label="技能名称" align="center" width="150">
-                  <template slot-scope="scope">
+                <el-table-column prop="skill_name" label="技能名称" align="center" width="150">
+                  <!-- <template slot-scope="scope">
                     {{scope.row.skill_id | renderFilter(skillDataFilter)}}
-                  </template>
+                  </template> -->
                 </el-table-column>
 
-                <el-table-column prop="sl_name" label="技能等级" align="center" width="150"></el-table-column>
+                <el-table-column prop="cc_name" label="技能等级" align="center" width="150">
+                  <!-- <template slot-scope="scope">
+                    {{scope.row.skill_id | renderFilter(skillDataFilter)}}
+                  </template> -->
+                </el-table-column>
 
-                <el-table-column prop="技能说明" label="技能说明" align="center" width="200"></el-table-column>
+                <el-table-column prop="skill_note" label="技能说明" align="center" width="200"></el-table-column>
 
-                <el-table-column prop="create_date" label="评定时间" align="center" width="160"></el-table-column>
+                <el-table-column prop="se_givedate" label="评定时间" align="center" width="160"></el-table-column>
 
                 <el-table-column prop="se_giveperson" label="评定人" align="center" width="130"></el-table-column>
 
                 <el-table-column label="操作" width="185" prop="handle">
                   <template slot-scope="scope">
-                    <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editItemShow(scope.row)">
+                    <el-button type="primary" icon="el-icon-edit" size="mini" 
+                    circle @click="editItemShow(scope.row)">
                     </el-button>
 
                     <el-button type="danger" icon="el-icon-delete" size="mini" circle
                       @click="deleteSkillOne(scope.row)">
                     </el-button>
-
                   </template>
                 </el-table-column>
               </el-table>
@@ -165,8 +169,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="技能等级" prop="cc_id">
-          <el-select v-model="skillModel.cc_id" placeholder="请选择技能等级">
+        <el-form-item label="技能等级" prop="sl_id">
+          <el-select v-model="skillModel.sl_id" placeholder="请选择技能等级">
             <el-option v-for="item in levelOption" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
@@ -177,7 +181,7 @@
         </el-form-item>
         <el-form-item style="text-align:center;margin-right:100px;">
           <el-button size="medium" @click="skillFormVisible = false">取&nbsp;&nbsp;消</el-button>
-          <el-button type="primary" size="medium" @click="onSaveSkillClick('skillForm')" style="margin-left:30px;">
+          <el-button type="primary" size="medium" @click="onSaveSkillClick" style="margin-left:30px;">
             保&nbsp;&nbsp;存
           </el-button>
         </el-form-item>
@@ -298,20 +302,10 @@ export default {
         skill_id: [
           { required: true, message: "请选择技能名称", trigger: "blur" }
         ],
-        c_id: [{ required: false, message: "请选择技能等级", trigger: "blur" }],
         sl_id: [
           { required: true, message: "请选择技能说明", trigger: "change" }
         ],
-
-        skill_name: [
-          { required: true, message: "请选择技能名称", trigger: "blur" }
-        ],
-        sl_name: [
-          { required: false, message: "请选择技能等级名称", trigger: "blur" }
-        ],
-        skill_note: [
-          { required: true, message: "请输入技能说明", trigger: "blur" }
-        ]
+        
       }
     };
   },
@@ -378,8 +372,9 @@ export default {
       )
         .then(res => {
           this.loading = false;
-          this.skillDataFilter = res.dict.skill_id;
+ /*          this.skillDataFilter = res.dict.skill_id; */
           this.empSkillData = res.data;
+          console.log(res);
         })
         .catch(res => {});
     },
@@ -407,9 +402,11 @@ export default {
       this.skillModel = {
         sl_id: "",
         skill_id: "",
-        skill_name: "",
-        sl_name: "",
-        create_user: 0
+        se_giveperson:"",
+        emp_id:this.currentRow.emp_id,
+        se_id:0,
+   
+
       };
     },
     //删除单个人员技能信息
@@ -440,10 +437,6 @@ export default {
     editSkillShow(row) {
       this.skillModel = JSON.parse(JSON.stringify(row));
 
-      this.skillModel.skill_name = this.renderFilter(
-        this.skillModel.skill_id,
-        this.skillDataFilter
-      );
       this.addSkillText = "编辑人员技能信息";
       this.addOrNot = false;
       this.skillFormVisible = true;
@@ -507,7 +500,7 @@ export default {
       this.$refs.skillForm.validate(valid => {
         if (valid) {
           if (this.addOrNot) {
-            console.log(this.skillModel);
+            /* console.log(this.skillModel); */
             this.z_post("api/skill_employee", this.skillModel)
               .then(res => {
                 this.$message({
@@ -526,7 +519,6 @@ export default {
               });
           } else {
             this.skillModel.UpdateColumns = this.$refs.skillForm.UpdateColumns;
-            console.log(this.skillModel);
             if (this.skillModel.UpdateColumns) {
               this.z_put("api/skill_employee", this.skillModel)
                 .then(res => {
@@ -556,11 +548,6 @@ export default {
     //显示编辑技能信息
     editItemShow(row) {
       this.skillModel = JSON.parse(JSON.stringify(row));
-      this.skillModel.skill_name = this.renderFilter(
-        this.skillModel.skill_id,
-        this.skillDataFilter
-      );
-
       this.addSkillText = "编辑客户信息";
       this.addOrNot = false;
       this.skillFormVisible = true;
@@ -575,26 +562,6 @@ export default {
       this.refreshItemData();
     },
 
-    //刷新物料item表
-    refreshItemListData() {
-      this.loading2 = true;
-      this.itemListData = [];
-      this.z_get(
-        "api/item/page",
-        {
-          condition: this.itemListCondition,
-          page: this.currentPage,
-          limit: this.limit
-        },
-        { loading: false }
-      )
-        .then(res => {
-          this.loading2 = false;
-          this.itemListData = res.data;
-          this.total = res.total;
-        })
-        .catch(res => {});
-    },
     refreshBottom() {
       this.itemCondition = "";
       this.dataCondition = "";

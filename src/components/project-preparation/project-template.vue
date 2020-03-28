@@ -1,7 +1,7 @@
 <template>
   <div class="project-template">
     <el-container>
-      <el-aside width="220px" style="padding-right:10px;">
+      <el-aside width="280px" style="padding-right:10px;">
         <el-card style="height:100%;box-sizing:border-box;" shadow="never">
           <div slot="header">
             <span>项目分类</span>
@@ -41,7 +41,7 @@
             </el-table-column>
             <el-table-column prop="pt_note" label="模板说明" align="center" show-overflow-tooltip></el-table-column>
             <el-table-column prop="pc_no" label="所属分类" align="center" width="150" sortable show-overflow-tooltip>
-              <template slot-scope="scope">{{scope.row.pc_no | renderFilter(classFilter)}}</template>
+              <template slot-scope="scope">{{scope.row.pc_no | renderFilter(projectClassDict.pc_no)}}</template>
             </el-table-column>
             <el-table-column prop="create_user" label="创建人" align="center" width="100"></el-table-column>
             <el-table-column prop="create_date" label="创建时间" align="center" width="100">
@@ -170,10 +170,10 @@
               <el-table-column prop="item_name" label="物料名称" align="center" width="120" show-overflow-tooltip>
               </el-table-column>
               <el-table-column prop="item_unit" label="单位" align="center" width="80">
-                <template slot-scope="scope">{{scope.row.item_unit | renderFilter(unitFilter)}}</template>
+                <template slot-scope="scope">{{scope.row.item_unit | renderFilter(itemDict.item_unit)}}</template>
               </el-table-column>
               <el-table-column prop="auxiliary_unit" label="辅助单位" align="center" width="80">
-                <template slot-scope="scope">{{scope.row.auxiliary_unit | renderFilter(unitFilter)}}</template>
+                <template slot-scope="scope">{{scope.row.auxiliary_unit | renderFilter(itemDict.item_unit)}}</template>
               </el-table-column>
               <el-table-column prop="item_specification" label="规格" align="center" width="100" show-overflow-tooltip>
               </el-table-column>
@@ -181,13 +181,13 @@
               </el-table-column>
               <el-table-column prop="item_weight" label="重量" align="center" width="55"></el-table-column>
               <el-table-column prop="it_1code" label="大类" align="center" width="100">
-                <template slot-scope="scope">{{scope.row.it_1code | renderFilter(itCodeFilter)}}</template>
+                <template slot-scope="scope">{{scope.row.it_1code | renderFilter(itemDict.it_1code)}}</template>
               </el-table-column>
               <el-table-column prop="it_2code" label="中类" align="center" width="100">
-                <template slot-scope="scope">{{scope.row.it_2code | renderFilter(itCodeFilter)}}</template>
+                <template slot-scope="scope">{{scope.row.it_2code | renderFilter(itemDict.it_1code)}}</template>
               </el-table-column>
               <el-table-column prop="it_3code" label="小类" align="center" width="100">
-                <template slot-scope="scope">{{scope.row.it_3code | renderFilter(itCodeFilter)}}</template>
+                <template slot-scope="scope">{{scope.row.it_3code | renderFilter(itemDict.it_1code)}}</template>
               </el-table-column>
             </el-table>
             <div style="margin:0 15%;">
@@ -274,9 +274,8 @@ export default {
       projectTemplateData: [],
       productData: [],
       itemListData: [],
-      unitFilter: [],
-      itCodeFilter: [],
-      classFilter: [],
+      itemDict: [],
+      projectClassDict: [],
       selectClass: {},
       currentRow: {},
       selection: [],
@@ -325,7 +324,7 @@ export default {
       )
         .then(res => {
           this.loading = false;
-          this.classFilter = res.dict.pc_no;
+          this.projectClassDict = res.dict;
           this.projectTemplateData = res.data;
         })
         .catch(res => {});
@@ -377,8 +376,7 @@ export default {
       )
         .then(res => {
           this.loading2 = false;
-          this.itCodeFilter = res.dict.it_1code;
-          this.unitFilter = res.dict.item_unit;
+          this.itemDict = res.dict;
           this.itemListData = res.data;
           this.total = res.total;
         })
@@ -440,7 +438,7 @@ export default {
       this.templateModel = JSON.parse(JSON.stringify(row));
       this.templateModel.pc_name = this.renderFilter(
         this.templateModel.pc_no,
-        this.classFilter
+        this.projectClassDict.pc_no
       );
       this.addOrNot = false;
       this.addTemplateVisible = true;
@@ -697,7 +695,7 @@ export default {
 
 <style scoped>
 .project-template {
-  width: 1200px;
+  width: 1300px;
 }
 .mainContent {
   border-left: 5px solid #eee;

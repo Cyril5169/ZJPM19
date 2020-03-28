@@ -1,21 +1,19 @@
 <template>
   <div class="task">
-    <div class="containAll">
-      <el-tabs v-model="activeName">
-        <el-tab-pane label="未发布任务" name="taskManage">
-          <keep-alive>
-            <taskManage >
-            </taskManage>
-          </keep-alive>
-        </el-tab-pane>
-        <el-tab-pane label="已发布任务" name="myTask">
-          <keep-alive>
-            <taskReleased >
-            </taskReleased>
-          </keep-alive>
-        </el-tab-pane>
-      </el-tabs>
-    </div>
+    <el-tabs v-model="activeName" class="taskTabs flexDiv-column">
+      <el-tab-pane label="待处理" name="taskManage" class="flexDiv-column">
+        <keep-alive>
+          <taskManage class="flexDiv-column">
+          </taskManage>
+        </keep-alive>
+      </el-tab-pane>
+      <el-tab-pane label="已排班或发布" name="taskReleased" class="flexDiv-column">
+        <keep-alive>
+          <taskReleased class="flexDiv-column">
+          </taskReleased>
+        </keep-alive>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
@@ -28,20 +26,27 @@ export default {
   name: "task",
   components: {
     taskManage,
-    taskReleased,
+    taskReleased
   },
   data() {
-    return {      
+    return {
       activeName: "taskManage"
     };
   },
-    methods: {},
+  methods: {},
   mounted() {}
 };
 </script>
 
 <style scoped>
 .task {
-   width: 100%;
+  width: 100%;
+}
+</style>
+<style>
+.taskTabs .el-tabs__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 </style>

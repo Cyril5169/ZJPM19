@@ -1,156 +1,115 @@
 <template>
   <div class="taskManage">
-    <div class="containAll">
-      <div class="topLayout">
-        <div class="tbar">
-          <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
-          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入任务名称" v-model="condition" clearable
-            style="width:200px;">
-          </el-input>
-          <span style="font-size:15px;margin-left:10px">项目号:</span>
-          <el-select size="small" v-model="select_project" @change="refreshData" ref="select_project"
-            placeholder="请选择项目">
-            <el-option v-for="item in project_options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-          </el-select>
-          <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewNode('root')">新增
-          </el-button>
-          <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewNode('children')">
-            新增子任务
-          </el-button>
-          <el-dropdown style="margin-left:7px;margin-right:7px;">
-            <el-button size="small" :disabled="selection.length==0">
-              设置执行者({{selection.length}})<i class="el-icon-arrow-down el-icon--right"></i>
+    <div class="tbar">
+      <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
+      <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入任务名称" v-model="condition" clearable
+        style="width:200px;">
+      </el-input>
+      <span style="font-size:15px;margin-left:10px">项目号:</span>
+      <el-select size="small" v-model="select_project" @change="refreshData" ref="select_project" placeholder="请选择项目">
+        <el-option v-for="item in project_options" :key="item.value" :label="item.label" :value="item.value">
+        </el-option>
+      </el-select>
+      <el-button type="primary" size="small" style="margin-left:10px;" @click="addNewNode('root')">新增
+      </el-button>
+      <el-button type="primary" size="small" :disabled="selection.length!=1" @click="addNewNode('children')">
+        新增子任务
+      </el-button>
+      <el-dropdown style="margin-left:7px;margin-right:7px;">
+        <el-button size="small" :disabled="selection.length==0">
+          设置执行者({{selection.length}})<i class="el-icon-arrow-down el-icon--right"></i>
+        </el-button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item @click.native="editExecutorShow()" divided>设置执行者</el-dropdown-item>
+          <el-dropdown-item @click.native="resetExecutor()" divided>取消设置执行者</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+      <el-button type="primary" size="small" :disabled="selection.length==0" @click="ReleseTask(1)">
+        排班({{selection.length}})
+      </el-button>
+      <el-button type="primary" size="small" :disabled="selection.length==0" @click="ReleseTask(2)">
+        发布({{selection.length}})
+      </el-button>
+      <el-dropdown style="margin-left:10px;">
+        <el-button size="small">
+          操作<i class="el-icon-arrow-down el-icon--right"></i>
+        </el-button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item @click.native="expandAll">展开所有节点</el-dropdown-item>
+          <el-dropdown-item @click.native="collapseAll" divided>折叠所有节点</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+    </div>
+    <div class="gridTable">
+      <zj-table :autoHeight='bottomDivShow' ref="taskTable" style="width: 100%" height="100%" :data="tableData"
+        tooltip-effect="dark" highlight-current-row row-key="t_id" default-expand-all
+        @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick" border>
+        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <el-table-column type="index" width="55" align="center" label="序号">
+        </el-table-column>
+        <el-table-column prop="t_name" label="任务名称" align="center" width="130"></el-table-column>
+        <el-table-column prop="t_status" label="执行状态" align="center" width="115">
+          <template slot-scope="scope">{{scope.row.t_status | taskStatusTrans}}</template>
+        </el-table-column>
+        <el-table-column prop="t_release_status" label="管理状态" align="center" width="115">
+          <template slot-scope="scope">{{scope.row.t_release_status | releaseStatusTrans}}</template>
+        </el-table-column>
+        <el-table-column prop="p_no" label="所属项目" align="center" width="130">
+          <template slot-scope="scope">{{scope.row.p_no | renderFilter(projectDataFilter)}}</template>
+        </el-table-column>
+        <el-table-column prop="t_origin" label="来源" align="center" width="100">
+          <template slot-scope="scope">{{scope.row.t_origin |originTrans }}</template>
+        </el-table-column>
+        <el-table-column prop="t_early_startdate" label="计划开始时间" align="center" width="130">
+          <template slot-scope="scope">{{scope.row.t_early_startdate | datetrans}}</template>
+        </el-table-column>
+        <el-table-column prop="t_last_enddate" label="计划结束时间" align="center" width="130">
+          <template slot-scope="scope">{{scope.row.t_last_enddate | datetrans}}</template>
+        </el-table-column>
+        <el-table-column prop="t_period" label="工期" align="center" width="90"></el-table-column>
+        <el-table-column prop="dept_id" label="负责部门" align="center" width="120">
+          <template slot-scope="scope">{{scope.row.dept_id | renderFilter(deptDataFilter)}}</template>
+        </el-table-column>
+        <el-table-column prop="emp_id" label="负责人" align="center" width="120">
+          <template slot-scope="scope">{{scope.row.emp_id | renderFilter(empDataFilter)}}</template>
+        </el-table-column>
+        <el-table-column prop="t_note" label="备注" align="center"></el-table-column>
+        <el-table-column label="操作" width="140" prop="handle">
+          <template slot-scope="scope">
+            <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
             </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item @click.native="editExecutorShow()" divided>设置执行者</el-dropdown-item>
-              <el-dropdown-item @click.native="resetExecutor()" divided>取消设置执行者</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <el-button type="primary" size="small" :disabled="selection.length==0" @click="ReleseTask(1)">
-            发布到排班({{selection.length}})
-          </el-button>
-          <el-button type="primary" size="small" :disabled="selection.length==0" @click="ReleseTask(2)">
-            发布到个人({{selection.length}})
-          </el-button>
-          <el-dropdown style="margin-left:10px;">
-            <el-button size="small">
-              操作<i class="el-icon-arrow-down el-icon--right"></i>
+            <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
             </el-button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item @click.native="expandAll">展开所有节点</el-dropdown-item>
-              <el-dropdown-item @click.native="collapseAll" divided>折叠所有节点</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </div>
-        <div class="gridTable">
-          <zj-table ref="taskTable" style="width: 100%" :height="bottomDivShow?'200px':'350px'" :data="taskData"
-            tooltip-effect="dark" highlight-current-row row-key="t_id" default-expand-all
-            @selection-change="handleSelectionChange" @select-all="handleSelectAll" @row-click="handleRowClick" border>
-            <el-table-column type="selection" width="55" align="center"></el-table-column>
-            <el-table-column type="index" width="55" align="center" label="序号">
-            </el-table-column>
-            <el-table-column prop="t_name" label="任务名称" align="center" width="130"></el-table-column>
-            <!-- <el-table-column prop="t_status" label="执行状态" align="center" width="115">
-              <template slot-scope="scope">{{scope.row.t_status | taskStatusTrans}}</template>
-            </el-table-column>
-            <el-table-column prop="t_flow_status" label="流转状态" align="center" width="115"></el-table-column> -->
-            <el-table-column prop="p_no" label="所属项目" align="center" width="130">
-              <template slot-scope="scope">{{scope.row.p_no | renderFilter(projectDataFilter)}}</template>
-            </el-table-column>
-            <!-- <el-table-column prop="t_origin" label="来源" align="center" width="100">
-              <template slot-scope="scope">{{scope.row.t_origin |originTrans }}</template>
-            </el-table-column> -->
-            <el-table-column prop="t_early_startdate" label="计划开始时间" align="center" width="130">
-              <template slot-scope="scope">{{scope.row.t_early_startdate | datetrans}}</template>
-            </el-table-column>
-            <el-table-column prop="t_last_enddate" label="计划结束时间" align="center" width="130">
-              <template slot-scope="scope">{{scope.row.t_last_enddate | datetrans}}</template>
-            </el-table-column>
-            <el-table-column prop="t_period" label="工期" align="center" width="90"></el-table-column>
-            <el-table-column prop="dept_id" label="负责部门" align="center" width="120">
-              <template slot-scope="scope">{{scope.row.dept_id | renderFilter(deptDataFilter)}}</template>
-            </el-table-column>
-            <el-table-column prop="emp_id" label="负责人" align="center" width="120">
-              <template slot-scope="scope">{{scope.row.emp_id | renderFilter(empDataFilter)}}</template>
-            </el-table-column>
-            <el-table-column prop="t_note" label="备注" align="center"></el-table-column>
-            <el-table-column label="操作" width="140" prop="handle">
-              <template slot-scope="scope">
-                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
-                </el-button>
-                <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
-                </el-button>
-              </template>
-            </el-table-column>
-          </zj-table>
-        </div>
-      </div>
-      <div class="bottomLayout">
-        <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
-          <el-tab-pane label="任务详情" name="taskDetail">
-            <div v-if="bottomDivShow">
-              <div class="gridTable">
-                <!-- <zj-table :autoHeight='bottomDivShow' ref="detailTable" style="width:100%;"
-                  :height="source =='plan'? '100%':200" tooltip-effect="dark" highlight-current-row border> -->
-                <!-- <el-table-column prop="t_status" label="执行状态" align="center" width="115">
-                        <template slot-scope="scope">{{scope.row.t_status | taskStatusTrans}}</template>
-                      </el-table-column> -->
-                <!-- <el-table-column prop="t_flow_status" label="流转状态" align="center" width="115"></el-table-column> -->
-                <!-- <el-table-column prop="t_origin" label="来源" align="center" width="100">
-              <template slot-scope="scope">{{scope.row.t_origin |originTrans }}</template>
-            </el-table-column> -->
-                <!-- </zj-table> -->
-                <el-form size="small" :model="currentRow" label-width="80px">
-                  <el-row>
-                    <el-col :span="4">
-                      <span style="font-size:14px;margin-left:10px">执行状态:</span>
-                      <span style="font-size:14px;margin-left:10px">{{currentRow.t_status|taskStatusTrans}}</span>
-                    </el-col>
-                    <el-col class="line" :span="1">&nbsp;</el-col>
-                    <el-col :span="4">
-                      <span style="font-size:14px;margin-left:10px">流转状态:</span>
-                      <span style="font-size:14px;margin-left:10px">{{currentRow.t_flow_status}}</span>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="4">
-                      <span style="font-size:14px;margin-left:10px">来源:</span>
-                      <span style="font-size:14px;margin-left:10px">{{currentRow.t_origin|originTrans}}</span>
-                    </el-col>
-                    <el-col class="line" :span="1">&nbsp;</el-col>
-                    <el-col :span="4">
-                    </el-col>
-                  </el-row>
-                </el-form>
-              </div>
-            </div>
-          </el-tab-pane>
-          <el-tab-pane label="任务执行者" name="executor">
-            <keep-alive>
-              <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
-              </taskExecutor>
-            </keep-alive>
-          </el-tab-pane>
-          <el-tab-pane label="物料需求" name="material">
-            <keep-alive>
-              <taskMaterial v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskMaterial>
-            </keep-alive>
-          </el-tab-pane>
-          <el-tab-pane label="资料需求" name="data">
-            <keep-alive>
-              <taskData v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskData>
-            </keep-alive>
-          </el-tab-pane>
-          <el-tab-pane label="输入文档" name="dataFile">
-            <keep-alive>
-              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
-            </keep-alive>
-          </el-tab-pane>
-        </el-tabs>
-        <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
-          @click="bottomDivShow=!bottomDivShow"></i>
-      </div>
+          </template>
+        </el-table-column>
+      </zj-table>
+    </div>
+    <div class="bottomLayout">
+      <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
+        <el-tab-pane label="任务执行者" name="executor">
+          <keep-alive>
+            <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
+            </taskExecutor>
+          </keep-alive>
+        </el-tab-pane>
+        <el-tab-pane label="物料需求" name="material">
+          <keep-alive>
+            <taskMaterial v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskMaterial>
+          </keep-alive>
+        </el-tab-pane>
+        <el-tab-pane label="资料需求" name="data">
+          <keep-alive>
+            <taskData v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskData>
+          </keep-alive>
+        </el-tab-pane>
+        <el-tab-pane label="输入文档" name="dataFile">
+          <keep-alive>
+            <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
+          </keep-alive>
+        </el-tab-pane>
+      </el-tabs>
+      <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
+        @click="bottomDivShow=!bottomDivShow"></i>
     </div>
 
     <!-- 新增任务、子任务、编辑任务-->
@@ -179,7 +138,7 @@
         <el-row>
           <el-col :span="11">
             <el-form-item label="负责部门" prop="dept_id">
-              <el-select class="formItem" v-model="taskModel.dept_id" @change="refreshEmployee(taskModel.dept_id)"
+              <el-select class="formItem" v-model="taskModel.dept_id" @change="refreshManager(taskModel.dept_id)"
                 placeholder="请选择负责部门">
                 <el-option v-for="item in dept_options" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
@@ -189,8 +148,7 @@
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="负责人" ref="form_emp_id" prop="emp_id">
-              <el-select class="formItem" v-model="taskModel.emp_id" placeholder="请选择负责人"
-                :disabled="!taskModel.dept_id">
+              <el-select class="formItem" v-model="taskModel.emp_id" placeholder="请选择负责人">
                 <el-option v-for="item in emp_options" :key="item.value" :label="item.label" :value="item.value">
                 </el-option>
               </el-select>
@@ -201,7 +159,7 @@
           <el-col :span="11">
             <el-form-item label="计划开始时间" prop="t_early_startdate">
               <el-date-picker class="formItem" v-model="taskModel.t_early_startdate" type="date"
-                format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd" placeholder="请选择日期" :picker-options="pickerOptions">
+                format="yyyy 年 MM 月 dd 日" placeholder="请选择日期" :picker-options="pickerOptions">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -209,7 +167,7 @@
           <el-col :span="11">
             <el-form-item label="计划结束时间" prop="t_last_enddate">
               <el-date-picker class="formItem" v-model="taskModel.t_last_enddate" type="date" format="yyyy 年 MM 月 dd 日"
-                value-format="yyyy-MM-dd" placeholder="请选择日期" :picker-options="pickerOptions">
+                placeholder="请选择日期" :picker-options="pickerOptions">
               </el-date-picker>
             </el-form-item>
           </el-col>
@@ -276,12 +234,12 @@ export default {
     return {
       select_project: "", //下拉框绑定的项目号字段
       condition: "", //搜索框绑定的任务名称字段
-      taskData: [], //表格数据
+      tableData: [], //表格数据
       deptDataFilter: [], //部门渲染数据
       empDataFilter: [], //人员渲染数据
       projectDataFilter: [], //项目渲染数据
-      selection: [],
-      currentRow: {},
+      selection: [], //选中项
+      currentRow: {}, //当前行
       addTaskVisiable: false,
       setExecutorVisiable: false,
       taskModel: {},
@@ -295,21 +253,22 @@ export default {
       setExecutorText: "", //设置执行者的弹出框title
       addOrNot: true, //是否新增
       addTaskText: "", //新增编辑弹出框title
-      project_options: [],
-      dept_options: [],
-      emp_options: [],
-      activeName: "taskDetail",
+      project_options: [], //项目下拉框渲染数据
+      dept_options: [], //部门下拉框渲染数据
+      emp_options: [], //人员下拉框渲染数据
+      leafNode: [], //叶子节点任务
+      activeName: "executor",
       bottomDivShow: false,
-      // origin_options: [
-      //   {
-      //     value: "temp",
-      //     label: "临时"
-      //   },
-      //   {
-      //     value: "plan",
-      //     label: "计划"
-      //   }
-      // ],
+      origin_options: [
+        {
+          value: "temp",
+          label: "临时"
+        },
+        {
+          value: "plan",
+          label: "计划"
+        }
+      ],
       executor_rules: {
         dept_id: [
           { required: true, message: "请选择执行部门", trigger: "change" }
@@ -362,19 +321,47 @@ export default {
     taskStatusTrans(value) {
       switch (value) {
         case 0:
-          return "未处理";
+          return "未确认";
           break;
-        case 1:
+        case 10:
+          return "未开始";
+          break;
+        case 20:
           return "执行中";
           break;
-        case 2:
+        case 30:
           return "暂停";
           break;
-        case 3:
+        case 40:
           return "中止";
           break;
-        case 4:
+        case 50:
           return "完工";
+          break;
+      }
+    },
+    releaseStatusTrans(value) {
+      switch (value) {
+        case -10:
+          return "作废";
+          break;
+        case 0:
+          return "待处理";
+          break;
+        case 10:
+          return "已分解";
+          break;
+        case 20:
+          return "排班中";
+          break;
+        case 30:
+          return "撤销排班";
+          break;
+        case 40:
+          return "已发布";
+          break;
+        case 50:
+          return "撤销发布";
           break;
       }
     }
@@ -468,9 +455,37 @@ export default {
         })
         .catch(res => {});
     },
+    //查询部门负责人
+    selectManager(deptId) {
+      this.taskModel.emp_id = "";
+      this.z_get(
+        "api/dept/selectManager",
+        { deptId: deptId },
+        { loading: false }
+      )
+        .then(res => {
+          if (res.code == 0) {
+            if (res.data.length != 0) {
+              this.emp_options = res.data;
+              for (var i = 0; i < this.emp_options.length; i++) {
+                this.emp_options[i].label = this.emp_options[i].emp_name;
+                this.emp_options[i].value = this.emp_options[i].emp_id;
+              }
+            } else {
+              this.$alert("该部门尚未设置负责人", "提示", {
+                confirmButtonText: "确定",
+                type: "error"
+              });
+              this.taskModel.emp_id = "";
+              this.taskModel.dept_id = "";
+            }
+          }
+        })
+        .catch(res => {});
+    },
     //刷新新增及编辑任务弹出框中的负责人员信息
-    refreshEmployee(deptId) {
-      this.selectEmployee(deptId);
+    refreshManager(deptId) {
+      this.selectManager(deptId);
       this.$refs.form_emp_id.resetField(); //改变选中负责部门，将负责人员重置
     },
     //刷新设置执行者弹出框的人员信息
@@ -480,7 +495,7 @@ export default {
     },
     //刷新任务树
     refreshData() {
-      this.taskData = [];
+      this.tableData = [];
       this.currentRow = {};
       this.bottomDivShow = false;
       this.z_get("api/task/treeList", {
@@ -491,7 +506,7 @@ export default {
           this.deptDataFilter = res.dict.dept_id;
           this.empDataFilter = res.dict.emp_id;
           this.projectDataFilter = res.dict.p_no;
-          this.taskData = res.data;
+          this.tableData = res.data;
         })
         .catch(res => {});
     },
@@ -502,6 +517,15 @@ export default {
     //重置设置执行者表单
     refreshExecutorForm() {
       this.$refs.executorForm.resetFields();
+    },
+    //查出位于叶子节点的任务，即可排班或发布的任务
+    selectLeafNode(inputList, outputList) {
+      for (var i = 0; i < inputList.length; i++) {
+        if (inputList[i].children.length == 0) {
+          //只要没有子节点，就添加到输出的叶子节点集合中
+          outputList.push(inputList[i]);
+        }
+      }
     },
     //刷新
     search() {
@@ -541,7 +565,7 @@ export default {
         t_status: 0
       };
       if (type == "children") {
-        this.selectEmployee(dept_id); //获取部门人员信息
+        this.selectManager(dept_id); //获取部门人员信息
       }
       this.addOrNot = true;
       this.addTaskVisiable = true;
@@ -552,11 +576,11 @@ export default {
         let endTime = this.p_taskModel.t_last_enddate;
         let startTime = this.p_taskModel.t_early_startdate;
         return (
-          time.getTime() < new Date(startTime).getTime() ||
-          time.getTime() > new Date(endTime).getTime()
+          time.getTime() <= new Date(startTime).getTime() ||
+          time.getTime() >= new Date(endTime).getTime()
         );
       } else {
-        return time.getTime() < Date.now() - 8.64e7;
+        return time.getTime() <= Date.now() - 8.64e7;
       }
     },
     //点击批量设置执行者
@@ -621,24 +645,76 @@ export default {
         this.resetExecutorClick(this.selection);
       }
     },
-    //发布任务
-    ReleseTask(mark) {
+    //发布/排班
+    async ReleseTask(mark) {
       if (this.selection.length) {
+        //从所选任务中选中叶子节点任务
+        this.leafNode = [];
+        this.selectLeafNode(this.selection, this.leafNode);
+        //是否选中记录
+        for (var j = 0; j < this.leafNode.length; j++) {
+          //遍历选中项
+          //查询执行者数据
+          var flag = false; //判断当前查询到的任务是否能够发布或排班
+          var res1 = await this.z_get("api/task_release/executor", {
+            condition: null,
+            taskId: this.leafNode[j].t_id
+          });
+          if (res1.data.dic.length != 0) {
+            for (var i = 0; i < res1.data.dic.length; i++) {
+              if (
+                mark == 1 &&
+                res1.data.dic[i].dept_id &&
+                res1.data.dic[i].tr_ismain
+              ) {
+                flag = true; //有主要执行部门
+              }
+              if (
+                mark == 2 &&
+                res1.data.dic[i].emp_id &&
+                res1.data.dic[i].tr_ismain
+              ) {
+                flag = true; //有主要执行人
+              }
+            }
+          } else {
+            flag = false; //任务集中有记录没有设置任务执行者
+          }
+          if (!flag) {
+            //判断当前任务是否满足排班或发布所需的执行者条件
+            if (mark == 1) {
+              this.$alert(
+                "存在任务无执行部门或主要执行部门，不可排班",
+                "提示",
+                {
+                  confirmButtonText: "好的",
+                  type: "warning"
+                }
+              );
+            } else if (mark == 2) {
+              this.$alert("存在任务无执行人或主要执行人，不可发布", "提示", {
+                confirmButtonText: "好的",
+                type: "warning"
+              });
+            }
+            return;
+          }
+        }
         this.onReleaseClick(this.selection, mark);
       }
     },
-    //提交发布结果
+    //提交发布/排班
     onReleaseClick(list, mark) {
       var text = "";
       if (mark == 1) {
-        text = "发布到排班";
+        text = "排班";
         for (var i = 0; i < list.length; i++) {
-          list[i].t_release_state = "1";
+          list[i].t_release_state = 20;
         }
       } else if (mark == 2) {
-        text = "发布到个人";
+        text = "发布";
         for (var i = 0; i < list.length; i++) {
-          list[i].t_release_state = "2";
+          list[i].t_release_state = 40;
         }
       }
       this.$confirm("是否确认将选中项" + text + "?", "提示", {
@@ -698,7 +774,7 @@ export default {
     },
     //全选选中子节点
     handleSelectAll(selection) {
-      var val = this.taskData;
+      var val = this.tableData;
       var select = false;
       for (var i = 0; i < selection.length; i++) {
         if (selection[i].st_id == val[0].st_id) {
@@ -800,7 +876,7 @@ export default {
         let res2 = await this.selectDept(2, this.taskModel.dept_id); //编辑子节点：查出父节点部门下的子部门
         let res3 = await this.selectPTaskModel(this.taskModel.t_pid); //获取父节点的model
       }
-      this.selectEmployee(this.taskModel.dept_id);
+      this.selectManager(this.taskModel.dept_id);
       this.addTaskText = "编辑节点";
       this.addOrNot = false;
       this.addTaskVisiable = true;

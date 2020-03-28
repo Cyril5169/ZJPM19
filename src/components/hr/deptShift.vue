@@ -82,13 +82,11 @@
               </el-select>
             </el-form-item>
             <el-form-item label="开始使用日期" prop="dsg_startdate">
-              <el-date-picker v-model="item.dsg_startdate" type="date" format="yyyy 年 MM 月 dd 日"
-                value-format="yyyy-MM-dd" placeholder="请选择日期">
+              <el-date-picker v-model="item.dsg_startdate" type="date" format="yyyy 年 MM 月 dd 日" placeholder="请选择日期">
               </el-date-picker>
             </el-form-item>
             <el-form-item label="结束使用日期" prop="dsg_enddate">
-              <el-date-picker v-model="item.dsg_enddate" type="date" format="yyyy 年 MM 月 dd 日" value-format="yyyy-MM-dd"
-                placeholder="请选择日期">
+              <el-date-picker v-model="item.dsg_enddate" type="date" format="yyyy 年 MM 月 dd 日" placeholder="请选择日期">
               </el-date-picker>
             </el-form-item>
           </el-form>
@@ -106,11 +104,11 @@ export default {
   name: "deptShift",
   components: {
     child1: deptShiftChild,
-    child2: depEmpChild,
+    child2: depEmpChild
   },
   data() {
     return {
-      deptshift:[],
+      deptshift: [],
       ShiftModelList: [],
       shiftSelectItem: "",
       addDeptShiftVisiable: false,
@@ -144,8 +142,8 @@ export default {
   },
   filters: {
     sg_nameFilter(value) {
-      if (value == null) return "前往设置"
-      return value
+      if (value == null) return "前往设置";
+      return value;
     },
     datatrans(value) {
       if (!value || value == "9999-12-31") return "";
@@ -173,35 +171,33 @@ export default {
           return "小组";
           break;
       }
-    },
+    }
   },
   methods: {
     //保存班次修改
-    SaveDeptShiftClick(){
-    let tableDataObj={};
-    tableDataObj.sg_id=0;
-    tableDataObj.dept_id=this.deptshift[0].dept_id;
-    if(this.shiftSelectItem!="") {
-     tableDataObj.sg_id=this.shiftSelectItem ;
-    }
-   
-      this.z_post("api/dept_shift_group",tableDataObj)
-              .then(res => {
-                this.$message({
-                  message: "更新班次配置成功!",
-                  type: "success",
-                  duration: 1000
-                });
-                this.refreshData();
-               
-              })
-              .catch(res => {
-                this.$alert("未能更新配置!", "提示", {
-                  confirmButtonText: "确定",
-                  type: "error"
-                });
-              });
+    SaveDeptShiftClick() {
+      let tableDataObj = {};
+      tableDataObj.sg_id = 0;
+      tableDataObj.dept_id = this.deptshift[0].dept_id;
+      if (this.shiftSelectItem != "") {
+        tableDataObj.sg_id = this.shiftSelectItem;
+      }
 
+      this.z_post("api/dept_shift_group", tableDataObj)
+        .then(res => {
+          this.$message({
+            message: "更新班次配置成功!",
+            type: "success",
+            duration: 1000
+          });
+          this.refreshData();
+        })
+        .catch(res => {
+          this.$alert("未能更新配置!", "提示", {
+            confirmButtonText: "确定",
+            type: "error"
+          });
+        });
     },
     //转时间段
     timeRange(end, start) {
@@ -237,29 +233,25 @@ export default {
       this.shiftListData = [];
       let params1 = -1;
       if (this.shiftSelectItem !== "") {
-        params1 = this.shiftSelectItem
+        params1 = this.shiftSelectItem;
       }
-      this.z_get(
-        "api/day_shift",
-        {
-          sg_id: params1,
-        },
-      )
+      this.z_get("api/day_shift", {
+        sg_id: params1
+      })
         .then(res => {
           if (res.code == 0) {
             this.shiftListData = res.data;
           }
         })
-        .catch(res => { });
+        .catch(res => {});
     },
     refreshData() {
       this.z_get("api/dept/shift", { condition: this.condition })
         .then(res => {
           this.tableData = res.data;
           this.tableDataFlat = this.arrayChildrenFlatten(res.data, []);
-
         })
-        .catch(res => { });
+        .catch(res => {});
     },
     refreshShiftOptionsModel() {
       this.z_get("api/shift_group", { condition: this.condition })
@@ -267,7 +259,7 @@ export default {
           this.shiftOptions = res.data;
           console.log(this.shiftOptions);
         })
-        .catch(res => { });
+        .catch(res => {});
     },
     //重置表单
     refreshForm() {
@@ -321,8 +313,7 @@ export default {
         }
       }
     }
-  },
-
+  }
 };
 </script>
 

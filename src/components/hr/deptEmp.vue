@@ -19,9 +19,9 @@
               </el-dropdown-menu>
             </el-dropdown>
           </div>
-          <div class="topContent" style="height:475px;">
-            <el-table ref="deptTable" style="width: 100%" height="100%" :data="tableData" tooltip-effect="dark"
-              highlight-current-row row-key="dept_id" default-expand-all @row-click="handleRowDbClick">
+          <div class="gridTable" >
+            <el-table ref="deptTable" style="width: 100%" :data="tableData" tooltip-effect="dark"
+              highlight-current-row row-key="dept_id" default-expand-all @row-click="handleRowClick">
               <el-table-column prop="dept_name" label="部门名称" style="width:95%" align="left"></el-table-column>
             </el-table>
           </div>
@@ -207,7 +207,7 @@ export default {
     //编辑数据
     editDeptShow(row) {
       this.deptModel = JSON.parse(JSON.stringify(row));
-      this.deptModel.dept_pname = this.filterDeptName(this.deptModel.dept_pid);
+      this.deptModel.dept_pname = this.renderFilter(this.deptModel.dept_pid);
       this.addDeptText = "编辑节点";
       this.addOrNot = false;
       this.addDeptVisiable = true;
@@ -249,15 +249,6 @@ export default {
             });
         })
         .catch(() => {});
-    },
-    //筛选部门名称
-    filterDeptName(id) {
-      var name = id;
-      var dept = this.deptDataFilter.filter(item => item.value == id);
-      if (dept.length) {
-        name = dept[0].display;
-      }
-      return name;
     },
     handleRowClick(row, column) {
       this.deptIdSelect = row.dept_id;

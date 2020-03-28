@@ -1,42 +1,43 @@
 <template>
   <div class="taskExecutor">
-      <div>
-        <div class="tbar">
-          <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
-          <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入执行人/部门" v-model="condition"
-            style="width:200px;">
-          </el-input>
-          <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewOne()">新增执行者</el-button>
-        </div>
-        <div class="gridTable" style="width:60%;">
-          <el-table ref="taskExecutorTable" style="width: 100%" height="200px" :data="tableData" tooltip-effect="dark"
-            highlight-current-row border>
-            <el-table-column type="selection" width="55" align="center"></el-table-column>
-            <el-table-column type="index" width="55" align="center" label="序号">
-            </el-table-column>
-            <el-table-column prop="emp_name" label="执行人" align="center" width="160"></el-table-column>
-            <el-table-column prop="dept_name" label="执行部门" align="center"></el-table-column>
-            <el-table-column label="是否主要执行" align="center" width="160">
-              <template slot-scope="scope">
-                <span>{{ scope.row.tr_ismain | transMainExecute }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="130" prop="handle">
-              <template slot-scope="scope">
-                <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editShow(scope.row)">
-                </el-button>
-                <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
+    <div>
+      <div class="tbar">
+        <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search()"></el-button>
+        <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入执行人/部门" v-model="condition"
+          style="width:200px;">
+        </el-input>
+        <el-button size="small" type="primary" style="margin-left:10px;" @click="addNewOne()">新增执行者</el-button>
       </div>
+      <div class="gridTable" style="width:60%;">
+        <el-table ref="taskExecutorTable" style="width: 100%" height="200px" :data="tableData" tooltip-effect="dark"
+          highlight-current-row border>
+          <el-table-column type="selection" width="55" align="center"></el-table-column>
+          <el-table-column type="index" width="55" align="center" label="序号">
+          </el-table-column>
+          <el-table-column prop="dept_name" label="执行部门" align="center"></el-table-column>
+          <el-table-column prop="emp_name" label="执行人" align="center" width="160"></el-table-column>
+          <el-table-column label="是否主要执行" align="center" width="160">
+            <template slot-scope="scope">
+              <span>{{ scope.row.tr_ismain | transMainExecute }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="130" prop="handle">
+            <template slot-scope="scope">
+              <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editShow(scope.row)">
+              </el-button>
+              <el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteOne(scope.row)">
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </div>
 
     <!--设置执行者 -->
     <el-dialog width="450px" :title="setExecutorText" :close-on-click-modal="false" :visible.sync="setExecutorVisiable"
       top="25vh" @closed="refreshExecutorForm" :append-to-body="true">
-      <zj-form :model="executorModel" :newDataFlag='setExecutorVisiable' label-width="100px" ref="executorForm" :rules="executor_rules">
+      <zj-form :model="executorModel" :newDataFlag='setExecutorVisiable' label-width="100px" ref="executorForm"
+        :rules="executor_rules">
         <el-form-item label="部门" prop="dept_id">
           <el-select v-model="executorModel.dept_id" @change="refreshExecutorEmps(executorModel.dept_id)"
             placeholder="请选择部门">
@@ -50,7 +51,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="主要执行" ref="tr_ismain" prop="tr_ismain">
+        <el-form-item label="主要执行"  prop="tr_ismain">
           <el-select v-model="executorModel.tr_ismain">
             <el-option v-for="item in tr_mainOptions" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
@@ -121,8 +122,7 @@ export default {
         condition: this.condition,
         taskId: this.currentRow.t_id
       })
-        .then(res => {
-          console.log(res);
+        .then(res => {          
           this.tableData = res.data.dic;
         })
         .catch(res => {});
@@ -202,7 +202,7 @@ export default {
       this.executorModel = {
         dept_id: "",
         emp_id: "",
-        tr_ismain: "",
+        tr_ismain: false,
         c_id: 1, //现在先写死，到时候通过缓存给该变量赋值
         t_id: this.currentRow.t_id
       };
@@ -214,7 +214,7 @@ export default {
     async editShow(row) {
       this.executorModel = JSON.parse(JSON.stringify(row));
       let res1 = await this.selectDept(2, this.currentRow.dept_id); //查找出负责部门的部门支
-      let res2 = await this.selectEmployee(this.executorModel.dept_id);  //查出当前部门所对应的人员
+      let res2 = await this.selectEmployee(this.executorModel.dept_id); //查出当前部门所对应的人员
       this.setExecutorText = "编辑执行者";
       this.addOrNot = false;
       this.setExecutorVisiable = true;
@@ -224,7 +224,9 @@ export default {
       this.$refs.executorForm.validate(valid => {
         if (valid) {
           if (this.addOrNot) {
-            this.z_post("api/task_release", this.executorModel)
+            this.z_post("api/task_release", this.executorModel, {
+              params: { t_id: this.currentRow.t_id }
+            })
               .then(res => {
                 this.$message({
                   message: "新增成功",
@@ -235,32 +237,34 @@ export default {
                 this.setExecutorVisiable = false;
               })
               .catch(res => {
-                this.$alert("新增失败", "提示", {
+                this.$alert("新增失败:" + res.msg, "提示", {
                   confirmButtonText: "确定",
                   type: "error"
-                });
-                console.log(res);
+                });                
               });
           } else {
             this.executorModel.UpdateColumns = this.$refs.executorForm.UpdateColumns;
             if (this.executorModel.UpdateColumns) {
-            this.z_put("api/task_release", this.executorModel)
-              .then(res => {
-                this.$message({
-                  message: "编辑成功",
-                  type: "success",
-                  duration: 1000
-                });
-                this.refreshData();
-                this.setExecutorVisiable = false;
+              this.z_put("api/task_release", this.executorModel, {
+                params: { t_id: this.currentRow.t_id }
               })
-              .catch(res => {
-                this.$alert("编辑失败", "提示", {
-                  confirmButtonText: "确定",
-                  type: "error"
+                .then(res => {
+                  this.$message({
+                    message: "编辑成功",
+                    type: "success",
+                    duration: 1000
+                  });
+                  this.refreshData();
+                  this.setExecutorVisiable = false;
+                })
+                .catch(res => {
+                  this.$alert("编辑失败:" + res.msg, "提示", {
+                    confirmButtonText: "确定",
+                    type: "error"
+                  });                  
                 });
-                console.log(res);
-              });
+            } else {
+              this.setExecutorVisiable = false;
             }
           }
         } else {
@@ -288,7 +292,10 @@ export default {
         type: "warning"
       })
         .then(() => {
-          this.z_delete("api/task_release/list",  { data: list } )
+          this.z_delete("api/task_release/list", {
+            params: { t_id: this.currentRow.t_id },
+            data: list
+          })
             .then(res => {
               this.$message({
                 message: "删除成功",
@@ -298,14 +305,14 @@ export default {
               this.refreshData();
             })
             .catch(res => {
-              this.$alert("删除失败", "提示", {
+              this.$alert("删除失败:" + res.msg, "提示", {
                 confirmButtonText: "确定",
                 type: "warning"
               });
             });
         })
         .catch(() => {});
-    },
+    }
   },
   filters: {
     datetrans(value) {
