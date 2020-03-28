@@ -4,7 +4,7 @@
       <span>选择模板：</span>
       <el-select size="small" v-model="selectTemplateId" placeholder="请选择模板" @change="selTemplate">
         <el-option v-for="item in projectTemplateData" :key="item.pt_id"
-          :label="renderFilter(item.pc_no,classFilter) +'-' + item.pt_name" :value="item.pt_id"></el-option>
+          :label="renderFilter(item.pc_no,projectClassDict.pc_no) +'-' + item.pt_name" :value="item.pt_id"></el-option>
       </el-select>
       <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="refreshTemplateData"></el-button>
       <el-button icon="el-icon-arrow-left" size="small" style="float:right;" v-if="btnShow" @click="toTemplate">返回项目模板
@@ -59,10 +59,10 @@
         <el-table-column prop="tt_name" label="任务名称" width="180" show-overflow-tooltip></el-table-column>
         <el-table-column prop="tt_period" label="工期(天)" align="center" width="100"></el-table-column>
         <el-table-column prop="tt_node_level" label="层级" align="center" width="100">
-          <template slot-scope="scope">{{scope.row.tt_node_level | levelFilter}}</template>
+          <template slot-scope="scope">{{scope.row.tt_node_level | renderFilter(dict.tt_node_level)}}</template>
         </el-table-column>
         <el-table-column prop="tt_node_type" label="任务类型" align="center" width="100">
-          <template slot-scope="scope">{{scope.row.tt_node_type | stTypeFilter}}</template>
+          <template slot-scope="scope">{{scope.row.tt_node_type | renderFilter(dict.tt_node_type)}}</template>
         </el-table-column>
         <el-table-column prop="tt_note" label="说明" align="center" show-overflow-tooltip></el-table-column>
         <el-table-column label="操作" width="140" prop="handle">
@@ -128,7 +128,7 @@
         </el-form-item>
         <el-form-item label="任务类型">
           <el-select v-model="taskModel.tt_node_type" placeholder="请选择任务类型">
-            <el-option v-for="item in stType_options" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in dict.tt_node_type" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -203,6 +203,8 @@ export default {
       currentRow: [],
       taskModel: {},
       taskModelList: [],
+      dict: [],
+      projectClassDict: [],
       addTaskText: "",
       activeName: "first",
       addOrNot: true,
@@ -213,16 +215,6 @@ export default {
       addFromStandardVisible: false,
       bottomDivShow: false,
       loading: false,
-      stType_options: [
-        {
-          value: "task",
-          label: "任务"
-        },
-        {
-          value: "work",
-          label: "节点"
-        }
-      ],
       add_rules: {
         dept_id: [{ required: true, message: "请选择部门", trigger: "change" }],
         tt_name: [
@@ -237,28 +229,6 @@ export default {
     taskItem,
     taskDataComponent,
     constraintTable
-  },
-  filters: {
-    stTypeFilter(value) {
-      switch (value) {
-        case "task":
-          return "任务";
-          break;
-        case "work":
-          return "节点";
-          break;
-      }
-    },
-    levelFilter(value) {
-      switch (value) {
-        case "base":
-          return "基准";
-          break;
-        case "detail":
-          return "详细";
-          break;
-      }
-    }
   },
   computed: {
     sameLevelTask() {
@@ -276,7 +246,7 @@ export default {
       this.projectTemplateData = [];
       this.z_get("api/project_template", { pc_no: 0, condition: "" })
         .then(res => {
-          this.classFilter = res.dict.pc_no;
+          this.projectClassDict = res.dict;
           this.projectTemplateData = res.data;
         })
         .catch(res => {});
@@ -291,6 +261,7 @@ export default {
           condition: this.condition
         })
           .then(res => {
+            this.dict = res.dict;
             this.taskData = res.data;
           })
           .catch(res => {});

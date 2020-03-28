@@ -1,6 +1,5 @@
 <template>
   <div class="taskManage">
-
     <div class="tbar">
       <el-button icon="el-icon-refresh" title="刷新" size="mini" circle @click="search"></el-button>
       <el-input size="small" @keyup.enter.native="refreshData" placeholder="请输入任务名称" v-model="condition" clearable

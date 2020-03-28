@@ -38,21 +38,21 @@
             </el-button>
             <!-- <el-button type="primary" size="small">进度计算</el-button> -->
             <el-button v-if="selectNodeLevel == 'base'" type="primary" size="small"
-              :disabled="!currentRow.pp_id ||(currentRow.pp_release_status !='unrelease' || currentRow.pp_node_type!='work')"
-              @click="publishPlan('released')">
+              :disabled="!currentRow.pp_id ||(currentRow.pp_release_status !='0' || currentRow.pp_node_type!='work')"
+              @click="publishPlan('2')">
               发布</el-button>
             <el-button v-if="selectNodeLevel == 'base'" type="primary" size="small"
-              :disabled="!currentRow.pp_id ||( currentRow.pp_release_status !='released' || currentRow.pp_node_type!='work')"
-              @click="publishPlan('unrelease')">
+              :disabled="!currentRow.pp_id ||( currentRow.pp_release_status !='2' || currentRow.pp_node_type!='work')"
+              @click="publishPlan('0')">
               撤销发布</el-button>
             <el-button v-if="selectNodeLevel == 'detail'" type="primary" size="small"
-              :disabled="projectPlanSelection.length == 0" @click="publishPlanList('released')">
+              :disabled="projectPlanSelection.length == 0" @click="publishPlanList('2')">
               发布选中({{projectPlanSelection.length}})</el-button>
             <el-button v-if="selectNodeLevel == 'detail'" type="primary" size="small"
-              :disabled="projectPlanSelection.length == 0" @click="publishPlanList('unrelease')">
+              :disabled="projectPlanSelection.length == 0" @click="publishPlanList('0')">
               撤销发布选中({{projectPlanSelection.length}})</el-button>
             <el-button type="primary" size="small"
-              :disabled="!currentRow.pp_id || currentRow.pp_release_status !='released'" @click="changeTimeShow">时间变更
+              :disabled="!currentRow.pp_id || currentRow.pp_release_status !='2'" @click="changeTimeShow">时间变更
             </el-button>
             <el-dropdown style="margin-left:5px;">
               <el-button size="small">
@@ -74,13 +74,12 @@
               @selection-change="handleSelectionChange" @row-click="handleRowClick" @row-dblclick="handleRowDBClick"
               :cell-class-name="cellClass" @select-all="handleSelectAll">
               <el-table-column type="selection" width="55" align="center"></el-table-column>
-              <el-table-column prop="pp_release_status" label="发布状态" width="100">
-                <template slot-scope="scope">{{scope.row.pp_release_status | releaseStatusFilter}}</template>
-              </el-table-column>
+              <zj-table-column prop="pp_release_status" label="发布状态" width="100" align='left' :dict="dict">
+              </zj-table-column>
               <el-table-column prop="pp_name" label="任务名称" align="center" width="120" show-overflow-tooltip>
               </el-table-column>
               <el-table-column prop="pp_node_type" label="任务类型" align="center" width="80">
-                <template slot-scope="scope">{{scope.row.pp_node_type | stTypeFilter}}</template>
+                <template slot-scope="scope">{{scope.row.pp_node_type | renderFilter(dict.pp_node_type)}}</template>
               </el-table-column>
               <el-table-column prop="pp_early_startdate" label="计划开始时间" align="center" width="110">
                 <template slot-scope="scope">{{scope.row.pp_early_startdate | dateFilter}}</template>
@@ -105,10 +104,10 @@
                     @click="handleRowDBClick(scope.row)">
                   </el-button>
                   <el-button type="primary" icon="el-icon-edit" size="mini" circle
-                    v-if="scope.row.pp_release_status !='released'" @click="editProjectPlanShow(scope.row)">
+                    v-if="scope.row.pp_release_status !='2'" @click="editProjectPlanShow(scope.row)">
                   </el-button>
                   <el-button type="danger" icon="el-icon-delete" size="mini" circle
-                    @click="onDeletePlanClick(scope.row)" v-if="scope.row.pp_release_status !='released'">
+                    @click="onDeletePlanClick(scope.row)" v-if="scope.row.pp_release_status !='2'">
                   </el-button>
                 </template>
               </el-table-column>
@@ -199,7 +198,7 @@
             <el-form-item label="任务类型">
               <el-select :disabled="projectPlanData.length == 0" v-model="projectPlanModel.pp_node_type"
                 placeholder="请选择任务类型" @change="nodeTypeSel">
-                <el-option v-for="item in stType_options" :key="item.value" :label="item.label" :value="item.value">
+                <el-option v-for="item in dict.pp_node_type" :key="item.value" :label="item.display" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -334,6 +333,7 @@ export default {
       changeTimeData: [],
       changeTimeModel: {},
       timeConstraintRow: {},
+      dict:[],
       btnShow: false,
       bottomDivShow: false,
       projectPlanCondition: "",
@@ -345,16 +345,6 @@ export default {
       addOrNot: false,
       loading: false,
       hightLightNo: 0,
-      stType_options: [
-        {
-          value: "task",
-          label: "任务"
-        },
-        {
-          value: "work",
-          label: "节点"
-        }
-      ],
       changeType_options: [
         {
           value: "start",
@@ -403,26 +393,6 @@ export default {
     constraintTable
   },
   filters: {
-    releaseStatusFilter(value) {
-      switch (value) {
-        case "released":
-          return "已发布";
-          break;
-        case "unrelease":
-          return "未发布";
-          break;
-      }
-    },
-    stTypeFilter(value) {
-      switch (value) {
-        case "task":
-          return "任务";
-          break;
-        case "work":
-          return "节点";
-          break;
-      }
-    },
     changeTypeFilter(value) {
       switch (value) {
         case "start":
@@ -482,6 +452,7 @@ export default {
           p_no: this.selectProjectNo
         })
           .then(res => {
+            this.dict = res.dict;
             this.projectPlanData = res.data;
           })
           .catch(res => {});
@@ -490,6 +461,7 @@ export default {
           pp_id: this.selectBasePlan.pp_id
         })
           .then(res => {
+            this.dict = res.dict;
             this.projectPlanData = res.data;
           })
           .catch(res => {});
@@ -574,7 +546,7 @@ export default {
           pp_progress: "0",
           pp_node_level: this.selectNodeLevel,
           pp_pid: pp_pid,
-          pp_release_status: "unrelease"
+          pp_release_status: "0"
         };
         this.addOrNot = true;
         this.addProjectPlanVisible = true;
@@ -702,7 +674,7 @@ export default {
       selection_temp.pp_release_status = status;
       selection_temp.pp_releaser = 0;
       selection_temp.UpdateColumns = ["pp_release_status", "pp_releaser"];
-      var title = status == "unrelease" ? "撤销" : "";
+      var title = status == "0" ? "撤销" : "";
       this.z_put("api/project_plan", selection_temp)
         .then(res => {
           this.$message({
@@ -729,7 +701,7 @@ export default {
         selection_temp[i].pp_releaser = 0;
         selection_temp[i].UpdateColumns = ["pp_release_status", "pp_releaser"];
       }
-      var title = status == "unrelease" ? "撤销" : "";
+      var title = status == "0" ? "撤销" : "";
       this.z_put("api/project_plan/list", selection_temp)
         .then(res => {
           this.$message({
@@ -963,7 +935,7 @@ export default {
     },
     cellClass({ row, column, rowIndex, columnIndex }) {
       if (columnIndex == 1) {
-        if (row.pp_release_status == "released") {
+        if (row.pp_release_status == "2") {
           return "backgroundComplete";
         }
       }

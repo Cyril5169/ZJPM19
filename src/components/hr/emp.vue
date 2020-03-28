@@ -19,12 +19,13 @@
     </div>
     <div class="gridTable">
       <zj-table :autoHeight='bottomDivShow' ref="taskTable" style="width: 100%;" height='250px' :data="taskData"
-        tooltip-effect="dark" highlight-current-row row-key="emp_no" @row-click="handleRowClick"
-        @row-dblclick="handleRowDBClick">
+        border
+        tooltip-effect="dark" highlight-current-row row-key="emp_no"
+        @row-dblclick="handleRowClick">
 
         <el-table-column type="index" label="序号" align="center" width="80"></el-table-column>
 
-        <el-table-column prop="emp_no" label="工号" align="center" width="100"></el-table-column>
+        <el-table-column prop="emp_no" label="工号" align="center" ></el-table-column>
 
         <el-table-column prop="emp_name" label="姓名" align="center" width="130"></el-table-column>
 
@@ -39,7 +40,7 @@
             {{scope.row.emp_state | empStateTrans}}
           </template></el-table-column>
 
-        <el-table-column label="操作" width="160" prop="handle">
+        <el-table-column label="操作" width="160" prop="handle" align="center">
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" circle @click="editTaskShow(scope.row)">
             </el-button>
@@ -86,12 +87,12 @@
                 </el-table-column>
 
                 <el-table-column prop="skill_note" label="技能说明" align="center" width="200"></el-table-column>
-
+<!-- 
                 <el-table-column prop="se_givedate" label="评定时间" align="center" width="160"></el-table-column>
 
-                <el-table-column prop="se_giveperson" label="评定人" align="center" width="130"></el-table-column>
+                <el-table-column prop="se_giveperson" label="评定人" align="center" width="130"></el-table-column> -->
 
-                <el-table-column label="操作" width="185" prop="handle">
+                <el-table-column label="操作" width="185" prop="handle" align="center">
                   <template slot-scope="scope">
                     <el-button type="primary" icon="el-icon-edit" size="mini" 
                     circle @click="editItemShow(scope.row)">
@@ -119,29 +120,29 @@
         :rules="add_rules">
 
         <el-form-item label="人员编号" prop="emp_no">
-          <el-input v-model="empModel.emp_no" autocomplete="off" placeholder="请填写人员编号">
+          <el-input v-model="empModel.emp_no" autocomplete="off" placeholder="请填写人员编号" style="width:250px" >
           </el-input>
         </el-form-item>
 
         <el-form-item label="姓名" prop="emp_name">
-          <el-input class="formItem" v-model="empModel.emp_name" placeholder="请填写姓名">
+          <el-input class="formItem" v-model="empModel.emp_name" placeholder="请填写姓名" style="width:250px">
           </el-input>
         </el-form-item>
 
         <el-form-item label="性别" prop="emp_sex">
-          <el-select v-model="empModel.emp_sex" placeholder="请选择性别">
+          <el-select v-model="empModel.emp_sex" placeholder="请选择性别" style="width:250px">
             <el-option v-for="item in dict.emp_sex" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
 
         <el-form-item label="联系电话" prop="emp_phone">
-          <el-input class="formItem" v-model="empModel.emp_phone" placeholder="请填写联系电话">
+          <el-input class="formItem" v-model="empModel.emp_phone" placeholder="请填写联系电话" style="width:300px">
           </el-input>
         </el-form-item>
 
         <el-form-item label="备用电话" prop="emp_2Phone">
-          <el-input class="formItem" v-model="empModel.emp_2Phone" placeholder="请填写备用电话">
+          <el-input class="formItem" v-model="empModel.emp_2Phone" placeholder="请填写备用电话" style="width:300px">
           </el-input>
         </el-form-item>
 
@@ -164,21 +165,21 @@
         :rules="addSkill_rules">
 
         <el-form-item label="技能名称" prop="skill_id">
-          <el-select v-model="skillModel.skill_id" placeholder="请选择技能名称">
+          <el-select v-model="skillModel.skill_id" placeholder="请选择技能名称" style="width:300px">
             <el-option v-for="item in skillOption" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="技能等级" prop="sl_id">
-          <el-select v-model="skillModel.sl_id" placeholder="请选择技能等级">
+          <el-select v-model="skillModel.sl_id" placeholder="请选择技能等级" style="width:300px">
             <el-option v-for="item in levelOption" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="评定人" prop="se_giveperson">
+        <!-- <el-form-item label="评定人" prop="se_giveperson" style="width:300px">
           <el-input v-model="skillModel.se_giveperson" autocomplete="off" placeholder="请填写评定人">
           </el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item style="text-align:center;margin-right:100px;">
           <el-button size="medium" @click="skillFormVisible = false">取&nbsp;&nbsp;消</el-button>
           <el-button type="primary" size="medium" @click="onSaveSkillClick" style="margin-left:30px;">
