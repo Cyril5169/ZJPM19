@@ -32,11 +32,11 @@
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="st_name" label="任务名称" width="180" show-overflow-tooltip></el-table-column>
         <el-table-column prop="dept_id" label="部门" align="center" width="180">
-          <template slot-scope="scope">{{scope.row.dept_id | renderFilter(deptDataFilter)}}</template>
+          <template slot-scope="scope">{{scope.row.dept_id | renderFilter(dict.dept_id)}}</template>
         </el-table-column>
         <el-table-column prop="st_period" label="工期(天)" align="center" width="100"></el-table-column>
         <el-table-column prop="st_type" label="类别" align="center" width="100">
-          <template slot-scope="scope">{{scope.row.st_type | stTypeFilter}}</template>
+          <template slot-scope="scope">{{scope.row.st_type | renderFilter(dict.st_type)}}</template>
         </el-table-column>
         <el-table-column prop="st_note" label="说明" align="center" show-overflow-tooltip></el-table-column>
         <el-table-column label="操作" width="140" prop="handle">
@@ -91,7 +91,7 @@
         </el-form-item>
         <el-form-item label="任务类型">
           <el-select v-model="taskModel.st_type" placeholder="请选择任务类型">
-            <el-option v-for="item in stType_options" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in dict.st_type" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -127,7 +127,7 @@ export default {
     return {
       condition: "",
       taskData: [], //表格数据
-      deptDataFilter: [], //部门渲染数据
+      dict: [], //字典渲染数据
       deptData: [], //部门数据
       selection: [], //选中行数据
       currentRow: {},
@@ -137,16 +137,6 @@ export default {
       addOrNot: true, //是否新增
       addTaskText: "",
       activeName: "first",
-      stType_options: [
-        {
-          value: "task",
-          label: "任务"
-        },
-        {
-          value: "work",
-          label: "节点"
-        }
-      ],
       add_rules: {
         dept_id: [{ required: true, message: "请选择部门", trigger: "change" }],
         st_name: [
@@ -159,18 +149,6 @@ export default {
   components: {
     taskItem,
     taskDataComponent
-  },
-  filters: {
-    stTypeFilter(value) {
-      switch (value) {
-        case "task":
-          return "任务";
-          break;
-        case "work":
-          return "节点";
-          break;
-      }
-    }
   },
   watch: {
     addTaskVisiable(val) {
@@ -187,7 +165,7 @@ export default {
       this.bottomDivShow = false;
       this.z_get("api/standard_task/treeList", { condition: this.condition })
         .then(res => {
-          this.deptDataFilter = res.dict.dept_id;
+          this.dict = res.dict;
           this.taskData = res.data;
         })
         .catch(res => {});
@@ -308,7 +286,7 @@ export default {
       this.taskModel = JSON.parse(JSON.stringify(row));
       this.taskModel.dept_name = this.renderFilter(
         this.taskModel.dept_id,
-        this.deptDataFilter
+        this.dict.dept_id
       );
       this.addTaskText = "编辑节点";
       this.addOrNot = false;

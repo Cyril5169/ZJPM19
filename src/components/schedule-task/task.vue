@@ -1,15 +1,15 @@
 <template>
   <div class="task">
-    <el-tabs v-model="activeName">
-      <el-tab-pane label="待处理" name="taskManage">
+    <el-tabs v-model="activeName" class="taskTabs flexDiv-column">
+      <el-tab-pane label="待处理" name="taskManage" class="flexDiv-column">
         <keep-alive>
-          <taskManage>
+          <taskManage class="flexDiv-column">
           </taskManage>
         </keep-alive>
       </el-tab-pane>
-      <el-tab-pane label="已排班或发布" name="taskReleased">
+      <el-tab-pane label="已排班或发布" name="taskReleased" class="flexDiv-column">
         <keep-alive>
-          <taskReleased>
+          <taskReleased class="flexDiv-column">
           </taskReleased>
         </keep-alive>
       </el-tab-pane>
@@ -41,5 +41,12 @@ export default {
 <style scoped>
 .task {
   width: 100%;
+}
+</style>
+<style>
+.taskTabs .el-tabs__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 </style>

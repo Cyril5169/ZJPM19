@@ -1,7 +1,7 @@
 <template>
   <div class="projectList">
     <el-container>
-      <el-aside class="asideContent" width='230px'>
+      <el-aside class="asideContent" width='280px'>
         <div class="leftTop">
           <el-card class="leftCard" shadow="never">
             <div slot="header">
@@ -73,16 +73,16 @@
             <el-table-column prop="p_name" label="项目名称" align="center" show-overflow-tooltip>
             </el-table-column>
             <el-table-column prop="pc_no" label="所属分类" align="center" width="120" sortable show-overflow-tooltip>
-              <template slot-scope="scope">{{scope.row.pc_no | renderFilter(classFilter)}}</template>
+              <template slot-scope="scope">{{scope.row.pc_no | renderFilter(dict.pc_no)}}</template>
             </el-table-column>
             <el-table-column prop="p_salesman" label="业务员" width="100" align="center">
-              <template slot-scope="scope">{{scope.row.p_salesman | renderFilter(employeeFilter)}}</template>
+              <template slot-scope="scope">{{scope.row.p_salesman | renderFilter(dict.p_salesman)}}</template>
             </el-table-column>
             <el-table-column prop="p_manager" label="项目经理" width="100" align="center">
-              <template slot-scope="scope">{{scope.row.p_manager | renderFilter(employeeFilter)}}</template>
+              <template slot-scope="scope">{{scope.row.p_manager | renderFilter(dict.p_salesman)}}</template>
             </el-table-column>
             <el-table-column prop="p_status" label="项目状态" align="center" width="100">
-              <template slot-scope="scope">{{scope.row.p_status | statusFilter}}</template>
+              <template slot-scope="scope">{{scope.row.p_status | renderFilter(dict.p_status)}}</template>
             </el-table-column>
             <el-table-column label="操作" width="140" prop="handle">
               <template slot-scope="scope">
@@ -127,7 +127,7 @@
           <el-col :span="11">
             <el-form-item label="客户名称" prop="c_no">
               <el-select style="width:200px;" filterable v-model="projectModel.c_no" placeholder="请选择客户">
-                <el-option v-for="item in customerFilter" :key="item.value" :label="item.display" :value="item.value">
+                <el-option v-for="item in dict.c_no" :key="item.value" :label="item.display" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -170,7 +170,7 @@
           <el-col :span="11">
             <el-form-item label="业务员" prop="p_salesman">
               <el-select style="width:200px;" filterable v-model="projectModel.p_salesman" placeholder="请选择业务员">
-                <el-option v-for="item in employeeFilter" :key="item.value" :label="item.display" :value="item.value">
+                <el-option v-for="item in dict.p_salesman" :key="item.value" :label="item.display" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -179,7 +179,7 @@
           <el-col :span="11">
             <el-form-item label="项目经理" prop="p_manager">
               <el-select style="width:200px;" filterable v-model="projectModel.p_manager" placeholder="请选择项目经理">
-                <el-option v-for="item in employeeFilter" :key="item.value" :label="item.display" :value="item.value">
+                <el-option v-for="item in dict.p_salesman" :key="item.value" :label="item.display" :value="item.value">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -188,23 +188,21 @@
         <el-row>
           <el-col :span="11">
             <el-form-item label="计划开始时间" prop="p_plan_startdate">
-              <el-date-picker style="width:200px;" v-model="projectModel.p_plan_startdate"
-                placeholder="请选择计划开始时间">
+              <el-date-picker style="width:200px;" v-model="projectModel.p_plan_startdate" placeholder="请选择计划开始时间">
               </el-date-picker>
             </el-form-item>
           </el-col>
           <el-col class="line" :span="1">&nbsp;</el-col>
           <el-col :span="11">
             <el-form-item label="计划结束时间" prop="p_plan_enddate">
-              <el-date-picker style="width:200px;" v-model="projectModel.p_plan_enddate"
-                placeholder="请选择计划开始时间">
+              <el-date-picker style="width:200px;" v-model="projectModel.p_plan_enddate" placeholder="请选择计划开始时间">
               </el-date-picker>
             </el-form-item>
           </el-col>
         </el-row>
         <el-form-item label="项目状态" prop="p_status">
           <el-select style="width:200px;" v-model="projectModel.p_status" placeholder="请选择项目状态">
-            <el-option v-for="item in status_options" :key="item.value" :label="item.label" :value="item.value">
+            <el-option v-for="item in dict.p_status" :key="item.value" :label="item.display" :value="item.value">
             </el-option>
           </el-select>
         </el-form-item>
@@ -234,31 +232,11 @@ export default {
       classCountData: [],
       loading: false,
       projectSelection: [],
-      classFilter: [],
-      employeeFilter: [],
-      customerFilter: [],
+      dict: [],
       productData: [],
       projectModel: {},
       addOrNot: false,
       addProjectVisible: false,
-      status_options: [
-        {
-          value: "create",
-          label: "创建"
-        },
-        {
-          value: "execute",
-          label: "执行中"
-        },
-        {
-          value: "pause",
-          label: "暂停中"
-        },
-        {
-          value: "finish",
-          label: "完结"
-        }
-      ],
       add_rules: {
         p_no: [{ required: true, message: "请填写项目号", trigger: "blur" }],
         p_name: [
@@ -330,9 +308,7 @@ export default {
       )
         .then(res => {
           this.loading = false;
-          this.classFilter = res.dict.pc_no;
-          this.employeeFilter = res.dict.p_salesman;
-          this.customerFilter = res.dict.c_no;
+          this.dict = res.dict;
           this.projectData = res.data;
         })
         .catch(res => {});
@@ -388,7 +364,7 @@ export default {
       this.projectModel = JSON.parse(JSON.stringify(row));
       this.projectModel.pc_name = this.renderFilter(
         this.projectModel.pc_no,
-        this.classFilter
+        this.dict.pc_no
       );
       this.addOrNot = false;
       this.addProjectVisible = true;
@@ -521,7 +497,7 @@ export default {
 
 <style scoped>
 .projectList {
-  width: 1200px;
+  width: 1300px;
 }
 .asideContent {
   padding-right: 10px;
