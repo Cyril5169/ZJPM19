@@ -10,32 +10,8 @@
         </div>
       </div>
       <div class="bottomLayout">
-        <!-- <el-tabs v-model="activeName" :style="{height:bottomDivShow?'300px':'50px'}">
-          <el-tab-pane label="任务执行者" name="executor">
-            <keep-alive>
-              <taskExecutor v-if="bottomDivShow" :currentRow='currentRow'>
-              </taskExecutor>
-            </keep-alive>
-          </el-tab-pane>
-          <el-tab-pane label="物料需求" name="material">
-            <keep-alive>
-              <taskMaterial v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskMaterial>
-            </keep-alive>
-          </el-tab-pane>
-          <el-tab-pane label="资料需求" name="data">
-            <keep-alive>
-              <taskData v-if="bottomDivShow" :currentRow='currentRow' source='task'></taskData>
-            </keep-alive>
-          </el-tab-pane>
-          <el-tab-pane label="输入文档" name="dataFile">
-            <keep-alive>
-              <taskDataFile v-if="bottomDivShow" :currentRow='currentRow'></taskDataFile>
-            </keep-alive>
-          </el-tab-pane>
-        </el-tabs>
-        <i class="splitButton" :class="[bottomDivShow?'el-icon-caret-bottom':'el-icon-caret-top']"
-          @click="bottomDivShow=!bottomDivShow"></i>
-      </div> -->
+        
+      </div>
     </div>
   </div>
 </template>
