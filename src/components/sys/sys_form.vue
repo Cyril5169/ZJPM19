@@ -133,7 +133,7 @@
     </el-dialog>
     <!-- 编辑系统表单 -->
     <el-dialog width="450px" title="编辑系统表单" :close-on-click-modal="false" :visible.sync="isEditForm"
-      @closed="formModel={};$refs.formModel.resetFields()">
+      @closed="formModel={};$refs.formEditForm.resetFields()">
       <zj-form size="small" :newDataFlag='isEditForm' :model="formModel" label-width="120px" ref="formEditForm"
         :rules="form_rules">
         <el-form-item label="系统表单名称" prop="sys_form_name">
@@ -589,7 +589,31 @@ export default {
           });
       });
     },
-    onDeleteFormClick() {},
+    onDeleteFormClick() {
+      this.$confirm("确定删除吗？", "提示", {
+        confirmButtonText: "是",
+        cancelButtonText: "否",
+        type: "warning"
+      }).then(() => {
+        this.z_delete("api/sys_form", { data: this.formModel })
+          .then(res => {
+            this.$message({
+              message: "删除成功",
+              type: "success",
+              duration: 1000
+            });
+            this.isEditForm = false;
+            this.currentSysForm = {};
+            this.refreshSysFormData();
+          })
+          .catch(res => {
+            this.$alert("删除失败：" + res.msg, "提示", {
+              confirmButtonText: "确定",
+              type: "error"
+            });
+          });
+      });
+    },
     onSaveFormClick2() {
       this.$refs.formEditForm.validate(valid => {
         if (valid) {

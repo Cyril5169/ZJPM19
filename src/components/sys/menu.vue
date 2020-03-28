@@ -17,7 +17,7 @@
           <a @click="CancelModuleSortable">取消</a>
         </div>
         <div class="table_ct module_table">
-          <el-table ref="moduleTable" style="width:100%;" :height="moduleTableHeight" :data="moduleData" tooltip-effect="dark"
+          <el-table ref="moduleTable" style="position:absolute;width:100%" height="100%" :data="moduleData" tooltip-effect="dark"
             highlight-current-row :show-header="false" fit row-key="module_id"
             :current-row-key="currentModule.module_id" @current-change="handleModuleRowClick">
             <el-table-column prop="module_name" align="left">
@@ -66,7 +66,7 @@
           </el-dropdown>
         </div>
         <div class="table_ct">
-          <el-table ref="menuTable" style="width:100%;" :height="menuTableHeight" :data="menuData" tooltip-effect="dark"
+          <el-table ref="menuTable" style="position:absolute;width:100%" height="100%" :data="menuData" tooltip-effect="dark"
             highlight-current-row row-key="menu_id" :expand-row-keys="menuExpandRowKeys"
             @current-change="handleMenuRowClick" @selection-change="handleMenuSelectionChange"
             @expand-change="handleMenuExpandChange">
@@ -105,7 +105,7 @@
           </el-button>
         </div>
         <div class="table_ct">
-          <el-table ref="elementTable" style="width:100%;" :height=elementTableHeight :data="elementData" tooltip-effect="dark"
+          <el-table ref="elementTable" style="width:100%;" height="100%" :data="elementData" tooltip-effect="dark"
             highlight-current-row fit row-key="element_id" @current-change="handleElementRowClick"
             @selection-change="handleElementSelectionChange">
             <el-table-column type="selection" width="55" align="center"></el-table-column>
@@ -251,9 +251,6 @@ export default {
       menuSortable: null,
       showDragMenu: false,
       menuExpandRowKeys: [],
-      menuTableHeight: 300,
-      moduleTableHeight: 300,
-      elementTableHeight: 300,
     };
   },
   computed: {
@@ -827,15 +824,6 @@ export default {
   },
 
   mounted() {
-    let that = this;
-    this.$nextTick(function() {
-      let h = that.$refs.menuTable.$el.parentNode.offsetHeight;
-      that.menuTableHeight = h;
-      h = that.$refs.moduleTable.$el.parentNode.offsetHeight;
-      that.moduleTableHeight = h;
-      h = that.$refs.elementTable.$el.parentNode.offsetHeight;
-      that.elementTableHeight = h;
-    });
     this.refreshModuleData();
   },
   created() {}
@@ -880,6 +868,8 @@ export default {
 .table_ct {
   flex: 1;
   box-sizing: border-box;
+  position: relative;
+  overflow-y: auto;
 }
 .right {
   box-sizing: border-box;
